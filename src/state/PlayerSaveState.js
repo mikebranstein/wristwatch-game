@@ -8,6 +8,12 @@
 
 const DEFAULT_SAVE = {
   tutorial_first_fault_seen: false,
+
+  // Chronograph Discovery Path — Phase 1 (Issue #88)
+  // Backward-compatible additions: Object.assign({}, DEFAULT_SAVE, initialState) handles
+  // defaults transparently for existing save data that lacks these keys.
+  chronograph_overlay_seen: false,   // overlay first-time-only trigger (AC1, AC3, AC4)
+  discovery_mode_enabled: true,      // global discovery mode setting; default ON (AC3, AC4)
 };
 
 class PlayerSaveState {
