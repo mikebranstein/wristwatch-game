@@ -37,6 +37,16 @@ const EVENTS = {
   CLEANING_REVEAL_STARTED: 'cleaning_reveal_started',
   CLEANING_REVEAL_DISMISSED: 'cleaning_reveal_dismissed',
   CLEANING_REVEAL_AUTO_DISMISSED: 'cleaning_reveal_auto_dismissed',
+
+  // Chronograph Discovery Path — Phase 1 (Issue #88)
+  // All additive — zero changes to existing event names or signatures.
+  // COMPLICATION_GATE_REACHED must fire pre-launch to establish the D30 baseline (AC5).
+  COMPLICATION_GATE_REACHED: 'complication_gate_reached',
+  CHRONOGRAPH_OVERLAY_SHOWN: 'chronograph_overlay_shown',
+  CHRONOGRAPH_OVERLAY_DISMISSED: 'chronograph_overlay_dismissed',
+  CHRONOGRAPH_OVERLAY_SKIPPED: 'chronograph_overlay_skipped',
+  PART_GROUP_REVEALED: 'part_group_revealed',
+  DISCOVERY_MODE_TOGGLED: 'discovery_mode_toggled',
 };
 
 class TelemetryEmitter {
@@ -148,6 +158,66 @@ class TelemetryEmitter {
 
   cleaningRevealAutoDismissed() {
     this.emit(EVENTS.CLEANING_REVEAL_AUTO_DISMISSED, {});
+  }
+
+  // ---- Chronograph Discovery Path convenience methods (Issue #88) ----
+
+  /**
+   * Fires when any complication movement loads — required for D30 baseline
+   * instrumentation BEFORE launch (AC5, Test Scenario 10).
+   *
+   * @param {string} movementId
+   * @param {string} complicationType  e.g. 'chronograph'
+   */
+  complicationGateReached(movementId, complicationType) {
+    this.emit(EVENTS.COMPLICATION_GATE_REACHED, { movementId, complicationType });
+  }
+
+  /**
+   * Fires when the ChronographDiscoveryOverlay is displayed to the player.
+   *
+   * @param {string} movementId
+   */
+  chronographOverlayShown(movementId) {
+    this.emit(EVENTS.CHRONOGRAPH_OVERLAY_SHOWN, { movementId });
+  }
+
+  /**
+   * Fires when the player explicitly dismisses the overlay after viewing it.
+   *
+   * @param {string} movementId
+   */
+  chronographOverlayDismissed(movementId) {
+    this.emit(EVENTS.CHRONOGRAPH_OVERLAY_DISMISSED, { movementId });
+  }
+
+  /**
+   * Fires when the player immediately skips the overlay without reading.
+   *
+   * @param {string} movementId
+   */
+  chronographOverlaySkipped(movementId) {
+    this.emit(EVENTS.CHRONOGRAPH_OVERLAY_SKIPPED, { movementId });
+  }
+
+  /**
+   * Fires each time PartScaffoldingController reveals a group of parts.
+   *
+   * @param {number} groupIndex   0-based index of the revealed group
+   * @param {string} label        Descriptive context cue shown to the player
+   * @param {number} partCount    Number of parts in this group
+   */
+  partGroupRevealed(groupIndex, label, partCount) {
+    this.emit(EVENTS.PART_GROUP_REVEALED, { groupIndex, label, partCount });
+  }
+
+  /**
+   * Fires when the player toggles discovery mode in Settings.
+   *
+   * @param {boolean} newValue  The new state of discovery_mode_enabled
+   */
+  discoveryModeToggled(newValue) {
+    this.emit(EVENTS.DISCOVERY_MODE_TOGGLED, { newValue });
   }
 
   /**
