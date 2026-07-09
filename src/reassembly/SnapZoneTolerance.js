@@ -34,6 +34,26 @@ const DEFAULT_TOLERANCES = {
   crystal:       { approach_radius: 60, lock_radius: 20 },
 };
 
+/**
+ * SNAP_ZONES — full catalog of watch parts with snap-zone tolerances.
+ * Includes all 13 parts referenced by DirectionalMessageMap (Phase 2 / Issue #78).
+ */
+const SNAP_ZONES = {
+  mainspring:    { approach_radius: 60, lock_radius: 20 },
+  barrel:        { approach_radius: 60, lock_radius: 20 },
+  barrel_bridge: { approach_radius: 60, lock_radius: 20 },
+  escape_wheel:  { approach_radius: 60, lock_radius: 20 },
+  pallet_fork:   { approach_radius: 60, lock_radius: 20 },
+  balance_wheel: { approach_radius: 60, lock_radius: 20 },
+  balance_cock:  { approach_radius: 60, lock_radius: 20 },
+  cannon_pinion: { approach_radius: 60, lock_radius: 20 },
+  minute_wheel:  { approach_radius: 60, lock_radius: 20 },
+  hour_wheel:    { approach_radius: 60, lock_radius: 20 },
+  dial:          { approach_radius: 60, lock_radius: 20 },
+  crown:         { approach_radius: 60, lock_radius: 20 },
+  stem:          { approach_radius: 60, lock_radius: 20 },
+};
+
 /** Valid screen contexts that may activate snap zones. */
 const ALLOWED_CONTEXTS = ['reassembly'];
 
@@ -144,4 +164,4 @@ class SnapZoneTolerance {
   }
 }
 
-module.exports = { SnapZoneTolerance, DEFAULT_TOLERANCES, ALLOWED_CONTEXTS };
+module.exports = { SnapZoneTolerance, DEFAULT_TOLERANCES, SNAP_ZONES, ALLOWED_CONTEXTS };
