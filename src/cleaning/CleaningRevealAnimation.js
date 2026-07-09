@@ -91,6 +91,23 @@ class CleaningRevealAnimation {
     this._clearReveal();
   }
 
+  /**
+   * Clear and reset animation state. Safe to call when idle.
+   * Called by the sequence orchestrator during destroy() cleanup.
+   */
+  clear() {
+    if (this._isPlaying) {
+      this._isPlaying = false;
+      this._clearReveal();
+    }
+    this._isComplete = false;
+    this._currentPhaseIndex = 0;
+    this._phaseTimestamps = {};
+    this._visualTransitionBeatMs = null;
+    this._preTexture = null;
+    this._postTexture = null;
+  }
+
   /** @returns {boolean} True while the animation is still in progress. */
   isPlaying() {
     return this._isPlaying;

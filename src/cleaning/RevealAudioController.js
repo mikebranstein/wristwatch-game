@@ -82,6 +82,18 @@ class RevealAudioController {
   }
 
   /**
+   * Play the reveal audio cue immediately, without timing validation.
+   * Convenience method for the CleaningRevealSequence orchestrator — fires the
+   * cue synchronously at the reveal beat callback (AC#53-2).
+   */
+  playRevealCue() {
+    if (this._isPlaying) return;
+    this._isPlaying = true;
+    this._lastAudioFireMs = Date.now();
+    this._audioHook('reveal_cue');
+  }
+
+  /**
    * Signal that the audio cue has finished playing.  Resets the stacking guard
    * so future completions can fire correctly.
    */
