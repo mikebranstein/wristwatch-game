@@ -26,6 +26,7 @@ from src.catalog.data.part_compatibility import Part, PARTS_CATALOG, MovementFam
 class ActiveJobContext:
     movement_family: str
     failed_part_type: str
+    damage_state: Optional[str] = None  # None = standard wear; Phase 1 values: 'water_ingress', 'oxidation', 'crystal_crazing'
 
 
 @dataclass

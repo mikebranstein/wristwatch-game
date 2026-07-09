@@ -17,6 +17,8 @@ const SYMPTOM_PARTS_MAP = {
   'seconds_hand_stuck': ['seconds_wheel', 'cannon_pinion', 'center_wheel'],
   'dial_face_damage': ['dial', 'crystal'],
   'water_damage_visible': ['gasket', 'crown', 'crystal'],
+  'oxidation_visible': ['case_metal', 'dial', 'lubrication'],
+  'crystal_crazing_visible': ['crystal', 'dial'],
   'skipping_seconds': ['balance_wheel', 'pallet_fork', 'escape_wheel'],
   'date_not_advancing': ['date_disc', 'date_jumper', 'date_driving_wheel'],
 };

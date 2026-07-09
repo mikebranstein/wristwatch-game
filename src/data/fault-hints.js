@@ -47,6 +47,24 @@ const FAULT_HINTS = {
     tier2: "The date disc is driven by the date driving wheel and held in place between advances by the date jumper spring. A worn tooth or weak jumper spring can cause the date to skip or stick.",
     tier3: "Inspect the date disc teeth, date jumper, and date driving wheel. Replace any worn components and ensure the date jumper spring provides adequate tension to snap the disc cleanly at midnight.",
   },
+  water_ingress_damage: {
+    fault_id: 'water_ingress_damage',
+    tier1: "Something has invaded this movement from outside. Moisture leaves its mark on metal.",
+    tier2: "Water ingress causes blue-green verdigris corrosion on brass plates and poisons the lubricant. The crown seal has likely failed — check the gasket and crown before opening the movement.",
+    tier3: "Disassemble fully and apply the corrosion cleaning tool to all brass plates showing verdigris. Replace the failed crown and gasket. Use the crystal defogging solution on the inside crystal face. Relubricant all pivot points after cleaning.",
+  },
+  oxidation_tarnish_damage: {
+    fault_id: 'oxidation_tarnish_damage',
+    tier1: "Time has not been kind to this watch's finish. The case tells the story before you even open it.",
+    tier2: "Heavy oxidation tarnishes the case metal and dial. Inside, lubricant has crystallised into a gummy residue that slows or stops the escapement. The movement needs a full strip-down and clean.",
+    tier3: "Polish the case exterior to remove tarnish. Restore the dial surface using the dial restoration tool. Strip the movement completely, dissolve the crystallised lubricant in cleaning solution, and apply fresh lubrication to all jewels and pivot points.",
+  },
+  crystal_crazing_damage: {
+    fault_id: 'crystal_crazing_damage',
+    tier1: "You can see the problem from across the bench — look at the watch face.",
+    tier2: "The mineral crystal has shattered or crazed, with hairline fractures spreading across the dial enamel beneath. The crystal must be replaced before the dial damage worsens.",
+    tier3: "Remove the damaged crystal and replace it with a correctly sized mineral crystal. Repair the hairline fractures in the dial enamel using the dial enamel repair tool. Run a timing regulation check after reassembly to confirm no shock damage to the balance staff.",
+  },
 };
 
 /**

@@ -40,6 +40,10 @@ class PartType(str, Enum):
     JEWEL = "jewel"
     STEM = "stem"
     DIAL = "dial"
+    CRYSTAL = "crystal"
+    GASKET = "gasket"
+    CORROSION_CLEANING_TOOL = "corrosion-cleaning-tool"
+    DIAL_ENAMEL_REPAIR_TOOL = "dial-enamel-repair-tool"
 
 
 class MovementFamily(str, Enum):
@@ -387,6 +391,96 @@ PARTS_CATALOG: list[Part] = [
         function_description=(
             "Transfers crown rotation into time-setting and (optionally) manual winding for the Miyota 8215. "
             "The stem must be fitted to the correct length for the case configuration; measure before ordering."
+        ),
+    ),
+    # ---- Damage-state repair parts (Phase 1) ----
+    # Water Ingress repair path
+    Part(
+        id="corrosion-cleaning-tool",
+        name="Corrosion Cleaning Tool",
+        part_type=PartType.CORROSION_CLEANING_TOOL,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=14.00,
+        function_description=(
+            "Consumable cleaning compound and applicator for removing blue-green verdigris corrosion from brass "
+            "movement plates and bridges. "
+            "Used exclusively during Water Ingress damage-state repairs; does not appear in standard repair jobs."
+        ),
+    ),
+    Part(
+        id="gasket-universal",
+        name="Crown Gasket (Universal)",
+        part_type=PartType.GASKET,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=4.50,
+        function_description=(
+            "Rubber O-ring gasket that seals the crown tube against moisture ingress. "
+            "Required replacement whenever a Water Ingress damage state is repaired — "
+            "the failed gasket is the primary point of entry."
+        ),
+    ),
+    Part(
+        id="crystal-defogging-solution",
+        name="Crystal Defogging Solution",
+        part_type=PartType.CRYSTAL,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=6.00,
+        function_description=(
+            "Solvent solution that removes moisture condensation fog from the inner face of the watch crystal. "
+            "Applied as the final step of the Water Ingress repair path, after corrosion cleaning and crown replacement."
+        ),
+    ),
+    # Oxidation / Tarnish repair path
+    Part(
+        id="case-polish-compound",
+        name="Case Polishing Compound",
+        part_type=PartType.DIAL,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=8.00,
+        function_description=(
+            "Abrasive polishing compound for restoring tarnished and oxidised case metal surfaces. "
+            "Used in the Oxidation/Tarnish damage-state repair path to remove deep patination before reassembly."
+        ),
+    ),
+    Part(
+        id="dial-restoration-kit",
+        name="Dial Restoration Kit",
+        part_type=PartType.DIAL,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=18.00,
+        function_description=(
+            "Professional kit for cleaning and restoring badly oxidised dial surfaces with brown-black patination. "
+            "Part of the Oxidation/Tarnish damage-state repair path; restores dial legibility without refinishing."
+        ),
+    ),
+    # Crystal Crazing repair path
+    Part(
+        id="crystal-mineral-universal",
+        name="Mineral Crystal (Universal Flat)",
+        part_type=PartType.CRYSTAL,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=12.00,
+        function_description=(
+            "Flat mineral glass crystal for replacing shattered or crazed watch crystals. "
+            "Universal sizing accommodates standard case diameters; required for Crystal Crazing damage-state repairs."
+        ),
+    ),
+    Part(
+        id="dial-enamel-repair-tool",
+        name="Dial Enamel Repair Tool",
+        part_type=PartType.DIAL_ENAMEL_REPAIR_TOOL,
+        movement_family=None,
+        condition=PartCondition.NEW,
+        price=22.00,
+        function_description=(
+            "Precision applicator and filler compound for repairing hairline fractures in dial enamel surfaces. "
+            "Used in the Crystal Crazing damage-state repair path after crystal replacement to restore dial integrity."
         ),
     ),
 ]
