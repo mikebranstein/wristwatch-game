@@ -89,7 +89,6 @@ class TelemetryEmitter {
     this.emit(EVENTS.DIAGNOSIS_COMPLETED_WITH_HINT, { faultInstanceId, highestTierUsed });
   }
 
-<<<<<<< HEAD
   // ---- Reassembly convenience methods (backward-compatible additive extension) ----
 
   /**
@@ -121,8 +120,20 @@ class TelemetryEmitter {
    * @param {string|null} sessionId
    * @param {{ assembledCount: number, totalUndoAttempts: number }} stats
    */
-  reassemblyCompleted(sessionId, stats) {
-    this.emit(EVENTS.REASSEMBLY_COMPLETED, { sessionId, ...stats });
+  /**
+   * Backward-compatible dual-mode signature:
+   *   reassemblyCompleted(partId)                    — Phase 1 (Issue #76) single-arg form
+   *   reassemblyCompleted(sessionId, stats)           — Phase 2 extended form with session context
+   *
+   * When called with one argument, emits { partId }.
+   * When called with two arguments (stats defined), emits { sessionId, ...stats }.
+   */
+  reassemblyCompleted(partIdOrSessionId, stats) {
+    if (stats !== undefined) {
+      this.emit(EVENTS.REASSEMBLY_COMPLETED, { sessionId: partIdOrSessionId, ...stats });
+    } else {
+      this.emit(EVENTS.REASSEMBLY_COMPLETED, { partId: partIdOrSessionId });
+    }
   }
 
   // ---- Cleaning Reveal events (Issue #53) ----
