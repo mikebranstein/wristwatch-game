@@ -6,13 +6,18 @@
  * injected `instrumentationHook` function so the existing infrastructure
  * decides how to record / ship the event.
  *
- * Named events (AC5):
+ * Named events (AC5 — diagnosis system):
  *   tutorial_diagnosis_started
  *   hint_tier_1_shown
  *   hint_tier_2_shown
  *   hint_tier_3_shown
  *   diagnosis_completed_without_hint
  *   diagnosis_completed_with_hint
+ *
+ * Named events (AC5 — reassembly system, backward-compatible additive extension):
+ *   undo_attempted          — player undid a reassembly placement
+ *   reassembly_part_confirmed — a part was successfully snapped in
+ *   reassembly_completed    — full reassembly stage completed (carries undo frequency)
  */
 
 const EVENTS = {
@@ -22,6 +27,16 @@ const EVENTS = {
   HINT_TIER_3_SHOWN: 'hint_tier_3_shown',
   DIAGNOSIS_COMPLETED_WITHOUT_HINT: 'diagnosis_completed_without_hint',
   DIAGNOSIS_COMPLETED_WITH_HINT: 'diagnosis_completed_with_hint',
+
+  // Reassembly events (additive — does not affect diagnosis events above)
+  UNDO_ATTEMPTED: 'undo_attempted',
+  REASSEMBLY_PART_CONFIRMED: 'reassembly_part_confirmed',
+  REASSEMBLY_COMPLETED: 'reassembly_completed',
+
+  // Cleaning Reveal Core System (Issue #53)
+  CLEANING_REVEAL_STARTED: 'cleaning_reveal_started',
+  CLEANING_REVEAL_DISMISSED: 'cleaning_reveal_dismissed',
+  CLEANING_REVEAL_AUTO_DISMISSED: 'cleaning_reveal_auto_dismissed',
 };
 
 class TelemetryEmitter {
@@ -72,6 +87,56 @@ class TelemetryEmitter {
 
   diagnosisCompletedWithHint(faultInstanceId, highestTierUsed) {
     this.emit(EVENTS.DIAGNOSIS_COMPLETED_WITH_HINT, { faultInstanceId, highestTierUsed });
+  }
+
+<<<<<<< HEAD
+  // ---- Reassembly convenience methods (backward-compatible additive extension) ----
+
+  /**
+   * Emitted when the player undoes a reassembly placement.
+   * Used for AC5 undo-frequency baseline and post-implementation measurement.
+   *
+   * @param {string} partId
+   * @param {string|null} sessionId
+   * @param {number} totalUndoAttempts — running total for this session
+   */
+  undoAttempted(partId, sessionId, totalUndoAttempts) {
+    this.emit(EVENTS.UNDO_ATTEMPTED, { partId, sessionId, totalUndoAttempts });
+  }
+
+  /**
+   * Emitted when a part is successfully snapped into the correct position.
+   *
+   * @param {string} partId
+   * @param {string|null} sessionId
+   */
+  reassemblyPartConfirmed(partId, sessionId) {
+    this.emit(EVENTS.REASSEMBLY_PART_CONFIRMED, { partId, sessionId });
+  }
+
+  /**
+   * Emitted when the full reassembly stage completes.
+   * Carries undo frequency data for AC5 post-implementation measurement.
+   *
+   * @param {string|null} sessionId
+   * @param {{ assembledCount: number, totalUndoAttempts: number }} stats
+   */
+  reassemblyCompleted(sessionId, stats) {
+    this.emit(EVENTS.REASSEMBLY_COMPLETED, { sessionId, ...stats });
+  }
+
+  // ---- Cleaning Reveal events (Issue #53) ----
+
+  cleaningRevealStarted(preTexture, postTexture) {
+    this.emit(EVENTS.CLEANING_REVEAL_STARTED, { preTexture, postTexture });
+  }
+
+  cleaningRevealDismissed() {
+    this.emit(EVENTS.CLEANING_REVEAL_DISMISSED, {});
+  }
+
+  cleaningRevealAutoDismissed() {
+    this.emit(EVENTS.CLEANING_REVEAL_AUTO_DISMISSED, {});
   }
 
   /**
