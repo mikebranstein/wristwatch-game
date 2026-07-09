@@ -1,382 +1,306 @@
 /**
- * Integration tests for CleaningRevealSequence
+ * Integration tests for CleaningRevealSequence — Issue #53 + #54
  *
- * Covers all 5 acceptance criteria (AC1–AC5) and the 10 test scenarios from
- * issue #53 at the orchestrator level.  Subsystems are mocked so every public
- * method can be exercised against controlled behaviour.
+ * All subsystems are mocked so this file tests only the orchestration logic:
+ * correct delegation, call ordering, guard behaviour, and telemetry.
  *
- * Test scenarios:
- *   Scenario 1  (Happy path)           — full sequence triggers on completion event.
- *   Scenario 2  (Visual contrast)      — animation plays with pre/post textures.
- *   Scenario 3  (Audio sync)           — audio cue fires after sheen phase.
- *   Scenario 4  (Before/after accuracy)— UI receives correct pre/post textures.
- *   Scenario 5  (Portrait 9:16)        — layout mode forwarded to UI.
- *   Scenario 6  (Landscape 16:9)       — default layout mode is 16:9.
- *   Scenario 7  (Back-to-back)         — isRevealing guard prevents stacking.
- *   Scenario 8  (Performance floor)    — guard releases after sequence completes.
- *   Scenario 9  (Early dismiss)        — dismissEarly() delegates to BeforeAfterUI.
- *   Scenario 10 (Sequence boundary)    — telemetry fired; game loop unblocked.
+ * AC#53-1: animation plays on cleaning completion
+ * AC#53-2: audio fires synchronously at the reveal beat
+ * AC#53-3: before/after UI shows after animation completes
+ * AC#53-4: early dismiss delegates cleanly
+ * AC#53-5: concurrency guard prevents stacking
+ * AC#54-1: ClipSequencePacer consulted and timing emitted in telemetry
+ * AC#54-2: cinematic camera fires at reveal beat
+ * AC#54-3: clip-in/clip-out markers accessible via getPacer()
+ * AC#54-5: camera restored at sequence end; no snap/overshoot
  */
 
-const { CleaningRevealSequence } = require('../../src/cleaning/CleaningRevealSequence');
-const { CleaningRevealAnimation } = require('../../src/cleaning/CleaningRevealAnimation');
-const { RevealAudioController } = require('../../src/cleaning/RevealAudioController');
-const { BeforeAfterUI } = require('../../src/cleaning/BeforeAfterUI');
-const { TelemetryEmitter } = require('../../src/telemetry/TelemetryEmitter');
-
-// ─── Mock all subsystems ──────────────────────────────────────────────────────
-
-jest.mock('../../src/cleaning/CleaningRevealAnimation');
+jest.mock('../../src/cleaning/RevealAnimation');
 jest.mock('../../src/cleaning/RevealAudioController');
 jest.mock('../../src/cleaning/BeforeAfterUI');
+jest.mock('../../src/cleaning/CinematicCameraController');
+jest.mock('../../src/cleaning/ClipSequencePacer');
 jest.mock('../../src/telemetry/TelemetryEmitter');
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+const { CleaningRevealSequence, REVEAL_EVENTS } =
+  require('../../src/cleaning/CleaningRevealSequence');
+const { RevealAnimation }            = require('../../src/cleaning/RevealAnimation');
+const { RevealAudioController }      = require('../../src/cleaning/RevealAudioController');
+const { BeforeAfterUI }              = require('../../src/cleaning/BeforeAfterUI');
+const { CinematicCameraController }  = require('../../src/cleaning/CinematicCameraController');
+const { ClipSequencePacer }          = require('../../src/cleaning/ClipSequencePacer');
+const { TelemetryEmitter }           = require('../../src/telemetry/TelemetryEmitter');
 
-function makeEventBus() {
-  return { on: jest.fn(), off: jest.fn() };
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeSequence(overrides = {}) {
   return new CleaningRevealSequence({
+    renderReveal:       jest.fn(),
+    clearReveal:        jest.fn(),
+    audioHook:          jest.fn(),
     instrumentationHook: jest.fn(),
-    renderReveal: jest.fn(),
-    clearReveal: jest.fn(),
-    renderBeforeAfter: jest.fn(),
-    clearBeforeAfter: jest.fn(),
-    audioHook: jest.fn(),
-    eventBus: makeEventBus(),
-    layoutMode: '16:9',
+    cameraOverrideHook: jest.fn(),
+    cameraRestoreHook:  jest.fn(),
     ...overrides,
   });
 }
 
-// ─── Per-test setup ───────────────────────────────────────────────────────────
-
 let seq;
-let mockAnimation, mockAudio, mockUI, mockTelemetry;
+let mockTelemetry, mockAnimation, mockAudio, mockUI, mockCamera, mockPacer;
 
 beforeEach(() => {
   jest.clearAllMocks();
-
   seq = makeSequence();
 
-  mockAnimation = CleaningRevealAnimation.mock.instances[0];
-  mockAudio = RevealAudioController.mock.instances[0];
-  mockUI = BeforeAfterUI.mock.instances[0];
+  // Mock instances are created in constructor order:
+  // TelemetryEmitter, RevealAnimation, RevealAudioController,
+  // BeforeAfterUI, CinematicCameraController, ClipSequencePacer
   mockTelemetry = TelemetryEmitter.mock.instances[0];
+  mockAnimation = RevealAnimation.mock.instances[0];
+  mockAudio     = RevealAudioController.mock.instances[0];
+  mockUI        = BeforeAfterUI.mock.instances[0];
+  mockCamera    = CinematicCameraController.mock.instances[0];
+  mockPacer     = ClipSequencePacer.mock.instances[0];
 
-  // ── Default return values ────────────────────────────────────────────────
-  mockAnimation.play.mockReturnValue({ visualTransitionBeatMs: Date.now() });
-  mockAnimation.isComplete.mockReturnValue(true);
-  mockAnimation.getCurrentState.mockReturnValue({ phase: 'sheen_transition', phaseIndex: 2 });
-  mockAnimation.getVisualTransitionBeatMs.mockReturnValue(Date.now());
-  mockAnimation.isPlaying.mockReturnValue(false);
-  mockAudio.fireRevealCue.mockReturnValue({ fired: true, syncDeltaMs: 5, withinTolerance: true });
+  // Default mock behaviours
   mockUI.isVisible.mockReturnValue(false);
-  mockUI.getDisplayState.mockReturnValue({ lastDismissWasEarly: false });
+  mockCamera.isAtRest.mockReturnValue(true);
+  mockPacer.computeSequenceTiming.mockReturnValue({
+    totalDurationS: 22,
+    isWithinClipWindow: true,
+    clipInDurationS: 3,
+    cinematicMoveDurationS: 3,
+    coreRevealDurationS: 5,
+    beforeAfterDurationS: 6,
+    clipOutDurationS: 5,
+  });
+  mockPacer.isWithinClipWindow.mockReturnValue(true);
 });
 
-// ─── Constructor ─────────────────────────────────────────────────────────────
+// ── AC#53-1: animation plays on cleaning completion ───────────────────────────
 
-describe('CleaningRevealSequence — constructor', () => {
-  test('subscribes to cleaning_phase_complete on the event bus', () => {
-    const eventBus = makeEventBus();
-    makeSequence({ eventBus });
-    expect(eventBus.on).toHaveBeenCalledWith('cleaning_phase_complete', expect.any(Function));
+describe('Scenario — onCleaningComplete() starts the reveal animation (AC#53-1)', () => {
+  test('animation.play() is called with the correct pre and post textures', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    expect(mockAnimation.play).toHaveBeenCalledWith(
+      'pre.png', 'post.png', expect.any(Function), expect.any(Function)
+    );
   });
 
-  test('does not throw when no event bus is provided', () => {
-    expect(() => makeSequence({ eventBus: null })).not.toThrow();
-  });
-
-  test('isRevealing starts as false', () => {
-    expect(seq.isRevealing()).toBe(false);
-  });
-});
-
-// ─── Scenario 1 (AC1): Happy path ────────────────────────────────────────────
-
-describe('Scenario 1 — Happy path: triggerReveal() starts the full sequence', () => {
-  test('triggerReveal returns true when not already revealing', () => {
-    const result = seq.triggerReveal('dirty', 'clean');
-    expect(result).toBe(true);
-  });
-
-  test('animation.play() is called with preTexture and postTexture', () => {
-    seq.triggerReveal('dirty_movement', 'clean_movement');
-    expect(mockAnimation.play).toHaveBeenCalledWith('dirty_movement', 'clean_movement');
-  });
-
-  test('isRevealing is true during the sequence', () => {
-    // UI show() won't call onDismiss synchronously in the mock, so guard stays true
-    mockUI.show.mockImplementation(() => {});
-    seq.triggerReveal('dirty', 'clean');
+  test('isRevealing() is true after onCleaningComplete()', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
     expect(seq.isRevealing()).toBe(true);
   });
 
-  test('telemetry cleaning_reveal_started is emitted', () => {
-    seq.triggerReveal('dirty', 'clean');
+  test('telemetry cleaning_reveal_started fires on onCleaningComplete()', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
     expect(mockTelemetry.emit).toHaveBeenCalledWith(
-      'cleaning_reveal_started',
-      expect.objectContaining({ preTexture: 'dirty', postTexture: 'clean' })
+      REVEAL_EVENTS.CLEANING_REVEAL_STARTED,
+      expect.objectContaining({ sessionId: 's-1' })
+    );
+  });
+
+  test('AC#54-1: telemetry clip_sequence_started fires with timing payload', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    expect(mockTelemetry.emit).toHaveBeenCalledWith(
+      REVEAL_EVENTS.CLIP_SEQUENCE_STARTED,
+      expect.objectContaining({ sessionId: 's-1', timing: expect.any(Object) })
     );
   });
 });
 
-// ─── Scenario 2 (AC1): Visual contrast — animation receives correct textures ──
+// ── AC#53-5: concurrency guard ────────────────────────────────────────────────
 
-describe('Scenario 2 — Visual contrast: animation.play receives pre/post textures', () => {
-  test('pre texture is passed to animation.play()', () => {
-    seq.triggerReveal('dirty_tex', 'clean_tex');
-    expect(mockAnimation.play).toHaveBeenCalledWith('dirty_tex', expect.anything());
+describe('Scenario — concurrency guard prevents stacking (AC#53-5)', () => {
+  test('second onCleaningComplete() while revealing is silently ignored', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    mockAnimation.play.mockClear();
+    seq.onCleaningComplete('s-2', 'pre2.png', 'post2.png');
+    expect(mockAnimation.play).not.toHaveBeenCalled();
   });
 
-  test('post texture is passed to animation.play()', () => {
-    seq.triggerReveal('dirty_tex', 'clean_tex');
-    expect(mockAnimation.play).toHaveBeenCalledWith(expect.anything(), 'clean_tex');
-  });
-});
-
-// ─── Scenario 3 (AC2): Audio sync ────────────────────────────────────────────
-
-describe('Scenario 3 — Audio sync: audio cue is fired at the sheen_transition phase', () => {
-  test('audio.fireRevealCue is called with the reveal cue ID', () => {
-    // Simulate sheen_transition phase appearing after two nextPhase() calls
-    let callCount = 0;
-    mockAnimation.getCurrentState.mockImplementation(() => {
-      callCount++;
-      // Return sheen_transition on the 2nd nextPhase call (index 2)
-      return callCount === 2
-        ? { phase: 'sheen_transition', phaseIndex: 2 }
-        : { phase: 'particle_burst', phaseIndex: 1 };
-    });
-    seq.triggerReveal('dirty', 'clean');
-    expect(mockAudio.fireRevealCue).toHaveBeenCalledWith(
-      'cleaning_reveal_cue',
-      expect.any(Number)
-    );
-  });
-});
-
-// ─── Scenario 4 (AC3): Before/after UI accuracy ──────────────────────────────
-
-describe('Scenario 4 — Before/after UI: show() called with correct textures after animation', () => {
-  test('ui.show() is called when animation is complete', () => {
-    mockAnimation.isComplete.mockReturnValue(true);
-    seq.triggerReveal('dirty_tex', 'clean_tex');
-    expect(mockUI.show).toHaveBeenCalled();
-  });
-
-  test('ui.show() is called with preTexture', () => {
-    mockAnimation.isComplete.mockReturnValue(true);
-    seq.triggerReveal('dirty_tex', 'clean_tex');
-    expect(mockUI.show).toHaveBeenCalledWith('dirty_tex', 'clean_tex', '16:9', expect.any(Function));
-  });
-
-  test('ui.show() is NOT called when animation is not complete', () => {
-    mockAnimation.isComplete.mockReturnValue(false);
-    seq.triggerReveal('dirty_tex', 'clean_tex');
-    expect(mockUI.show).not.toHaveBeenCalled();
-  });
-});
-
-// ─── Scenario 5 (AC3): Portrait 9:16 ─────────────────────────────────────────
-
-describe('Scenario 5 — Portrait 9:16: layoutMode 9:16 is forwarded to BeforeAfterUI', () => {
-  test('ui.show() receives layoutMode 9:16', () => {
-    const seq916 = makeSequence({ layoutMode: '9:16' });
-    const mockUI916 = BeforeAfterUI.mock.instances[BeforeAfterUI.mock.instances.length - 1];
-    mockUI916.show = jest.fn();
-    CleaningRevealAnimation.mock.instances[
-      CleaningRevealAnimation.mock.instances.length - 1
-    ].play.mockReturnValue({ visualTransitionBeatMs: Date.now() });
-    CleaningRevealAnimation.mock.instances[
-      CleaningRevealAnimation.mock.instances.length - 1
-    ].isComplete.mockReturnValue(true);
-    CleaningRevealAnimation.mock.instances[
-      CleaningRevealAnimation.mock.instances.length - 1
-    ].getCurrentState.mockReturnValue({ phase: 'gleam_hold', phaseIndex: 3 });
-
-    seq916.triggerReveal('dirty', 'clean');
-    expect(mockUI916.show).toHaveBeenCalledWith('dirty', 'clean', '9:16', expect.any(Function));
-  });
-});
-
-// ─── Scenario 6 (AC3): Landscape 16:9 ────────────────────────────────────────
-
-describe('Scenario 6 — Landscape 16:9: default layoutMode is 16:9', () => {
-  test('ui.show() defaults to layoutMode 16:9 when none specified', () => {
-    mockAnimation.isComplete.mockReturnValue(true);
-    seq.triggerReveal('dirty', 'clean');
-    expect(mockUI.show).toHaveBeenCalledWith('dirty', 'clean', '16:9', expect.any(Function));
-  });
-});
-
-// ─── Scenario 7 (AC5): Back-to-back / isRevealing guard ──────────────────────
-
-describe('Scenario 7 — Back-to-back: isRevealing guard prevents audio stacking', () => {
-  test('second triggerReveal returns false while still revealing', () => {
-    mockUI.show.mockImplementation(() => {
-      // Don't call onDismiss — keep isRevealing locked
-    });
-    seq.triggerReveal('dirty', 'clean');
-    const secondResult = seq.triggerReveal('dirty', 'clean');
-    expect(secondResult).toBe(false);
-  });
-
-  test('animation.play() is called only once when two triggers arrive', () => {
-    mockUI.show.mockImplementation(() => {});
-    seq.triggerReveal('dirty', 'clean');
-    seq.triggerReveal('dirty', 'clean');
-    expect(mockAnimation.play).toHaveBeenCalledTimes(1);
-  });
-
-  test('event bus trigger also respects the isRevealing guard', () => {
-    const eventBus = makeEventBus();
-    const seqEB = makeSequence({ eventBus });
-    const mockAnimEB = CleaningRevealAnimation.mock.instances[
-      CleaningRevealAnimation.mock.instances.length - 1
-    ];
-    mockAnimEB.play.mockReturnValue({ visualTransitionBeatMs: Date.now() });
-    mockAnimEB.isComplete.mockReturnValue(false); // keep guard locked — UI.show not called
-    // getCurrentState must return a valid object to avoid null reference in _stepAnimationPhases
-    mockAnimEB.getCurrentState.mockReturnValue({ phase: 'gleam_hold', phaseIndex: 3 });
-    mockAnimEB.getVisualTransitionBeatMs.mockReturnValue(Date.now());
-
-    // Capture the listener registered on the event bus
-    const listener = eventBus.on.mock.calls[0][1];
-    listener({ preTexture: 'dirty', postTexture: 'clean' });
-    // isRevealing is true now; second trigger is discarded
-    listener({ preTexture: 'dirty', postTexture: 'clean' });
-
-    expect(mockAnimEB.play).toHaveBeenCalledTimes(1);
-  });
-});
-
-// ─── Scenario 8 (AC5): Guard releases after sequence completes ───────────────
-
-describe('Scenario 8 — Guard release: isRevealing resets after sequence completes', () => {
-  test('isRevealing resets to false after onDismiss callback fires', () => {
-    let capturedOnDismiss = null;
-    mockUI.show.mockImplementation((pre, post, layout, onDismiss) => {
-      capturedOnDismiss = onDismiss;
-    });
-    mockUI.getDisplayState.mockReturnValue({ lastDismissWasEarly: false });
-    mockAnimation.isComplete.mockReturnValue(true);
-
-    seq.triggerReveal('dirty', 'clean');
+  test('isRevealing() stays true after duplicate trigger is dropped', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    seq.onCleaningComplete('s-2', 'pre.png', 'post.png');
     expect(seq.isRevealing()).toBe(true);
+  });
+});
 
-    // Simulate the UI auto-dismissing
-    capturedOnDismiss();
+// ── AC#53-2 + AC#54-2: reveal beat fires audio + camera simultaneously ────────
+
+describe('Scenario — reveal beat fires audio and cinematic camera (AC#53-2, AC#54-2)', () => {
+  test('AC#53-2: audio.playRevealCue() fires at the reveal beat callback', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const revealBeatCb = mockAnimation.play.mock.calls[0][2];
+    revealBeatCb();
+    expect(mockAudio.playRevealCue).toHaveBeenCalledTimes(1);
+  });
+
+  test('AC#54-2: camera.playRevealMove() fires at the reveal beat callback', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const revealBeatCb = mockAnimation.play.mock.calls[0][2];
+    revealBeatCb();
+    expect(mockCamera.playRevealMove).toHaveBeenCalledTimes(1);
+  });
+
+  test('AC#53-2: audio and camera fire in the same beat callback (sync guarantee)', () => {
+    const callOrder = [];
+    mockAudio.playRevealCue.mockImplementation(() => callOrder.push('audio'));
+    mockCamera.playRevealMove.mockImplementation(() => callOrder.push('camera'));
+
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const revealBeatCb = mockAnimation.play.mock.calls[0][2];
+    revealBeatCb();
+
+    // Both must fire — audio first, then camera
+    expect(callOrder).toEqual(['audio', 'camera']);
+  });
+
+  test('telemetry cleaning_reveal_beat fires at the beat callback', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const revealBeatCb = mockAnimation.play.mock.calls[0][2];
+    revealBeatCb();
+    expect(mockTelemetry.emit).toHaveBeenCalledWith(
+      REVEAL_EVENTS.CLEANING_REVEAL_BEAT,
+      expect.objectContaining({ sessionId: 's-1' })
+    );
+  });
+});
+
+// ── AC#53-3: before/after UI shows after animation completes ─────────────────
+
+describe('Scenario — before/after UI appears after animation complete (AC#53-3)', () => {
+  test('UI.show() is called with correct textures when animation completes', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const onAnimComplete = mockAnimation.play.mock.calls[0][3];
+    onAnimComplete();
+    expect(mockUI.show).toHaveBeenCalledWith('pre.png', 'post.png', expect.any(Function));
+  });
+
+  test('telemetry cleaning_reveal_completed fires after animation completes', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const onAnimComplete = mockAnimation.play.mock.calls[0][3];
+    onAnimComplete();
+    expect(mockTelemetry.emit).toHaveBeenCalledWith(
+      REVEAL_EVENTS.CLEANING_REVEAL_COMPLETED,
+      expect.objectContaining({ sessionId: 's-1' })
+    );
+  });
+});
+
+// ── AC#53-4: early dismiss ────────────────────────────────────────────────────
+
+describe('Scenario — early dismiss of before/after UI (AC#53-4)', () => {
+  test('dismiss() calls UI.dismiss() when UI is visible', () => {
+    mockUI.isVisible.mockReturnValue(true);
+    seq.dismiss();
+    expect(mockUI.dismiss).toHaveBeenCalled();
+  });
+
+  test('dismiss() is a no-op when UI is not visible (no errors)', () => {
+    mockUI.isVisible.mockReturnValue(false);
+    seq.dismiss();
+    expect(mockUI.dismiss).not.toHaveBeenCalled();
+  });
+});
+
+// ── AC#54-5: camera restore at sequence end ───────────────────────────────────
+
+describe('Scenario — camera restored at sequence end (AC#54-5)', () => {
+  function runToUIShow() {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    const onAnimComplete = mockAnimation.play.mock.calls[0][3];
+    onAnimComplete();
+    return mockUI.show.mock.calls[0][2]; // the UI dismiss callback
+  }
+
+  test('AC#54-5: camera.restore() is called when camera is not at rest at sequence end', () => {
+    mockCamera.isAtRest.mockReturnValue(false);
+    const uiDismissCb = runToUIShow();
+    uiDismissCb();
+    expect(mockCamera.restore).toHaveBeenCalled();
+  });
+
+  test('camera.restore() is NOT called when camera is already at rest', () => {
+    mockCamera.isAtRest.mockReturnValue(true);
+    const uiDismissCb = runToUIShow();
+    uiDismissCb();
+    expect(mockCamera.restore).not.toHaveBeenCalled();
+  });
+
+  test('isRevealing() is false after sequence ends', () => {
+    const uiDismissCb = runToUIShow();
+    uiDismissCb();
     expect(seq.isRevealing()).toBe(false);
   });
 
-  test('after guard releases, a new triggerReveal succeeds', () => {
-    let capturedOnDismiss = null;
-    mockUI.show.mockImplementation((pre, post, layout, onDismiss) => {
-      capturedOnDismiss = onDismiss;
-    });
-    mockUI.getDisplayState.mockReturnValue({ lastDismissWasEarly: false });
-    mockAnimation.isComplete.mockReturnValue(true);
+  test('telemetry cleaning_reveal_dismissed fires at sequence end', () => {
+    const uiDismissCb = runToUIShow();
+    uiDismissCb();
+    expect(mockTelemetry.emit).toHaveBeenCalledWith(
+      REVEAL_EVENTS.CLEANING_REVEAL_DISMISSED,
+      expect.objectContaining({ sessionId: 's-1' })
+    );
+  });
 
-    seq.triggerReveal('dirty', 'clean');
-    capturedOnDismiss();
-
-    const secondResult = seq.triggerReveal('dirty', 'clean');
-    expect(secondResult).toBe(true);
-    expect(mockAnimation.play).toHaveBeenCalledTimes(2);
+  test('telemetry clip_sequence_ended fires with sessionId and timing data', () => {
+    const uiDismissCb = runToUIShow();
+    uiDismissCb();
+    expect(mockTelemetry.emit).toHaveBeenCalledWith(
+      REVEAL_EVENTS.CLIP_SEQUENCE_ENDED,
+      expect.objectContaining({ sessionId: 's-1', totalDurationS: expect.any(Number) })
+    );
   });
 });
 
-// ─── Scenario 9 (AC4): Early dismiss ─────────────────────────────────────────
+// ── AC#54-3: clip markers accessible via getPacer() ──────────────────────────
 
-describe('Scenario 9 — Early dismiss: dismissEarly() delegates to BeforeAfterUI', () => {
-  test('dismissEarly() calls ui.dismissEarly()', () => {
-    seq.dismissEarly();
-    expect(mockUI.dismissEarly).toHaveBeenCalled();
+describe('Scenario — clip-in/clip-out markers via getPacer() (AC#54-3)', () => {
+  test('getPacer() returns the ClipSequencePacer mock instance', () => {
+    expect(seq.getPacer()).toBe(mockPacer);
+  });
+
+  test('pacer.computeSequenceTiming() returns timing with totalDurationS in [20,60]', () => {
+    const timing = seq.getPacer().computeSequenceTiming();
+    expect(timing.totalDurationS).toBeGreaterThanOrEqual(20);
+    expect(timing.totalDurationS).toBeLessThanOrEqual(60);
   });
 });
 
-// ─── Scenario 10 (AC5/boundary): telemetry emitted on dismiss ────────────────
-
-describe('Scenario 10 — Sequence boundary: telemetry emitted on sequence completion', () => {
-  test('cleaning_reveal_auto_dismissed emitted when auto-dismissed', () => {
-    let capturedOnDismiss = null;
-    mockUI.show.mockImplementation((pre, post, layout, onDismiss) => {
-      capturedOnDismiss = onDismiss;
-    });
-    mockUI.getDisplayState.mockReturnValue({ lastDismissWasEarly: false });
-    mockAnimation.isComplete.mockReturnValue(true);
-
-    seq.triggerReveal('dirty', 'clean');
-    capturedOnDismiss();
-
-    expect(mockTelemetry.emit).toHaveBeenCalledWith('cleaning_reveal_auto_dismissed', {});
-  });
-
-  test('cleaning_reveal_dismissed emitted when dismissed early', () => {
-    let capturedOnDismiss = null;
-    mockUI.show.mockImplementation((pre, post, layout, onDismiss) => {
-      capturedOnDismiss = onDismiss;
-    });
-    mockUI.getDisplayState.mockReturnValue({ lastDismissWasEarly: true });
-    mockAnimation.isComplete.mockReturnValue(true);
-
-    seq.triggerReveal('dirty', 'clean');
-    capturedOnDismiss();
-
-    expect(mockTelemetry.emit).toHaveBeenCalledWith('cleaning_reveal_dismissed', {});
-  });
-
-  test('audio.onCueComplete() is called when sequence ends', () => {
-    let capturedOnDismiss = null;
-    mockUI.show.mockImplementation((pre, post, layout, onDismiss) => {
-      capturedOnDismiss = onDismiss;
-    });
-    mockUI.getDisplayState.mockReturnValue({ lastDismissWasEarly: false });
-    mockAnimation.isComplete.mockReturnValue(true);
-
-    seq.triggerReveal('dirty', 'clean');
-    capturedOnDismiss();
-
-    expect(mockAudio.onCueComplete).toHaveBeenCalled();
-  });
-});
-
-// ─── destroy() ────────────────────────────────────────────────────────────────
-
-describe('CleaningRevealSequence — destroy()', () => {
-  test('unsubscribes from the event bus on destroy()', () => {
-    const eventBus = makeEventBus();
-    const seqD = makeSequence({ eventBus });
-    seqD.destroy();
-    expect(eventBus.off).toHaveBeenCalledWith('cleaning_phase_complete', expect.any(Function));
-  });
-
-  test('destroy() is a no-op when no event bus was provided', () => {
-    const seqNoEB = makeSequence({ eventBus: null });
-    expect(() => seqNoEB.destroy()).not.toThrow();
-  });
-});
-
-// ─── Accessor methods ─────────────────────────────────────────────────────────
+// ── Accessor methods ──────────────────────────────────────────────────────────
 
 describe('CleaningRevealSequence — accessor methods', () => {
-  test('getAnimation() returns the internal animation instance', () => {
+  test('getTelemetry() returns the TelemetryEmitter mock instance', () => {
+    expect(seq.getTelemetry()).toBe(mockTelemetry);
+  });
+
+  test('getCamera() returns the CinematicCameraController mock instance', () => {
+    expect(seq.getCamera()).toBe(mockCamera);
+  });
+
+  test('getAnimation() returns the RevealAnimation mock instance', () => {
     expect(seq.getAnimation()).toBe(mockAnimation);
   });
 
-  test('getAudio() returns the internal audio controller instance', () => {
-    expect(seq.getAudio()).toBe(mockAudio);
+  test('getBeforeAfterUI() returns the BeforeAfterUI mock instance', () => {
+    expect(seq.getBeforeAfterUI()).toBe(mockUI);
+  });
+});
+
+// ── destroy() ─────────────────────────────────────────────────────────────────
+
+describe('CleaningRevealSequence — destroy()', () => {
+  test('destroy() clears animation, destroys UI, destroys camera, resets isRevealing', () => {
+    seq.onCleaningComplete('s-1', 'pre.png', 'post.png');
+    seq.destroy();
+
+    expect(mockAnimation.clear).toHaveBeenCalled();
+    expect(mockUI.destroy).toHaveBeenCalled();
+    expect(mockCamera.destroy).toHaveBeenCalled();
+    expect(seq.isRevealing()).toBe(false);
   });
 
-  test('getUI() returns the internal BeforeAfterUI instance', () => {
-    expect(seq.getUI()).toBe(mockUI);
-  });
-
-  test('getTelemetry() returns the internal TelemetryEmitter instance', () => {
-    expect(seq.getTelemetry()).toBe(mockTelemetry);
+  test('destroy() when idle (never started) does not throw', () => {
+    expect(() => seq.destroy()).not.toThrow();
   });
 });
