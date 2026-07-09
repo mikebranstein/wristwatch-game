@@ -47,6 +47,14 @@ const EVENTS = {
   CHRONOGRAPH_OVERLAY_SKIPPED: 'chronograph_overlay_skipped',
   PART_GROUP_REVEALED: 'part_group_revealed',
   DISCOVERY_MODE_TOGGLED: 'discovery_mode_toggled',
+
+  // Guided First-Job Onboarding System (Issue #111)
+  // All additive — zero changes to existing event names or signatures.
+  ONBOARDING_STARTED: 'onboarding_started',
+  ONBOARDING_STEP_COMPLETED: 'onboarding_step_completed',
+  ONBOARDING_SKIPPED: 'onboarding_skipped',
+  ONBOARDING_COMPLETED: 'onboarding_completed',
+  AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
 };
 
 class TelemetryEmitter {
@@ -218,6 +226,59 @@ class TelemetryEmitter {
    */
   discoveryModeToggled(newValue) {
     this.emit(EVENTS.DISCOVERY_MODE_TOGGLED, { newValue });
+  }
+
+  // ---- Guided First-Job Onboarding convenience methods (Issue #111) ----
+
+  /**
+   * Fires when the guided onboarding overlay is shown to a guided-cohort player.
+   *
+   * @param {string} jobId
+   * @param {'guided'|'control'} cohort
+   */
+  onboardingStarted(jobId, cohort) {
+    this.emit(EVENTS.ONBOARDING_STARTED, { jobId, cohort });
+  }
+
+  /**
+   * Fires when the player advances past a step in the guided onboarding.
+   *
+   * @param {string} jobId
+   * @param {number} step  1-based step index that was completed
+   * @param {'guided'|'control'} cohort
+   */
+  onboardingStepCompleted(jobId, step, cohort) {
+    this.emit(EVENTS.ONBOARDING_STEP_COMPLETED, { jobId, step, cohort });
+  }
+
+  /**
+   * Fires when the player explicitly skips the guided onboarding overlay.
+   *
+   * @param {string} jobId
+   * @param {number} stepAtSkip  Step index at which the player chose to skip
+   * @param {'guided'|'control'} cohort
+   */
+  onboardingSkipped(jobId, stepAtSkip, cohort) {
+    this.emit(EVENTS.ONBOARDING_SKIPPED, { jobId, stepAtSkip, cohort });
+  }
+
+  /**
+   * Fires when the player completes all guided onboarding steps naturally.
+   *
+   * @param {string} jobId
+   * @param {'guided'|'control'} cohort
+   */
+  onboardingCompleted(jobId, cohort) {
+    this.emit(EVENTS.ONBOARDING_COMPLETED, { jobId, cohort });
+  }
+
+  /**
+   * Fires when a player is assigned to an A/B cohort for the first time.
+   *
+   * @param {'guided'|'control'} cohort
+   */
+  abCohortAssigned(cohort) {
+    this.emit(EVENTS.AB_COHORT_ASSIGNED, { cohort });
   }
 
   /**
