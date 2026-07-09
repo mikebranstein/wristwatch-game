@@ -27,10 +27,16 @@ const EVENTS = {
   HINT_TIER_3_SHOWN: 'hint_tier_3_shown',
   DIAGNOSIS_COMPLETED_WITHOUT_HINT: 'diagnosis_completed_without_hint',
   DIAGNOSIS_COMPLETED_WITH_HINT: 'diagnosis_completed_with_hint',
+
   // Reassembly events (additive — does not affect diagnosis events above)
   UNDO_ATTEMPTED: 'undo_attempted',
   REASSEMBLY_PART_CONFIRMED: 'reassembly_part_confirmed',
   REASSEMBLY_COMPLETED: 'reassembly_completed',
+
+  // Cleaning Reveal Core System (Issue #53)
+  CLEANING_REVEAL_STARTED: 'cleaning_reveal_started',
+  CLEANING_REVEAL_DISMISSED: 'cleaning_reveal_dismissed',
+  CLEANING_REVEAL_AUTO_DISMISSED: 'cleaning_reveal_auto_dismissed',
 };
 
 class TelemetryEmitter {
@@ -83,6 +89,7 @@ class TelemetryEmitter {
     this.emit(EVENTS.DIAGNOSIS_COMPLETED_WITH_HINT, { faultInstanceId, highestTierUsed });
   }
 
+<<<<<<< HEAD
   // ---- Reassembly convenience methods (backward-compatible additive extension) ----
 
   /**
@@ -116,6 +123,20 @@ class TelemetryEmitter {
    */
   reassemblyCompleted(sessionId, stats) {
     this.emit(EVENTS.REASSEMBLY_COMPLETED, { sessionId, ...stats });
+  }
+
+  // ---- Cleaning Reveal events (Issue #53) ----
+
+  cleaningRevealStarted(preTexture, postTexture) {
+    this.emit(EVENTS.CLEANING_REVEAL_STARTED, { preTexture, postTexture });
+  }
+
+  cleaningRevealDismissed() {
+    this.emit(EVENTS.CLEANING_REVEAL_DISMISSED, {});
+  }
+
+  cleaningRevealAutoDismissed() {
+    this.emit(EVENTS.CLEANING_REVEAL_AUTO_DISMISSED, {});
   }
 
   /**
