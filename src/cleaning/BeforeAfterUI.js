@@ -105,6 +105,22 @@ class BeforeAfterUI {
     this._dismiss();
   }
 
+  /**
+   * Dismiss the before/after panel. Delegates to dismissEarly().
+   * Called by the CleaningRevealSequence orchestrator on early player dismiss.
+   */
+  dismiss() {
+    this.dismissEarly();
+  }
+
+  /**
+   * Full teardown — cancels any pending timers, hides panel, resets state.
+   * Called by the sequence orchestrator during destroy() cleanup.
+   */
+  destroy() {
+    this._reset();
+  }
+
   /** @returns {boolean} True while the before/after panel is visible. */
   isVisible() {
     return this._isVisible;
