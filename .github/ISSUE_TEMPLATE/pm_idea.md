@@ -4,6 +4,7 @@ about: A strategic product hypothesis for PM pipeline validation
 title: "[PM-IDEA] "
 labels: pm-idea
 assignees: ''
+
 ---
 
 ## Hypothesis

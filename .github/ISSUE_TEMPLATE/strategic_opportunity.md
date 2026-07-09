@@ -4,6 +4,7 @@ about: A validated strategic opportunity ready for product owner prioritization
 title: "[OPPORTUNITY] "
 labels: strategic-opportunity
 assignees: ''
+
 ---
 
 ## Strategic Opportunity Summary
