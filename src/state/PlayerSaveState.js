@@ -26,6 +26,11 @@ const DEFAULT_SAVE = {
   last_checkpoint_stage:  null,   // last stage for which an autosave was written
   autosave_slot:          false,  // true when this save data originated from an autosave
 
+  // Guided First-Job Onboarding System (Issue #111)
+  // Backward-compatible addition: null default means "not yet assigned".
+  // Valid values: 'guided' | 'control' | null
+  ab_first_job_cohort: null,
+
 };
 
 class PlayerSaveState {
