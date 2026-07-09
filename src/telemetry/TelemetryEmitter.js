@@ -6,13 +6,19 @@
  * injected `instrumentationHook` function so the existing infrastructure
  * decides how to record / ship the event.
  *
- * Named events (AC5):
+ * Named events (AC5 — DiagnosisScreen):
  *   tutorial_diagnosis_started
  *   hint_tier_1_shown
  *   hint_tier_2_shown
  *   hint_tier_3_shown
  *   diagnosis_completed_without_hint
  *   diagnosis_completed_with_hint
+ *
+ * Named events (backward-compatible extension — Phase 1, Issue #76 — ReassemblyScreen):
+ *   undo_attempted      — player attempted to place a part but it was not in LOCKED_IN state
+ *   reassembly_completed — player successfully locked in a part
+ *
+ * Extension is additive only; all existing events and callers are unmodified.
  */
 
 const EVENTS = {
@@ -22,6 +28,9 @@ const EVENTS = {
   HINT_TIER_3_SHOWN: 'hint_tier_3_shown',
   DIAGNOSIS_COMPLETED_WITHOUT_HINT: 'diagnosis_completed_without_hint',
   DIAGNOSIS_COMPLETED_WITH_HINT: 'diagnosis_completed_with_hint',
+  // Reassembly events (Phase 1 — Issue #76)
+  UNDO_ATTEMPTED: 'undo_attempted',
+  REASSEMBLY_COMPLETED: 'reassembly_completed',
 };
 
 class TelemetryEmitter {
@@ -72,6 +81,25 @@ class TelemetryEmitter {
 
   diagnosisCompletedWithHint(faultInstanceId, highestTierUsed) {
     this.emit(EVENTS.DIAGNOSIS_COMPLETED_WITH_HINT, { faultInstanceId, highestTierUsed });
+  }
+
+  // ---- Reassembly events (Phase 1 — Issue #76 backward-compatible extension) ----
+
+  /**
+   * Player attempted to confirm placement but the part was not in LOCKED_IN state.
+   * Used for AC5 undo-frequency baseline and post-implementation measurement.
+   * @param {string} partId
+   */
+  undoAttempted(partId) {
+    this.emit(EVENTS.UNDO_ATTEMPTED, { partId });
+  }
+
+  /**
+   * Player successfully locked a part into its snap zone (State 4 confirmed).
+   * @param {string} partId
+   */
+  reassemblyCompleted(partId) {
+    this.emit(EVENTS.REASSEMBLY_COMPLETED, { partId });
   }
 
   /**
