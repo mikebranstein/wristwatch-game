@@ -45,6 +45,7 @@ class CleaningRevealSequence {
    * @param {Function} opts.cameraOverrideHook  Camera override: (moveType, progress) => void
    * @param {Function} opts.cameraRestoreHook   Camera restore: (recoveryProgress) => void
    * @param {Object}   [opts.phaseDurations]    Optional ClipSequencePacer phase overrides (seconds).
+   * @param {Function} [opts.autosaveHook]      Issue #82: async (stage: string) => void
    */
   constructor({
     renderReveal,
@@ -54,6 +55,7 @@ class CleaningRevealSequence {
     cameraOverrideHook,
     cameraRestoreHook,
     phaseDurations = {},
+    autosaveHook = null,
   }) {
     this._telemetry     = new TelemetryEmitter(instrumentationHook);
     this._animation     = new RevealAnimation(renderReveal, clearReveal);
@@ -65,6 +67,7 @@ class CleaningRevealSequence {
     this._isRevealing      = false; // concurrency guard (AC#53-5)
     this._currentSessionId = null;
     this._sequenceStartedAt = null;
+    this._autosaveHook     = autosaveHook;  // Issue #82
   }
 
   // ── Sequence lifecycle ────────────────────────────────────────────────────
@@ -74,6 +77,10 @@ class CleaningRevealSequence {
    *
    * Full sequence: clip-in → [core reveal + cinematic move at beat] → before/after UI → clip-out
    * AC#54: sequence is 20–60 s, opens on a distinct clip-in frame, closes on a neutral clip-out.
+   *
+   * Issue #82 — AC1, AC5: if an autosaveHook was injected it is called here (async,
+   * fire-and-forget is acceptable for the reveal sequence since the save must only complete
+   * before the *next stage* begins, not before the reveal animation).
    *
    * @param {string} sessionId    Unique session/run identifier (for telemetry).
    * @param {string} preTexture   Pre-cleaning texture identifier.
@@ -86,6 +93,11 @@ class CleaningRevealSequence {
     this._isRevealing       = true;
     this._currentSessionId  = sessionId;
     this._sequenceStartedAt = Date.now();
+
+    // Issue #82: trigger autosave checkpoint at cleaning completion (AC1).
+    if (this._autosaveHook) {
+      this._autosaveHook('cleaning');
+    }
 
     // Telemetry: sequence started
     this._telemetry.emit(REVEAL_EVENTS.CLEANING_REVEAL_STARTED, { sessionId });
