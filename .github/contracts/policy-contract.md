@@ -4,7 +4,7 @@
 
 Policy gate uses a **tiered approach** to minimize manual review while maintaining governance safety. Most features auto-approve (Tier 1); risky features escalate for leadership review (Tier 2); dangerous features block immediately (Tier 3).
 
-You make the final human judgment for Tier 2 features: ESCALATE (leadership review) or APPROVE (with conditions).
+You make the final human judgment for Tier 2 features. Prefer APPROVE (with conditions) when risk is understood and mitigated. Use ESCALATE only when high-impact uncertainty remains. Reserve BLOCK for critical release-stoppers only.
 
 ## Decision Framework - Three Tiers
 
@@ -29,7 +29,7 @@ You make the final human judgment for Tier 2 features: ESCALATE (leadership revi
 
 ### TIER 2: Leadership Review (Standard Review Path)
 
-**Feature Escalates if ANY of the following are true (but none of the BLOCK conditions apply):**
+**Feature enters Tier 2 if ANY of the following are true (and none of the BLOCK conditions apply):**
 
 ⚠️ Risk level: **Medium** (automated gates passed, but business judgment needed)
 ⚠️ Impact: **Touches 2-3 subsystems** (normal scope, but cross-system coordination risk)
@@ -39,7 +39,11 @@ You make the final human judgment for Tier 2 features: ESCALATE (leadership revi
 ⚠️ Architecture: Multiple files changed (3+) but follows existing patterns
 ⚠️ Deployment: Coordination needed with ops, other teams, or data migration (but not blocking)
 
-**When any of these apply:** Orchestrator applies `policy-escalated` label; leadership reviews in async fashion (~30 min). Leadership can APPROVE or request changes. Feature does NOT auto-release; leadership makes the call.
+**Tier 2 decision rule:**
+- If risk is clear and mitigations are explicit (monitoring, rollback, flags, owner), choose APPROVE.
+- If risk is high-impact and unresolved, or requires explicit cross-team sign-off, choose ESCALATE.
+
+This means Tier 2 does not automatically escalate. Policy reviewer can approve directly when evidence is sufficient.
 
 ---
 
@@ -57,6 +61,13 @@ You make the final human judgment for Tier 2 features: ESCALATE (leadership revi
 
 **When any of these apply:** Orchestrator applies `policy-blocked` label and routes back to Design for fixes. Feature does NOT release; blocker is unambiguous.
 
+**Do NOT BLOCK for these by default (use APPROVE with conditions or ESCALATE):**
+- Medium risk with documented mitigations
+- Manageable performance regression <=10% with rollback/observability
+- New dependencies that passed security/license review
+- Cross-subsystem changes that are tested and reversible
+- Contributor inexperience when evidence and checks are strong
+
 ---
 
 ## Decision Logic
@@ -67,13 +78,16 @@ You make the final human judgment for Tier 2 features: ESCALATE (leadership revi
    - If any apply → BLOCK immediately (no nuance)
 2. Check for **TIER 1 auto-approve** criteria
    - If all 10 apply → Auto-approved (feature releases, no human review needed)
-3. If neither Tier 1 nor Tier 3 → **TIER 2** (escalate for leadership review)
+3. If neither Tier 1 nor Tier 3 → **TIER 2**:
+   - APPROVE when mitigations are explicit and acceptable for this release
+   - ESCALATE when high-impact uncertainty or required cross-team sign-off remains
 
 **For Orchestrator (Automated):**
 
 - If feature meets all TIER 1 criteria → Apply `policy-auto-approved` label; route to release
 - If feature has any TIER 3 blocker → Apply `policy-blocked` label; route back to Design
-- If feature has any TIER 2 escalation criteria → Apply `policy-escalated` label; wait for leadership
+- If feature is Tier 2 and policy reviewer decides APPROVE → Apply `policy-auto-approved`; route to release
+- If feature is Tier 2 and policy reviewer decides ESCALATE → Apply `policy-escalated`; wait for leadership
 
 ## Output Schema (JSON only)
 
@@ -117,5 +131,5 @@ Return valid JSON only:
 
 ## Gate Rule
 - TIER 1 (Auto-Approve): Feature is auto-released
-- TIER 2 (Leadership Review): Hold for async leadership review (~30 min); leadership decides
+- TIER 2 (Policy Judgment): Policy reviewer chooses APPROVE (with conditions) or ESCALATE for leadership review
 - TIER 3 (Hard Block): Return to design for fixes; blocker reason documented
