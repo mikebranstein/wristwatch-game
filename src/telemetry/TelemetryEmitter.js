@@ -38,6 +38,15 @@ const EVENTS = {
   CLEANING_REVEAL_DISMISSED: 'cleaning_reveal_dismissed',
   CLEANING_REVEAL_AUTO_DISMISSED: 'cleaning_reveal_auto_dismissed',
 
+  // First-Tick Audio Presentation — Phase 1 (Issue #113)
+  // All additive — zero changes to existing event names or signatures.
+  FIRST_TICK_TENSION_RAMP_STARTED:       'first_tick_tension_ramp_started',
+  FIRST_TICK_FIRED:                      'first_tick_fired',
+  FIRST_TICK_TICKING_LOOP_STARTED:       'first_tick_ticking_loop_started',
+  FIRST_TICK_REWOUND_NO_DRAMA:           'first_tick_rewound_no_drama',
+  FIRST_TICK_SEQUENCE_ABORTED:           'first_tick_sequence_aborted',
+  FIRST_TICK_INCORRECT_ASSEMBLY_ABORTED: 'first_tick_incorrect_assembly_no_tick',
+
   // Chronograph Discovery Path — Phase 1 (Issue #88)
   // All additive — zero changes to existing event names or signatures.
   // COMPLICATION_GATE_REACHED must fire pre-launch to establish the D30 baseline (AC5).
