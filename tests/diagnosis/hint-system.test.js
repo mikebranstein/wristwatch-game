@@ -198,3 +198,53 @@ describe('HintSystem.wasHintUsed', () => {
     expect(hints.wasHintUsed('fi')).toBe(true);
   });
 });
+
+// ─── AC7: Error paths — throw on unregistered fault instance (line 59) ────────
+
+describe('AC7 — HintSystem: requestNextHint throws for unregistered fault instance (line 59)', () => {
+  test('throws a descriptive error when faultInstanceId was never registered', () => {
+    const { hints } = makeHintSystem();
+    expect(() => hints.requestNextHint('never-registered-id')).toThrow(
+      /Fault instance "never-registered-id" not registered/
+    );
+  });
+
+  test('thrown error mentions calling registerFaultInstance first', () => {
+    const { hints } = makeHintSystem();
+    expect(() => hints.requestNextHint('unregistered-xyz')).toThrow(
+      /registerFaultInstance/
+    );
+  });
+
+  test('throws even after other fault instances have been registered', () => {
+    const { hints } = makeHintSystem();
+    hints.registerFaultInstance('registered-fi', 'mainspring_failure');
+    expect(() => hints.requestNextHint('different-unregistered-fi')).toThrow();
+  });
+});
+
+// ─── AC7: Error paths — throw when fault type has no authored hints (line 69) ─
+
+describe('AC7 — HintSystem: requestNextHint throws when fault type has no authored hints (line 69)', () => {
+  test('throws a descriptive error when faultTypeId has no authored hint data', () => {
+    const { hints } = makeHintSystem();
+    hints.registerFaultInstance('fi-no-hints', 'nonexistent_fault_type');
+    expect(() => hints.requestNextHint('fi-no-hints')).toThrow(
+      /No authored hints found for fault type "nonexistent_fault_type"/
+    );
+  });
+
+  test('error message for missing hint data identifies the fault type', () => {
+    const { hints } = makeHintSystem();
+    hints.registerFaultInstance('fi-missing', 'completely_unknown_fault_type_abc');
+    expect(() => hints.requestNextHint('fi-missing')).toThrow(
+      /completely_unknown_fault_type_abc/
+    );
+  });
+
+  test('does not throw for a registered fault type that has authored hints', () => {
+    const { hints } = makeHintSystem();
+    hints.registerFaultInstance('fi-valid', 'escapement_fault');
+    expect(() => hints.requestNextHint('fi-valid')).not.toThrow();
+  });
+});

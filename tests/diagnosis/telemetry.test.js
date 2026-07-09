@@ -155,3 +155,43 @@ describe('TelemetryEmitter — constructor guard', () => {
     expect(() => new TelemetryEmitter('not-a-function')).toThrow();
   });
 });
+
+// ─── AC8: Default parameter — emit() without payload uses default {} (line 45) ─
+
+describe('AC8 — TelemetryEmitter: emit(eventName) with no payload uses default (line 45)', () => {
+  test('emit(eventName) with no second argument does not throw', () => {
+    const { emitter } = makeEmitter();
+    expect(() => emitter.emit('test_event')).not.toThrow();
+  });
+
+  test('emit(eventName) with no payload calls the instrumentation hook with a defined payload', () => {
+    const received = [];
+    const hook = (name, payload) => received.push({ name, payload });
+    const emitter = new TelemetryEmitter(hook);
+
+    emitter.emit('test_event_no_payload');
+
+    expect(received).toHaveLength(1);
+    expect(received[0].name).toBe('test_event_no_payload');
+    expect(received[0].payload).toBeDefined();
+  });
+
+  test('emit(eventName) default payload is an empty object {}', () => {
+    const received = [];
+    const hook = (name, payload) => received.push({ name, payload });
+    const emitter = new TelemetryEmitter(hook);
+
+    emitter.emit('test_event_default_payload');
+
+    expect(received[0].payload).toEqual({});
+  });
+
+  test('event emitted without payload is recorded in the internal log', () => {
+    const { emitter } = makeEmitter();
+    emitter.emit('test_event_logged');
+    const log = emitter.getEmittedEvents();
+    expect(log).toHaveLength(1);
+    expect(log[0].name).toBe('test_event_logged');
+    expect(log[0].payload).toEqual({});
+  });
+});
