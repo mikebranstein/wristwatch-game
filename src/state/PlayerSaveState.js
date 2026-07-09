@@ -103,6 +103,7 @@ const DEFAULT_SAVE = {
   tutorial_first_fault_seen: false,
 
 
+
   // Chronograph Discovery Path — Phase 1 (Issue #88)
   // Backward-compatible additions: Object.assign({}, DEFAULT_SAVE, initialState) handles
   // defaults transparently for existing save data that lacks these keys.
@@ -269,6 +270,11 @@ const DEFAULT_SAVE = {
   // Note: these fields travel with each job's completed_watches entry (per-job storage)
   // rather than living at the top-level save state (which is reserved for global player state).
 
+
+  // Phase 2 (Issue #84): one-shot first-encounter hints for novel mechanics.
+  // Set to true after the first display — hint shown only once, not as a permanent UI element.
+  phase2_penetrant_hint_shown: false,    // rust_fused_fasteners: shows on first fused-fastener encounter
+  phase2_scatter_hint_shown:   false,    // shock_damage: shows on first scattered-component encounter
 };
 
 class PlayerSaveState {

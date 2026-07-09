@@ -134,8 +134,8 @@ describe('BeforeAfterComparison — standard wear (null damage state) returns nu
     expect(comp.shouldShowComparison('crystal_crazing')).toBe(true);
   });
 
-  test('shouldShowComparison("shock_damage") returns false (Phase 2, not yet in scope)', () => {
-    expect(comp.shouldShowComparison('shock_damage')).toBe(false);
+  test('shouldShowComparison("shock_damage") returns true (Phase 2 now implemented — Issue #84)', () => {
+    expect(comp.shouldShowComparison('shock_damage')).toBe(true);
   });
 });
 

@@ -1,5 +1,5 @@
 /**
- * damage-state-hints — authored hint content for Phase 1 damage-state faults.
+ * damage-state-hints — authored hint content for Phase 1 and Phase 2 damage-state faults.
  *
  * Follows the exact same 3-tier pattern as fault-hints.js.
  * Registered as a standalone data file so damage-state hints can be imported
@@ -12,6 +12,8 @@
  *
  * Issue #81 (Phase 1): water_ingress_damage, oxidation_tarnish_damage,
  * crystal_crazing_damage.
+ *
+ * Issue #84 (Phase 2): shock_damage_fault, rust_fused_fasteners_fault.
  */
 
 'use strict';
@@ -34,6 +36,19 @@ const DAMAGE_STATE_HINTS = {
     tier1: "You can see the problem from across the bench — look at the watch face.",
     tier2: "The mineral crystal has shattered or crazed, with hairline fractures spreading across the dial enamel beneath. The crystal must be replaced before the dial damage worsens.",
     tier3: "Remove the damaged crystal and replace it with a correctly sized mineral crystal. Repair the hairline fractures in the dial enamel using the dial enamel repair tool. Run a timing regulation check after reassembly to confirm no shock damage to the balance staff.",
+  },
+  // ── Phase 2 hints (Issue #84) ──────────────────────────────────────────────
+  shock_damage_fault: {
+    fault_id: 'shock_damage_fault',
+    tier1: "This movement took a hit. Not everything inside is where it should be.",
+    tier2: "A physical impact has scattered components across the movement plate and bent one or more hands off-axis. The balance staff is likely cracked. You'll need to straighten the hands before you can reposition everything else.",
+    tier3: "Use the bent-hand straightening tool on every misaligned hand first. Then perform a component inventory check — displaced components must be moved back to their canonical positions. Replace the cracked balance staff, then run timing regulation to confirm the repair.",
+  },
+  rust_fused_fasteners_fault: {
+    fault_id: 'rust_fused_fasteners_fault',
+    tier1: "The case back isn't budging. Something is stopping standard disassembly.",
+    tier2: "One or more fasteners have corroded solid — the rust has bonded the screw head to the case metal. Standard driver tools can't get purchase on a fused head; you need a different approach.",
+    tier3: "Apply the penetrant applicator to each fused fastener and allow it to work into the rust bond. Once treated, use the fastener extractor to remove the corroded fasteners. Proceed with standard disassembly, then replace all extracted fasteners with fresh ones on reassembly.",
   },
 };
 
