@@ -9,6 +9,12 @@
  * Design pattern mirrors DiagnosisScreen: accepts injected hooks at construction
  * and delegates to subsystems for all domain logic.
  *
+ * Issue #82 — Save/Load Reliability System:
+ *   An optional `autosaveHook` can be injected at construction.  When provided,
+ *   completeReassembly() awaits the hook before advancing so the autosave
+ *   checkpoint is guaranteed to land on disk before the next stage begins (AC1, AC5).
+ *   The hook signature is: async (stage: string) => void.
+ *
  * Screen-context guard: SnapZoneTolerance is constructed with context='reassembly',
  * ensuring no snap zone activation can bleed into teardown/disassembly stages.
  *
@@ -28,8 +34,9 @@ class ReassemblyScreen {
    * @param {Function} opts.renderVisual        — ({ partId, state, stateName, visuals }) => void
    * @param {string}   [opts.sessionId]         — optional session identifier for telemetry
    * @param {number}   [opts.minDwellMs]        — override dwell window (default: 250ms)
+   * @param {Function} [opts.autosaveHook]      — Issue #82: async (stage: string) => void
    */
-  constructor({ instrumentationHook, playAudio, renderVisual, sessionId = null, minDwellMs }) {
+  constructor({ instrumentationHook, playAudio, renderVisual, sessionId = null, minDwellMs, autosaveHook = null }) {
     this._telemetry = new TelemetryEmitter(instrumentationHook);
     this._snapZone = new SnapZoneTolerance('reassembly');
     this._fsm = new AssemblyFeedbackStateMachine({
@@ -41,6 +48,7 @@ class ReassemblyScreen {
     this._sessionId = sessionId;
     this._assembledParts = new Set();
     this._totalUndoAttempts = 0;
+    this._autosaveHook = autosaveHook;  // Issue #82
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -115,12 +123,23 @@ class ReassemblyScreen {
   /**
    * Mark the reassembly stage as complete.
    * Emits a reassembly_completed telemetry event with undo frequency data.
+   *
+   * Issue #82 — AC1, AC5: if an autosaveHook was injected, it is awaited here
+   * so the checkpoint write completes before the next stage begins.  Returns a
+   * Promise so callers can await stage-gate logic.
+   *
+   * @returns {Promise<void>}
    */
-  completeReassembly() {
+  async completeReassembly() {
     this._telemetry.reassemblyCompleted(this._sessionId, {
       assembledCount: this._assembledParts.size,
       totalUndoAttempts: this._totalUndoAttempts,
     });
+
+    // Issue #82: trigger autosave checkpoint at reassembly completion (AC1).
+    if (this._autosaveHook) {
+      await this._autosaveHook('reassembly');
+    }
   }
 
   // ──────────────────────────────────────────────────────────────────────────
