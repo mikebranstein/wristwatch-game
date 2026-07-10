@@ -394,11 +394,14 @@ describe('RevealSequenceController — abort()', () => {
 // ── Double-trigger guard ──────────────────────────────────────────────────────
 
 describe('RevealSequenceController — double-trigger guard', () => {
+  let controller;
+  afterEach(() => { controller.abort(); });
+
   test('trigger() while playing throws an error', () => {
-    const { ctrl } = makeController();
-    ctrl.trigger({ watchId: 'w-001', beforeState: 'B', afterState: 'A' });
+    controller = makeController().ctrl;
+    controller.trigger({ watchId: 'w-001', beforeState: 'B', afterState: 'A' });
     expect(() =>
-      ctrl.trigger({ watchId: 'w-002', beforeState: 'B', afterState: 'A' })
+      controller.trigger({ watchId: 'w-002', beforeState: 'B', afterState: 'A' })
     ).toThrow();
   });
 });
