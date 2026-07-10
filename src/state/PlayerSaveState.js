@@ -36,6 +36,15 @@
  *   backward-compatible). Captured at WatchIntake time; null for watches delivered
  *   before this feature shipped (AC5 / Test Scenario 3 handle the null case gracefully).
  *
+ * Issue #141 — Full-Watch Completion Reveal — Core System:
+ *   Added `job_state_captures: {}` (empty-object default, backward-compatible).
+ *   Keyed by stable jobId; each entry holds `{ before, after }` watch state
+ *   snapshots captured by CompletionRevealSequence.
+ *   - `before` is written once at job-start (no mid-repair overwrites).
+ *   - `after`  is written at job-complete (reveal trigger time).
+ *   Pre-existing saves that lack this key receive {} via Object.assign defaults.
+ *   Designed with Issue #142 replay access in mind (read-only access to same structure).
+ *
  * Issue #143 — Strap Swap: Cosmetic Restoration Phase 1:
  *   Added `strap_selection` (null default, backward-compatible).
  *   Written by CosmeticPhaseController.confirmStrap() at strap-selection confirmation.
@@ -102,6 +111,15 @@ const DEFAULT_SAVE = {
   // before_portrait_url added by #129 (null for watches delivered before that feature shipped).
   // Pre-existing saves without this key receive [] via Object.assign defaults.
   completed_watches:      [],
+
+  // Issue #141: Full-Watch Completion Reveal — per-job before/after state captures (additive, backward-compatible)
+  // Keyed by stable jobId: { [jobId]: { before: <snapshot>, after: <snapshot> } }
+  // Written by CompletionRevealSequence:
+  //   - `before` is written once at job-start only; no mid-repair overwrites (AC4).
+  //   - `after`  is written at job-complete reveal trigger time.
+  // Pre-existing saves lacking this key receive {} via Object.assign defaults.
+  // Designed with Issue #142 replay access in mind — same structure consumed read-only.
+  job_state_captures:     {},
 
   // Issue #143: Strap Swap — Cosmetic Restoration Phase 1 (additive, backward-compatible)
   // Written by CosmeticPhaseController.confirmStrap() at strap-selection confirmation.
