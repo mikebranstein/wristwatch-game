@@ -121,6 +121,15 @@ const EVENTS = {
   // One event per rationale card impression (shown or suppressed) for user-test analysis.
   // AC5: payload must contain operationId, toolId, shown (bool), timestamp — all required fields.
   TOOL_RATIONALE_CARD_IMPRESSION: 'tool_rationale_card_impression', // payload: { operationId, toolId, shown, timestamp }
+
+  // Movement Regulation Phase 1 (Issue #294)
+  // All additive — zero changes to existing event names or signatures.
+  // Four events cover phase lifecycle, grade award, assist mode, and completion.
+  // AC6: fired with correct grade and attempt_number payloads.
+  REGULATION_PHASE_STARTED:    'regulation_phase_started',     // payload: { jobId, initialDeviation }
+  REGULATION_GRADE_ACHIEVED:   'regulation_grade_achieved',    // payload: { grade, attemptNumber, isPassing, deviation, jobId }
+  REGULATION_ASSIST_MODE_USED: 'regulation_assist_mode_used',  // payload: { targetDeviation, achievedDeviation, grade, jobId }
+  REGULATION_PHASE_COMPLETED:  'regulation_phase_completed',   // payload: { regulationGrade, accuracyScore, attemptCount, assistModeUsed, jobId }
 };
 
 class TelemetryEmitter {
@@ -638,6 +647,62 @@ class TelemetryEmitter {
       toolId,
       shown,
       timestamp: Date.now(),
+    });
+  }
+
+  // ---- Movement Regulation Phase 1 convenience methods (Issue #294) ----
+
+  /**
+   * Fires when the regulation phase begins for a precision-certified job.
+   * AC6: phase_started event with jobId and initialDeviation payload.
+   *
+   * @param {string|null} jobId           Current job ID
+   * @param {number}      initialDeviation Starting beat-rate deviation in s/day
+   */
+  regulationPhaseStarted(jobId, initialDeviation) {
+    this.emit(EVENTS.REGULATION_PHASE_STARTED, { jobId, initialDeviation });
+  }
+
+  /**
+   * Fires each time the player submits a calibration (manual or assist).
+   * AC6: grade_achieved with grade and attempt_number payload.
+   *
+   * @param {string|null} grade          Accuracy grade ('acceptable'|'good'|'excellent'|'certified_chronometer'|null)
+   * @param {number}      attemptNumber  1-based count of calibration submissions
+   * @param {boolean}     isPassing      True when grade is not null
+   * @param {number}      deviation      Deviation at submission time
+   * @param {string|null} jobId
+   */
+  regulationGradeAchieved(grade, attemptNumber, isPassing, deviation, jobId = null) {
+    this.emit(EVENTS.REGULATION_GRADE_ACHIEVED, { grade, attemptNumber, isPassing, deviation, jobId });
+  }
+
+  /**
+   * Fires when the player activates Assist Mode.
+   * AC6: assist_mode_used event.
+   *
+   * @param {number}      targetDeviation   Target deviation (0 s/day)
+   * @param {number}      achievedDeviation Actual deviation after assist
+   * @param {string|null} grade             Grade awarded after assist
+   * @param {string|null} jobId
+   */
+  regulationAssistModeUsed(targetDeviation, achievedDeviation, grade, jobId = null) {
+    this.emit(EVENTS.REGULATION_ASSIST_MODE_USED, { targetDeviation, achievedDeviation, grade, jobId });
+  }
+
+  /**
+   * Fires when the regulation phase is marked complete.
+   * AC6: phase_completed event with final grade and attempt count.
+   *
+   * @param {string|null} regulationGrade  Final grade ('acceptable'|...|null)
+   * @param {number|null} accuracyScore    0–100 numeric score (null when no grade)
+   * @param {number}      attemptCount     Total calibration attempts
+   * @param {boolean}     assistModeUsed   True if assist mode was used
+   * @param {string|null} jobId
+   */
+  regulationPhaseCompleted(regulationGrade, accuracyScore, attemptCount, assistModeUsed, jobId = null) {
+    this.emit(EVENTS.REGULATION_PHASE_COMPLETED, {
+      regulationGrade, accuracyScore, attemptCount, assistModeUsed, jobId,
     });
   }
 }
