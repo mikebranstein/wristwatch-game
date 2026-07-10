@@ -231,6 +231,44 @@ const DEFAULT_SAVE = {
   // who have not yet seen the tool-switching introduction).
   tutorial_tool_switching_seen: false,
 
+  // Issue #253: Holistic Craftsmanship Score Phase 1 (additive, backward-compatible)
+  //
+  // craftsmanship_dimensions_unlocked: which scoring dimensions are available to the player.
+  //   Type: string[] — subset of ['cosmetic', 'mechanical', 'diagnostic', 'economic',
+  //                                'timing_calibration', 'sourcing_quality'].
+  //   Default: ['cosmetic', 'mechanical'] — these two dimensions are available from game start.
+  //   'diagnostic' and 'economic' are added when the player unlocks the relevant tools.
+  //   'timing_calibration' and 'sourcing_quality' (Issue #255) are added when the player
+  //   unlocks the relevant Phase 2 tools (timing tracker and sourcing quality tools).
+  //   TODO: hook — craft_dimensions_unlocked is populated by the tool-unlock progression system
+  //   (future issue); currently defaults to ['cosmetic', 'mechanical'] for all early-game players.
+  //   Pre-existing saves lacking this key receive the default via Object.assign.
+  craftsmanship_dimensions_unlocked: ['cosmetic', 'mechanical'],
+
+  // craftsmanship_personal_best: player's best composite craftsmanship score and tier.
+  //   Type: { score: number, tier: string, jobId: string | null } | null
+  //   Default: null — first load after feature ships (no prior best); triggers graceful-degradation
+  //   path in CraftsmanshipScoreDisplay (personal best section omitted, no error thrown).
+  //   Shape follows additive backward-compatibility pattern per ADR-0004.
+  craftsmanship_personal_best: null,
+
+  // Issue #255: Holistic Craftsmanship Score Phase 2 (additive, backward-compatible)
+  //
+  // These fields are stored per completed-job record (not in DEFAULT_SAVE directly — they are
+  // additive fields on each completed_watches entry written by DeliveryHandler.handleDelivery()).
+  // Listed here as documentation of the additive extension to the completed job record shape:
+  //
+  //   timing_calibration_score: Float 0–100 | null (null = job completed before Phase 2; or
+  //     player has not unlocked timing tracking yet; or no phases were instrumented).
+  //   sourcing_quality_score: Float 0–100 | null (null = job completed before Phase 2; or
+  //     player has not unlocked sourcing quality tools; or no parts were sourced with grades).
+  //
+  // Both fields are additive and backward-compatible: pre-Phase-2 saves that lack these fields
+  // on their completed_watches entries load correctly (null defaults). No migration required.
+  //
+  // Note: these fields travel with each job's completed_watches entry (per-job storage)
+  // rather than living at the top-level save state (which is reserved for global player state).
+
 };
 
 class PlayerSaveState {
