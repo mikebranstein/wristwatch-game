@@ -309,6 +309,182 @@ describe('AC3 / Scenario 2 — Wrong tool → operation blocked with contextual 
   });
 });
 
+// ─── TR1 — AC3 extension: multi-tool wrong-message format (lines 82–86) ─────────
+//
+// Requirement: when getToolsForOperation() returns ≥2 tools for an operation,
+// attemptOperation() must produce "Use the [A] or [B] to ..." listing all names.
+
+describe('TR1 — AC3 extension: multi-tool wrong-message format (lines 82–86)', () => {
+  // Add a second synthetic tool that is also eligible for 'handle-hour-hand' so
+  // getToolsForOperation('handle-hour-hand') returns exactly 2 tools.
+  // TOOL_DEFINITIONS is a plain (non-frozen) const array — push/pop is safe in tests.
+  beforeEach(() => {
+    TOOL_DEFINITIONS.push({
+      id: 'test-precision-grabber',
+      name: 'Precision Grabber',
+      purpose: 'Test-only tool for multi-tool message format coverage.',
+      eligibleOperations: ['handle-hour-hand'],
+      ariaLabel: 'Precision Grabber — test only',
+    });
+  });
+
+  afterEach(() => {
+    // Remove the synthetic entry so subsequent tests see the original 8 tools.
+    TOOL_DEFINITIONS.pop();
+  });
+
+  test('wrong-tool result is blocked when multiple tools are valid', () => {
+    const gating = makeGatingSystem();
+    const result = gating.attemptOperation('dust-blower', 'handle-hour-hand');
+    expect(result.allowed).toBe(false);
+  });
+
+  test('wrong-tool message names all valid tools joined with "or" (multi-tool format)', () => {
+    const gating = makeGatingSystem();
+    // handle-hour-hand is now covered by 'fine-tip-tweezers' AND 'test-precision-grabber'
+    const result = gating.attemptOperation('dust-blower', 'handle-hour-hand');
+    expect(result.allowed).toBe(false);
+    expect(typeof result.message).toBe('string');
+    // Both tool names must appear in the message
+    expect(result.message).toMatch(/Fine-Tip Tweezers/i);
+    expect(result.message).toMatch(/Precision Grabber/i);
+    // Names must be joined with "or", not listed with only one name
+    expect(result.message).toMatch(/\bor\b/);
+  });
+});
+
+// ─── TR2 — AC3 extension: empty-registry fallback message (lines 87–90) ─────────
+//
+// Requirement: when getToolsForOperation() returns [] (operation not in any tool's
+// eligibleOperations), attemptOperation() must fall back to the manifest's
+// requiredTool identifier to build the message.
+
+describe('TR2 — AC3 extension: empty-registry fallback message (lines 87–90)', () => {
+  test('wrong-tool result is blocked when operation has no registry entry', () => {
+    // 'phantom-op' does not appear in any tool's eligibleOperations → getToolsForOperation returns []
+    const manifest = {
+      'phantom-op': { requiredTool: 'case-knife', confirmationCue: 'done.' },
+    };
+    const gating = new OperationGatingSystem(manifest);
+    const result = gating.attemptOperation('dust-blower', 'phantom-op');
+    expect(result.allowed).toBe(false);
+  });
+
+  test('fallback message uses manifest requiredTool name when registry returns empty array', () => {
+    const manifest = {
+      'phantom-op': { requiredTool: 'case-knife', confirmationCue: 'done.' },
+    };
+    const gating = new OperationGatingSystem(manifest);
+    // getToolsForOperation('phantom-op') → [] (phantom-op not in any eligibleOperations)
+    // Fallback: getToolById('case-knife') → { name: 'Case Knife', ... }
+    const result = gating.attemptOperation('dust-blower', 'phantom-op');
+    expect(result.allowed).toBe(false);
+    expect(typeof result.message).toBe('string');
+    expect(result.message).toMatch(/Case Knife/i);
+  });
+
+  test('fallback message uses raw requiredTool ID when getToolById also returns null', () => {
+    const manifest = {
+      'phantom-op': { requiredTool: 'nonexistent-tool-xyz', confirmationCue: 'done.' },
+    };
+    const gating = new OperationGatingSystem(manifest);
+    // getToolsForOperation('phantom-op') → [] AND getToolById('nonexistent-tool-xyz') → null
+    // Fallback: raw ID 'nonexistent-tool-xyz' used as the name
+    const result = gating.attemptOperation('dust-blower', 'phantom-op');
+    expect(result.allowed).toBe(false);
+    expect(typeof result.message).toBe('string');
+    expect(result.message).toContain('nonexistent-tool-xyz');
+  });
+});
+
+// ─── TR3 — registerOperation() dynamic manifest update (lines 104–107) ───────────
+//
+// Requirement: registerOperation(operationId, entry) must add the operation to the
+// manifest so subsequent attemptOperation() calls gate it exactly like static entries.
+
+describe('TR3 — registerOperation() dynamic manifest update (lines 104–107)', () => {
+  test('correct tool returns allowed:true after dynamic registerOperation()', () => {
+    const gating = new OperationGatingSystem({});
+    gating.registerOperation('dynamic-op', { requiredTool: 'case-knife', confirmationCue: 'Dynamically registered.' });
+    const result = gating.attemptOperation('case-knife', 'dynamic-op');
+    expect(result.allowed).toBe(true);
+  });
+
+  test('wrong tool returns allowed:false with message after dynamic registerOperation()', () => {
+    const gating = new OperationGatingSystem({});
+    gating.registerOperation('dynamic-op', { requiredTool: 'case-knife', confirmationCue: 'Dynamically registered.' });
+    const result = gating.attemptOperation('dust-blower', 'dynamic-op');
+    expect(result.allowed).toBe(false);
+    expect(typeof result.message).toBe('string');
+  });
+
+  test('registerOperation() overwrites an existing entry for the same operationId', () => {
+    const gating = new OperationGatingSystem({
+      'dynamic-op': { requiredTool: 'dust-blower', confirmationCue: 'Old entry.' },
+    });
+    // Re-register with a different requiredTool
+    gating.registerOperation('dynamic-op', { requiredTool: 'case-knife', confirmationCue: 'Updated entry.' });
+    // Now case-knife should be the correct tool
+    expect(gating.attemptOperation('case-knife', 'dynamic-op').allowed).toBe(true);
+    // And dust-blower (old required tool) should now be wrong
+    expect(gating.attemptOperation('dust-blower', 'dynamic-op').allowed).toBe(false);
+  });
+});
+
+// ─── TR4 — getRegisteredOperations() manifest enumeration (lines 108–112) ────────
+//
+// Requirement: getRegisteredOperations() must return exactly the set of operation IDs
+// present in the manifest — no additions, no omissions — for both constructor-injected
+// and dynamically-registered entries.
+
+describe('TR4 — getRegisteredOperations() manifest enumeration (lines 108–112)', () => {
+  test('returns all operation IDs from a constructor-supplied manifest', () => {
+    const manifest = {
+      'handle-hour-hand':   { requiredTool: 'fine-tip-tweezers', confirmationCue: 'done.' },
+      'open-snap-back-case': { requiredTool: 'case-knife',       confirmationCue: 'done.' },
+      'detach-strap':        { requiredTool: 'spring-bar-tool',  confirmationCue: 'done.' },
+    };
+    const gating = new OperationGatingSystem(manifest);
+    const ops = gating.getRegisteredOperations();
+    expect(ops).toHaveLength(3);
+    expect(ops).toContain('handle-hour-hand');
+    expect(ops).toContain('open-snap-back-case');
+    expect(ops).toContain('detach-strap');
+  });
+
+  test('returns empty array when constructed with empty manifest', () => {
+    const gating = new OperationGatingSystem({});
+    expect(gating.getRegisteredOperations()).toEqual([]);
+  });
+
+  test('newly registered operation appears in getRegisteredOperations()', () => {
+    const gating = new OperationGatingSystem({
+      'handle-hour-hand': { requiredTool: 'fine-tip-tweezers', confirmationCue: 'done.' },
+    });
+    gating.registerOperation('dynamic-op', { requiredTool: 'case-knife', confirmationCue: 'done.' });
+    const ops = gating.getRegisteredOperations();
+    expect(ops).toContain('handle-hour-hand');
+    expect(ops).toContain('dynamic-op');
+    expect(ops).toHaveLength(2);
+  });
+
+  test('DEFAULT_COMPONENT_MANIFEST exposes all 29 MVP operation IDs via getRegisteredOperations()', () => {
+    const gating = makeGatingSystem();
+    const ops = gating.getRegisteredOperations();
+    // The DEFAULT_COMPONENT_MANIFEST contains 29 operations covering all 8 MVP tools
+    expect(ops.length).toBe(29);
+    // Spot-check a representative entry from each tool group
+    expect(ops).toContain('handle-hour-hand');       // fine-tip-tweezers
+    expect(ops).toContain('remove-movement-plate-screw'); // flat-blade-screwdriver
+    expect(ops).toContain('remove-case-back-screw'); // cross-tip-screwdriver
+    expect(ops).toContain('open-snap-back-case');    // case-knife
+    expect(ops).toContain('detach-strap');           // spring-bar-tool
+    expect(ops).toContain('seat-movement');          // movement-holder
+    expect(ops).toContain('set-hour-hand');          // hand-setting-tool
+    expect(ops).toContain('clear-debris');           // dust-blower
+  });
+});
+
 // ─── AC4 / Scenario 4: Tutorial — first session ────────────────────────────────
 
 describe('AC4 / Scenario 4 — Tutorial shown once; dismissed; never reappears', () => {
