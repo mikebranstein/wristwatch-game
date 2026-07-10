@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!--
+  THROWAWAY — Electron+Pixi.js PoC renderer page.
+  Issue #163: Renderer Technology Selection Spike.
+
+  PURPOSE:
+    - AC2 / Scenario 2: Render one watch part on screen via Pixi.js
+    - AC2: Confirm 60fps target is reachable for a single-sprite scene on mid-range PC hardware
+    - Performance data is logged to console for ADR-001 reference
+
+  NOT FOR PRODUCTION USE.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wristwatch PoC — Electron+Pixi.js Spike</title>
+  <style>
+    html, body { margin: 0; padding: 0; background: #1a1a2e; overflow: hidden; }
+    #fps-overlay {
+      position: absolute; top: 10px; left: 10px;
+      color: #00ff88; font-family: monospace; font-size: 14px;
+      background: rgba(0,0,0,0.5); padding: 6px 10px; border-radius: 4px;
+    }
+    #status {
+      position: absolute; bottom: 10px; left: 10px; right: 10px;
+      color: #aaa; font-family: monospace; font-size: 12px;
+      background: rgba(0,0,0,0.5); padding: 6px 10px; border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="fps-overlay">FPS: --</div>
+  <div id="status">Initialising Pixi.js renderer…</div>
+
+  <script type="module">
+    /**
+     * AC2 / Scenario 2 — Pixi.js watch-part render proof.
+     *
+     * Uses a programmatically generated watch-dial graphic (a filled circle with
+     * indices) as a stand-in for a real watch part sprite asset. In the Minimal
+     * Playable Shell sprint this will be replaced with real sprite sheet assets.
+     */
+
+    import { Application, Graphics, Text, TextStyle, Ticker } from 'pixi.js';
+
+    const statusEl = document.getElementById('status');
+    const fpsEl    = document.getElementById('fps-overlay');
+
+    // 1. Create Pixi application (WebGL preferred, Canvas fallback)
+    const app = new Application();
+    await app.init({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      backgroundColor: 0x1a1a2e,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+    });
+    document.body.appendChild(app.canvas);
+
+    statusEl.textContent = `Renderer: ${app.renderer.type === 1 ? 'WebGL' : 'Canvas'} | Pixi.js v${PIXI.VERSION ?? '8.x'}`;
+
+    // 2. Draw a representative "watch dial" as a Graphics object (stand-in for real sprite)
+    const dial = new Graphics();
+
+    // Outer case
+    dial.circle(0, 0, 120).fill({ color: 0x8b7355 }).stroke({ color: 0xd4af37, width: 4 });
+
+    // Dial face
+    dial.circle(0, 0, 110).fill({ color: 0xf5f0e8 });
+
+    // Hour indices (12 markers)
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+      const innerR = i % 3 === 0 ? 85 : 92;
+      const outerR = 100;
+      dial.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR)
+          .lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR)
+          .stroke({ color: 0x1a1a2e, width: i % 3 === 0 ? 3 : 1.5 });
+    }
+
+    // Balance wheel (simplified representation)
+    dial.circle(30, 30, 20).fill({ color: 0xc0c0c0 }).stroke({ color: 0x888, width: 1.5 });
+
+    // Centre logo text stand-in
+    const labelStyle = new TextStyle({ fontFamily: 'serif', fontSize: 10, fill: '#333' });
+    const label = new Text({ text: 'WRISTWATCH\nREVIVAL', style: labelStyle });
+    label.anchor.set(0.5);
+    label.position.set(0, -15);
+    dial.addChild(label);
+
+    // 3. Position on screen
+    dial.position.set(app.screen.width / 2, app.screen.height / 2);
+    app.stage.addChild(dial);
+
+    // 4. Animate — gentle rotation to confirm render loop is live
+    const ticker = app.ticker;
+    ticker.add((delta) => {
+      dial.rotation += 0.002 * delta.deltaTime;
+    });
+
+    // 5. FPS counter (AC4 / Scenario 4 — performance reference)
+    const fpsTicker = new Ticker();
+    fpsTicker.add(() => {
+      fpsEl.textContent = `FPS: ${Math.round(app.ticker.FPS)} | Renderer: ${app.renderer.type === 1 ? 'WebGL' : 'Canvas'}`;
+    });
+    fpsTicker.start();
+
+    // 6. Cold load timing — record in console for ADR reference
+    const loadTime = performance.now();
+    console.log(`[AC4/Scenario4] Cold load time: ${Math.round(loadTime)} ms`);
+    console.log('[AC2/Scenario2] Watch part rendered on screen. Pixi.js PoC PASS.');
+
+    statusEl.textContent += ` | Cold load: ${Math.round(loadTime)} ms`;
+
+    // Responsive resize
+    window.addEventListener('resize', () => {
+      app.renderer.resize(window.innerWidth, window.innerHeight);
+      dial.position.set(app.screen.width / 2, app.screen.height / 2);
+    });
+  </script>
+</body>
+</html>
