@@ -242,6 +242,22 @@ const DEFAULT_SAVE = {
   // Written by ProficiencyEngine.serialize() via PlayerSaveState.setToolProficiency()
   // after each operation where proficiency is earned.
   tool_proficiency: null,
+  // Issue #301: In-Context Tool Rationale — Core System & Pilot Set (Phase 1 MVP)
+  // (additive, backward-compatible — pre-existing saves receive these defaults on load)
+  //
+  // tool_rationale_use_counts: per-tool view-count map used by the progressive disclosure
+  //   system (ToolRationaleCardController).  Keys are toolId strings; values are integers.
+  //   Card is auto-suppressed by default once a toolId's count reaches SUPPRESS_AFTER_N (=5).
+  //   Empty-object default: new players see all cards; returning players who never reached
+  //   the threshold also see cards (safe default).
+  //
+  // tool_rationale_player_suppressed: explicit player suppress map.  Keys are toolId strings;
+  //   values are booleans (true = player has collapsed/suppressed this tool's card).
+  //   Written by ToolRationaleCardController.suppressCard() on player collapse action (AC3).
+  //   Cleared per-tool by unsuppressCard() when the player re-enables from the visible control.
+  //   Empty-object default: no tools suppressed on a fresh profile.
+  tool_rationale_use_counts:        {},
+  tool_rationale_player_suppressed: {},
 
   // Issue #253: Holistic Craftsmanship Score Phase 1 (additive, backward-compatible)
   //
@@ -293,6 +309,16 @@ class PlayerSaveState {
     this._store = Object.assign({}, DEFAULT_SAVE, initialState);
     if (Array.isArray(this._store.completed_watches)) {
       this._store.completed_watches = [...this._store.completed_watches];
+    }
+    // Issue #301: deep-copy the new object fields so that mutations via set() do
+    // not propagate back into the DEFAULT_SAVE shared reference (backward-compatible —
+    // all other object fields in DEFAULT_SAVE share the same shallow-copy risk but are
+    // not mutated in-place by any controller; these two fields are written via get+mutate+set).
+    if (this._store.tool_rationale_use_counts && typeof this._store.tool_rationale_use_counts === 'object') {
+      this._store.tool_rationale_use_counts = Object.assign({}, this._store.tool_rationale_use_counts);
+    }
+    if (this._store.tool_rationale_player_suppressed && typeof this._store.tool_rationale_player_suppressed === 'object') {
+      this._store.tool_rationale_player_suppressed = Object.assign({}, this._store.tool_rationale_player_suppressed);
     }
   }
 
