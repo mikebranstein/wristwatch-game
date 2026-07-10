@@ -37,6 +37,8 @@ Return valid JSON only:
 - Ground decisions in explicit evidence; distinguish verified evidence from assumptions.
 - If evidence is insufficient, defer or request follow-on research instead of overcommitting.
 - Keep decision rationale traceable to customer or market signal.
+- For `pm_phase = phase2`, all linked `research` issues for the pm-idea must be closed before emitting `CHAMPION`.
+- If any linked research issue remains open, emit `DEFER` with rationale `Research incomplete`.
 
 ## Boundary Violation Rule (Mandatory)
 - If PM flow creates or attempts to create a `feature-request` issue, treat it as a hard boundary violation.

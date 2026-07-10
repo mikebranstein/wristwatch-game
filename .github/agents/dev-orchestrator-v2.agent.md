@@ -57,11 +57,28 @@ ensure_label "released"
 ensure_label "feature-blocked"
 ensure_label "orchestrator-timeout"
 ensure_label "requirements-needs-human"
+ensure_label "transition-validation-failed"
 ```
 
 If `.github/ISSUE_TEMPLATE/feature_request.md` is missing, create it before processing new intake-bound feature requests. If repository write access is restricted, continue using current issue body format and post a bootstrap note for maintainers.
 
 ### Step 1: Query GitHub & Check for Work
+
+### Transition Validation Gates (Mandatory For Every State Change)
+
+Before applying any dev-pipeline transition label or closing an issue:
+
+- G1 Source-state check: issue is in expected source state for that transition.
+- G2 Decision check: decision is valid for source stage (Intake/Design/Build/QA/Policy).
+- G3 Route check: `(source_state, decision)` exists in `orchestration/routing-registry.md`.
+- G4 Preconditions check: required artifacts and decision payloads exist (QA JSON required for qa-failed routing; `Priority Score: [NUMBER]` line required for stage selection).
+- G5 Atomic update: remove previous active stage label before applying next active stage label.
+- G6 Terminal-close check: close only when target state is terminal (`released` or `feature-blocked`).
+
+If any gate fails:
+- Post comment: `Transition validation failed: <gate> <reason>`
+- Apply label: `transition-validation-failed`
+- Do not transition that issue this cycle.
 
 Use the `list_issues` GitHub MCP tool to list all open issues with the `feature-request` label. Also read any issues with active pipeline labels (intake-blocked, design-blocked, qa-failed, policy-escalated, policy-blocked).
 
@@ -69,7 +86,7 @@ Log the model you are currently using at the start of each cycle.
 
 ### Step 2: Early Return if No Work (Phase 1)
 
-Iterate through issues in creation order (oldest first). Use `issue_read` GitHub MCP tool to read each issue's labels.
+Iterate through issues in priority order (highest `Priority Score` first, oldest-first tie break). Use `issue_read` GitHub MCP tool to read each issue's labels.
 
 **Skip** an issue if it has any of these terminal/waiting labels:
 - `released` -- done, terminal
@@ -86,49 +103,86 @@ Return to main loop
 
 **Continue to Step 3 only if actionable issues exist.**
 
+### Step 2.1: Priority Score Validation Gate (Mandatory)
+
+Before selecting any issue for stage execution, validate parseable priority:
+
+- Required issue-body line format: `Priority Score: [NUMBER]`
+- If missing or malformed:
+  - Post comment: `Transition validation failed: G4 missing or malformed Priority Score. Expected line: Priority Score: [NUMBER]`
+  - Apply label: `transition-validation-failed`
+  - Skip the issue for this cycle (do not run Intake/Design/Build/QA/Policy tasks)
+
+Use PO-provided priority score to order work; do not fall back to creation order except tie-break.
+
 ### Step 3: Batch Process All Actionable Issues (Phase 2 - Max 5 Parallel Per Stage)
 
 **FIND ALL actionable issues per stage:**
 
 #### 3a. Find All Intake Stage Issues (up to 5)
 ```bash
-gh issue list --label feature-request --json number,title,labels \
-  --jq '.[] | select((.labels[].name | contains("intake-approved", "released", "feature-blocked", "policy-escalated")) | not) | {number, title}' \
+gh issue list --label feature-request --json number,title,body,createdAt,labels \
+  --jq '.
+    | map(select((.labels[].name | contains("intake-approved", "released", "feature-blocked", "policy-escalated")) | not))
+    | map(. + {priority_score: ((.body | capture("Priority Score:\\s*(?<s>[0-9]+(\\.[0-9]+)?)").s? // "" ) | tonumber?)})
+    | map(select(.priority_score != null))
+    | sort_by(-.priority_score, .createdAt)
+    | map({number, title, priority_score})' \
   | head -5
 ```
-Result: Up to 5 issues ready for Intake
+Result: Up to 5 issues ready for Intake (highest priority first)
 
 #### 3b. Find All Design Stage Issues (up to 5)
 ```bash
-gh issue list --label intake-approved --json number,title,labels \
-  --jq '.[] | select((.labels[].name | contains("design-approved", "design-blocked", "released")) | not) | {number, title}' \
+gh issue list --label intake-approved --json number,title,body,createdAt,labels \
+  --jq '.
+    | map(select((.labels[].name | contains("design-approved", "design-blocked", "released")) | not))
+    | map(. + {priority_score: ((.body | capture("Priority Score:\\s*(?<s>[0-9]+(\\.[0-9]+)?)").s? // "" ) | tonumber?)})
+    | map(select(.priority_score != null))
+    | sort_by(-.priority_score, .createdAt)
+    | map({number, title, priority_score})' \
   | head -5
 ```
-Result: Up to 5 issues ready for Design
+Result: Up to 5 issues ready for Design (highest priority first)
 
 #### 3c. Find All Build Stage Issues (up to 5)
 ```bash
-gh issue list --label design-approved --json number,title,labels \
-  --jq '.[] | select((.labels[].name | contains("build-complete", "released")) | not) | {number, title}' \
+gh issue list --label design-approved --json number,title,body,createdAt,labels \
+  --jq '.
+    | map(select((.labels[].name | contains("build-complete", "released")) | not))
+    | map(. + {priority_score: ((.body | capture("Priority Score:\\s*(?<s>[0-9]+(\\.[0-9]+)?)").s? // "" ) | tonumber?)})
+    | map(select(.priority_score != null))
+    | sort_by(-.priority_score, .createdAt)
+    | map({number, title, priority_score})' \
   | head -5
 ```
-Result: Up to 5 issues ready for Build
+Result: Up to 5 issues ready for Build (highest priority first)
 
 #### 3d. Find All QA Stage Issues (up to 5)
 ```bash
-gh issue list --label build-complete --json number,title,labels \
-  --jq '.[] | select((.labels[].name | contains("qa-testing", "qa-passed", "qa-failed", "released")) | not) | {number, title}' \
+gh issue list --label build-complete --json number,title,body,createdAt,labels \
+  --jq '.
+    | map(select((.labels[].name | contains("qa-testing", "qa-passed", "qa-failed", "released")) | not))
+    | map(. + {priority_score: ((.body | capture("Priority Score:\\s*(?<s>[0-9]+(\\.[0-9]+)?)").s? // "" ) | tonumber?)})
+    | map(select(.priority_score != null))
+    | sort_by(-.priority_score, .createdAt)
+    | map({number, title, priority_score})' \
   | head -5
 ```
-Result: Up to 5 issues ready for QA
+Result: Up to 5 issues ready for QA (highest priority first)
 
 #### 3e. Find All Policy Stage Issues (up to 5)
 ```bash
-gh issue list --label qa-passed --json number,title,labels \
-  --jq '.[] | select((.labels[].name | contains("policy-auto-approved", "policy-escalated", "policy-blocked", "released")) | not) | {number, title}' \
+gh issue list --label qa-passed --json number,title,body,createdAt,labels \
+  --jq '.
+    | map(select((.labels[].name | contains("policy-auto-approved", "policy-escalated", "policy-blocked", "released")) | not))
+    | map(. + {priority_score: ((.body | capture("Priority Score:\\s*(?<s>[0-9]+(\\.[0-9]+)?)").s? // "" ) | tonumber?)})
+    | map(select(.priority_score != null))
+    | sort_by(-.priority_score, .createdAt)
+    | map({number, title, priority_score})' \
   | head -5
 ```
-Result: Up to 5 issues ready for Policy
+Result: Up to 5 issues ready for Policy (highest priority first)
 
 ### Step 4: Spawn Parallel Tasks Within Each Stage (Phase 2)
 

@@ -19,6 +19,63 @@ This registry defines:
 
 ---
 
+## Global Transition Validation Gates (Mandatory)
+
+Every orchestrator must enforce these checks before any label/state transition or issue close action.
+
+### Gate G1: Source State Valid
+
+- Issue must contain the expected source state label for the attempted transition.
+- Source state must not be terminal for that loop.
+
+### Gate G2: Decision Valid For Source State
+
+- Agent/manual decision must be one of the allowed decisions for the source state in this registry.
+- Decision payload/comment must exist and be parseable.
+
+### Gate G3: Route Exists
+
+- `(source_state, decision)` must map to exactly one next state in this registry.
+- Orchestrator must not invent fallback states.
+
+### Gate G4: Transition Preconditions Satisfied
+
+- All route-specific preconditions must pass before transition.
+- Examples: foundation-approved for Discovery/PM start, linked research closed before PM Phase 2, required policy artifacts present for Architecture Review.
+
+### Gate G5: Atomic Label Update
+
+- Remove source state label and apply next state label in one transition step.
+- Do not leave issue in dual conflicting active states.
+
+### Gate G6: Terminal Close Guard
+
+- Issue can be closed only when next state is terminal in this registry.
+- If closing while keeping issue open is required by loop semantics, orchestrator must defer close.
+
+### Gate Failure Behavior (Hard Stop)
+
+If any gate fails:
+
+1. Do not transition labels.
+2. Do not close issue.
+3. Post comment: `Transition validation failed: <gate-id> <reason>`.
+4. Apply label: `transition-validation-failed`.
+5. Skip issue for remainder of cycle (or stop bounded run if systemic).
+
+---
+
+## Per-Loop Hard Gate Notes
+
+- Foundation loop: artifact existence gate (`docs/foundation-decision-pack.md`, `docs/adr/0000-template.md`) before approvals.
+- Discovery loop: foundation-approved and `docs/discovery-focus.md` gate before Idea Scout invocation.
+- PM loop: linked `research` issue closure gate before Phase 2 validation transitions.
+- PO loop: `strategic-opportunity` source-state and decision-schema gate before creating feature requests.
+- Dev loop: QA decision JSON gate and workspace isolation gate before build/qa-derived transitions.
+- Architecture review loop: policy artifact gate and fitness-report availability gate before debt/refactor transitions.
+
+---
+
 ## Foundation Loop Routing
 
 ### Stage: foundation-needed (Initial)

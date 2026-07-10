@@ -251,6 +251,14 @@ Execute when: Orchestrator finds a `pm-idea` issue with no labels yet
 
 Execute when: Orchestrator detects all linked research items on `pm-idea` are now closed
 
+**Hard Gate (Mandatory before any Phase 2 decision):**
+
+- Query open linked research items using labels `research` + `pm-idea-$PM_IDEA_NUMBER`.
+- If any are open:
+  - Post comment on `pm-idea`: `Phase 2 blocked: linked research still open ([issue numbers]).`
+  - Return `decision = DEFER` with reason `Research incomplete; cannot run Phase 2 while linked research is open`.
+  - Do not produce CHAMPION/BLOCK/DEFER strategic finalization output until all linked research is closed.
+
 1. **Re-read pm-idea** and linked strategic-opportunity
 
 2. **Read completed Research Wiki** (personas, journey maps, interview transcripts):
@@ -474,6 +482,10 @@ Execute when: Orchestrator detects all linked research items on `pm-idea` are no
    - **Final label state of strategic-opportunity:** `strategic-opportunity + pm-opportunity` (OPEN — for PO)
    - Notify PO: Post comment on strategic-opportunity: "Ready for PO prioritization. Research validated."
    - **DO NOT create any feature-request issues** (PO creates those, never PM)
+
+**Non-bypass rule:**
+- CHAMPION is invalid if any linked research issue is open.
+- If this condition is violated, treat as process error and return DEFER with explicit blocker reason.
 
 6. **Revise to DEFER** (if research reveals not ready):
    - Update strategic-opportunity body with finding and revised decision

@@ -17,13 +17,20 @@ Ensure foundational architecture decisions are explicit, approved, and documente
    - `git checkout main`
    - `git pull origin main`
 2. Ensure labels and templates exist:
-   - Labels: `foundation-needed`, `foundation-in-progress`, `foundation-review`, `foundation-approved`, `foundation-blocked`
+   - Labels: `foundation-needed`, `foundation-in-progress`, `foundation-review`, `foundation-approved`, `foundation-blocked`, `transition-validation-failed`
    - Template: `.github/ISSUE_TEMPLATE/foundation_decision.md`
 3. Verify required artifacts exist:
    - `docs/foundation-decision-pack.md`
    - `docs/adr/0000-template.md`
 4. Query open issues labeled `foundation-needed`, `foundation-in-progress`, or `foundation-review`.
-5. For each actionable issue:
+5. Apply hard transition validation gates before every state change:
+   - G1 Source-state check: issue has expected current label.
+   - G2 Decision check: decision is valid for current state (`RECOMMEND|NEEDS_MORE_RESEARCH|BLOCKED` for research, `APPROVE_FOUNDATION|REVISE_FOUNDATION|BLOCK_FOUNDATION` for gate).
+   - G3 Route check: `(state, decision)` exists in `orchestration/routing-registry.md`.
+   - G4 Preconditions check: required artifacts still exist before approving.
+   - G5 Atomic update: remove old state label and add next state label without conflicting active states.
+   - On failure: post `Transition validation failed: <gate> <reason>`, add `transition-validation-failed`, skip transition.
+6. For each actionable issue:
     - If label is `foundation-needed`:
        - Apply `foundation-in-progress`
     - If label is `foundation-needed` or `foundation-in-progress`:
@@ -40,7 +47,7 @@ Ensure foundational architecture decisions are explicit, approved, and documente
           - `APPROVE_FOUNDATION` -> apply `foundation-approved`
           - `REVISE_FOUNDATION` -> apply `foundation-in-progress`
           - `BLOCK_FOUNDATION` -> apply `foundation-blocked`
-6. Post run summary and stop.
+7. Post run summary and stop.
 
 ## Run Summary Format
 

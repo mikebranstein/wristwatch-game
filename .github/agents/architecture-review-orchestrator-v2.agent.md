@@ -32,6 +32,7 @@ You run in a bounded cycle and stop after one run summary.
    - `arch-review-pending`, `arch-review-in-progress`, `arch-review-no-action`, `arch-refactor-planned`, `arch-refactor-requests-created`, `arch-review-escalated`
    - `architecture-debt`, `debt-triaged`, `debt-scheduled`, `debt-resolved`, `debt-deferred`
    - `feature-request`, `refactor-request`
+   - `transition-validation-failed`
    - `.github/ISSUE_TEMPLATE/architecture_debt.md`
    - `.github/ISSUE_TEMPLATE/refactor_request.md`
 3. Validate required policy artifacts:
@@ -43,8 +44,16 @@ You run in a bounded cycle and stop after one run summary.
    - `./utilities/fitness-evaluator.md run --window "last-3-features" --output "./fitness-report.json"`
 5. Upsert architecture debt issues from fitness findings:
    - `./utilities/architecture-debt-manager.md sync --source "./fitness-report.json"`
-6. Query actionable review issues with labels `arch-review-pending`, `arch-review-in-progress`, or `arch-refactor-planned`.
-7. For each issue:
+6. Apply hard transition validation gates before every state change:
+   - G1 Source-state check: issue has expected architecture-review source state label.
+   - G2 Decision check: decision is valid for source stage.
+   - G3 Route check: `(source_state, decision)` exists in `orchestration/routing-registry.md`.
+   - G4 Preconditions check: policy artifacts and fitness report are present for transitions that depend on them.
+   - G5 Atomic update: no conflicting active architecture-review states on same issue.
+   - G6 Terminal-close check: close only on terminal routing outcomes.
+   - On failure: post `Transition validation failed: <gate> <reason>`, add `transition-validation-failed`, skip transition.
+7. Query actionable review issues with labels `arch-review-pending`, `arch-review-in-progress`, or `arch-refactor-planned`.
+8. For each issue:
     - If label is `arch-review-pending` or `arch-review-in-progress`:
        - Apply `arch-review-in-progress`
        - `task(description="Run architecture review on issue #NUMBER", agent_id="architecture-review", model_tier="STANDARD")`
@@ -60,8 +69,8 @@ You run in a bounded cycle and stop after one run summary.
           - `CREATE_REFACTOR_REQUESTS` -> for each created request issue, label as `feature-request` and `refactor-request`; apply `arch-refactor-requests-created`
           - `DEFER` -> apply `debt-deferred`
           - `BLOCKED` -> apply `arch-review-escalated`
-8. Post run summary and stop.
-9. Cleanup temp workspace regardless of outcome:
+9. Post run summary and stop.
+10. Cleanup temp workspace regardless of outcome:
    - Bash: `cd / && rm -rf "${TEMP_DIR}"`
    - PowerShell: `Set-Location $env:TEMP; Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue`
 

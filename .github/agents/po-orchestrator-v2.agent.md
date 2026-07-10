@@ -43,11 +43,28 @@ ensure_label "feature-request"
 ensure_label "feature-requests-created"
 ensure_label "po-deferred"
 ensure_label "po-rejected"
+ensure_label "transition-validation-failed"
 ```
 
 If `.github/ISSUE_TEMPLATE/feature_request.md` is missing, create it before creating feature-request issues. If repository write access is restricted, continue with explicit issue bodies and post a bootstrap note for maintainers.
 
 ### Step 1: Query GitHub & Check for Work
+
+### Transition Validation Gates (Mandatory For Every State Change)
+
+Before applying PO transition labels or closing issues:
+
+- G1 Source-state check: issue has `strategic-opportunity` and is not terminal.
+- G2 Decision check: only `CREATE_FEATURE_REQUESTS|DEFER|REJECT` accepted.
+- G3 Route check: transition exists in `orchestration/routing-registry.md`.
+- G4 Preconditions check: PO decision output is present and parseable.
+- G5 Atomic update: apply only one terminal PO outcome path.
+- G6 Terminal-close check: close only after valid terminal transition.
+
+If any gate fails:
+- Post comment: `Transition validation failed: <gate> <reason>`
+- Apply label: `transition-validation-failed`
+- Skip transition for that issue this cycle.
 
 Use the `list_issues` GitHub MCP tool to list all open issues with the `strategic-opportunity` label.
 

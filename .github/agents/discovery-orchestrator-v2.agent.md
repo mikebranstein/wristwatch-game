@@ -25,7 +25,7 @@ You run in a **bounded cycle**, not an infinite loop. End after one run summary.
    - `git checkout main`
    - `git pull origin main`
 2. Ensure required labels and templates exist before creating any issues:
-   - Ensure labels: `pm-idea`, `pm-idea-auto`
+   - Ensure labels: `pm-idea`, `pm-idea-auto`, `transition-validation-failed`
    - Create missing labels with `gh label create <name> --color 1D76DB --description "AIOS orchestration label"`
    - If `.github/ISSUE_TEMPLATE/pm_idea.md` is missing, create it before issue creation.
    - If repository write access is restricted, continue with explicit `gh issue create --body` and post a bootstrap note for maintainers.
@@ -44,12 +44,19 @@ You run in a **bounded cycle**, not an infinite loop. End after one run summary.
 7. Spawn Idea Scout once with run controls:
    - `task(description="Run Idea Scout bounded discovery", agent_id="idea-scout", model_tier="STANDARD")`
 8. Wait for completion and parse Idea Scout run summary.
-9. Apply post-run safeguards:
+9. Apply hard transition validation gates for each created/deferred/dropped candidate outcome:
+   - G1 Source-state check: candidate was evaluated in this run.
+   - G2 Decision check: only `CREATE_PM_IDEA|DEFER|DROP` accepted.
+   - G3 Route check: decision maps to valid routing-registry state.
+   - G4 Preconditions check: foundational and discovery-focus gates were passed for this run.
+   - G5 Atomic update: created issues must include required labels at creation (`pm-idea` + `pm-idea-auto`).
+   - On failure: post run note `Transition validation failed: <gate> <reason>`, apply `transition-validation-failed` where applicable, and do not create invalid issues.
+10. Apply post-run safeguards:
    - Ensure created ideas include `pm-idea` and `pm-idea-auto` labels.
    - Ensure no run exceeds `creation_cap`.
    - Ensure dedupe comments were posted when matches existed.
    - Append deferred candidates to the `Discovery-Deferred-Candidates` wiki page via `wiki-manager`.
-10. Emit final run summary and stop.
+11. Emit final run summary and stop.
 
 ## Run Summary Format
 
