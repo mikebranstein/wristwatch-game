@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PlayerSaveState — manages persistent player data.
  *
  * Stores player progress flags using an in-memory store (swap this for
@@ -73,6 +73,7 @@ const DEFAULT_SAVE = {
   // Written synchronously before any intake-screen code runs (AC1 / AC2).
   // Values: 'backstory' | 'control' | null (null = not yet assigned for this player)
   ab_backstory_cohort:    null,
+  ab_audio_cohort:       null,
 
   // Issue #127: Workshop Collection Gallery — completed watch entries (additive, backward-compatible)
   // Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey }

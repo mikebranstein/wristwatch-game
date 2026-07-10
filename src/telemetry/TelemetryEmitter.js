@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TelemetryEmitter — wires named events to the existing instrumentation hooks.
  *
  * Design constraint: must emit events to existing hooks WITHOUT creating a
@@ -65,6 +65,13 @@ const EVENTS = {
   ONBOARDING_SKIPPED: 'onboarding_skipped',
   ONBOARDING_COMPLETED: 'onboarding_completed',
   AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
+  AUDIO_SESSION_START: 'audio_session_start',
+  AUDIO_SESSION_END: 'audio_session_end',
+  AUDIO_CLEANING_REVEAL_FIRED: 'audio_cleaning_reveal_fired',
+  AUDIO_FIRST_TICK_FIRED: 'audio_first_tick_fired',
+  AUDIO_CASE_BACK_FIRED: 'audio_case_back_fired',
+  AUDIO_TOOL_PICKUP_FIRED: 'audio_tool_pickup_fired',
+  AUDIO_DELIVERY_FIRED: 'audio_delivery_fired',
   // Two-Bench Workshop Probe — Issue #116 (Phase 1 A/B)
   // All additive — zero changes to existing event names or signatures.
   // Six events cover cohort stabilisation, session-frequency and session-start-behaviour
@@ -437,6 +444,14 @@ class TelemetryEmitter {
    * Returns a copy of every event emitted so far (for testing / QA).
    * @returns {Array<{eventName: string, payload: Object, timestamp: number}>}
    */
+  audioSessionStart(sessionId, cohort) { return this.emit(EVENTS.AUDIO_SESSION_START, { sessionId, cohort }); }
+  audioSessionEnd(sessionId, cohort, sessionLengthMs) { return this.emit(EVENTS.AUDIO_SESSION_END, { sessionId, cohort, sessionLengthMs }); }
+  audioCleaningRevealFired(sessionId, cohort) { return this.emit(EVENTS.AUDIO_CLEANING_REVEAL_FIRED, { sessionId, cohort }); }
+  audioFirstTickFired(sessionId, cohort) { return this.emit(EVENTS.AUDIO_FIRST_TICK_FIRED, { sessionId, cohort }); }
+  audioCaseBackFired(sessionId, cohort) { return this.emit(EVENTS.AUDIO_CASE_BACK_FIRED, { sessionId, cohort }); }
+  audioToolPickupFired(sessionId, cohort) { return this.emit(EVENTS.AUDIO_TOOL_PICKUP_FIRED, { sessionId, cohort }); }
+  audioDeliveryFired(sessionId, cohort) { return this.emit(EVENTS.AUDIO_DELIVERY_FIRED, { sessionId, cohort }); }
+
   getEmittedEvents() {
     return this._emitted.slice();
   }

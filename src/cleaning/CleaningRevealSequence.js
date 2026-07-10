@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CleaningRevealSequence — orchestrates the full cleaning reveal sequence.
  *
  * Implements: Issue #53 (Core Reveal System) + Issue #54 (Shareability Layer)
@@ -56,6 +56,7 @@ class CleaningRevealSequence {
     cameraRestoreHook,
     phaseDurations = {},
     autosaveHook = null,
+    audioCohortFn = null,
   }) {
     this._telemetry     = new TelemetryEmitter(instrumentationHook);
     this._animation     = new RevealAnimation(renderReveal, clearReveal);
@@ -68,6 +69,7 @@ class CleaningRevealSequence {
     this._currentSessionId = null;
     this._sequenceStartedAt = null;
     this._autosaveHook     = autosaveHook;  // Issue #82
+    this._audioCohortFn = audioCohortFn;
   }
 
   // ── Sequence lifecycle ────────────────────────────────────────────────────
@@ -127,7 +129,10 @@ class CleaningRevealSequence {
    */
   _onRevealBeat(sessionId) {
     // Fire audio synchronously — same call stack as the visual beat (AC#53-2: ±100ms)
-    this._audio.playRevealCue();
+    const cohort = typeof this._audioCohortFn === 'function' ? this._audioCohortFn() : 'audio-on';
+    if (cohort === 'audio-on') {
+      this._audio.playRevealCue();
+    }
 
     // Fire cinematic camera pull-back (AC#54-2: 2–5 s, smooth recovery)
     this._camera.playRevealMove(() => {
