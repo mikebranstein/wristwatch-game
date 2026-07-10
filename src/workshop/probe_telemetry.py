@@ -253,33 +253,18 @@ class ProbeTelemetry:
             feedback_responses : list[dict]
             sufficient_data : bool              — True when both cohorts have ≥ MIN_COHORT_SAMPLE_SIZE
         """
-        probe_sessions   = [r for r in self._records if r["name"] == EVENT_SESSION_FREQUENCY_PROBE and r["payload"].get("cohort") == COHORT_PROBE]
-        control_sessions = [r for r in self._records if r["name"] == EVENT_SESSION_FREQUENCY_PROBE and r["payload"].get("cohort") == COHORT_CONTROL]
-        slot2_activations = [r for r in self._records if r["name"] == EVENT_SLOT2_ACTIVATED]
-        start_behavior = [r for r in self._records if r["name"] == EVENT_SESSION_START_BEHAVIOR]
-        feedback = [r for r in self._records if r["name"] == EVENT_FEEDBACK_RESPONSE]
-
-        probe_starts_with_sourcing = sum(
-            1 for r in start_behavior
-            if r["payload"].get("cohort") == COHORT_PROBE and r["payload"].get("slot1_is_sourcing")
-        )
-        probe_immediate_slot2 = sum(
-            1 for r in start_behavior
-            if r["payload"].get("cohort") == COHORT_PROBE
-            and r["payload"].get("slot1_is_sourcing")
-            and r["payload"].get("slot2_available")
-        )
-
-        probe_n   = len(probe_sessions)
-        control_n = len(control_sessions)
+        probe_n, control_n = self._collect_session_counts()
+        probe_sourcing, probe_immediate = self._collect_start_behavior_stats()
+        slot2_count = self._collect_slot2_activations()
+        feedback_responses = self._collect_feedback_responses()
 
         return {
             "probe_session_count": probe_n,
             "control_session_count": control_n,
-            "probe_slot2_activations": len(slot2_activations),
-            "probe_slot1_sourcing_starts": probe_starts_with_sourcing,
-            "probe_slot2_immediate_starts": probe_immediate_slot2,
-            "feedback_responses": [r["payload"] for r in feedback],
+            "probe_slot2_activations": slot2_count,
+            "probe_slot1_sourcing_starts": probe_sourcing,
+            "probe_slot2_immediate_starts": probe_immediate,
+            "feedback_responses": feedback_responses,
             "sufficient_data": (
                 probe_n >= MIN_COHORT_SAMPLE_SIZE
                 and control_n >= MIN_COHORT_SAMPLE_SIZE
@@ -327,6 +312,61 @@ class ProbeTelemetry:
     def was_emitted(self, event_name: str) -> bool:
         """Return True if *event_name* was emitted at least once."""
         return any(r["name"] == event_name for r in self._records)
+
+    # -----------------------------------------------------------------------
+    # Private data-collection helpers (extracted from get_probe_data)
+    # -----------------------------------------------------------------------
+
+    def _collect_session_counts(self) -> tuple:
+        """
+        Return ``(probe_n, control_n)`` — counts of SESSION_FREQUENCY_PROBE
+        records segmented by cohort.
+        """
+        probe_n = len([
+            r for r in self._records
+            if r["name"] == EVENT_SESSION_FREQUENCY_PROBE
+            and r["payload"].get("cohort") == COHORT_PROBE
+        ])
+        control_n = len([
+            r for r in self._records
+            if r["name"] == EVENT_SESSION_FREQUENCY_PROBE
+            and r["payload"].get("cohort") == COHORT_CONTROL
+        ])
+        return probe_n, control_n
+
+    def _collect_start_behavior_stats(self) -> tuple:
+        """
+        Return ``(probe_starts_with_sourcing, probe_immediate_slot2)`` from
+        SESSION_START_BEHAVIOR records for the probe cohort.
+        """
+        start_behavior = [
+            r for r in self._records if r["name"] == EVENT_SESSION_START_BEHAVIOR
+        ]
+        probe_starts_with_sourcing = sum(
+            1 for r in start_behavior
+            if r["payload"].get("cohort") == COHORT_PROBE
+            and r["payload"].get("slot1_is_sourcing")
+        )
+        probe_immediate_slot2 = sum(
+            1 for r in start_behavior
+            if r["payload"].get("cohort") == COHORT_PROBE
+            and r["payload"].get("slot1_is_sourcing")
+            and r["payload"].get("slot2_available")
+        )
+        return probe_starts_with_sourcing, probe_immediate_slot2
+
+    def _collect_slot2_activations(self) -> int:
+        """Return the count of SLOT2_ACTIVATED events."""
+        return len([
+            r for r in self._records if r["name"] == EVENT_SLOT2_ACTIVATED
+        ])
+
+    def _collect_feedback_responses(self) -> list:
+        """Return list of feedback response payloads."""
+        return [
+            r["payload"] for r in self._records
+            if r["name"] == EVENT_FEEDBACK_RESPONSE
+        ]
 
     # -----------------------------------------------------------------------
     # Internal helpers
