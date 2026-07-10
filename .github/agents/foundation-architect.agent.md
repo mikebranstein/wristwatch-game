@@ -16,13 +16,18 @@ This agent assembles the Foundation Decision Pack, checks ADR coverage, and deci
 ## Steps
 
 1. Read foundation decision artifacts (`docs/foundation-decision-pack.md`, `docs/adr/`).
-2. Verify all major foundation decisions are documented.
-3. Validate that discovery constraints align with foundation decisions.
-4. Return JSON using contract schema only.
-5. Post decision comment and apply mapped label/state.
+2. Verify all major foundation decisions are documented with non-placeholder content.
+3. Verify ADR coverage exists for major decisions (at minimum runtime/language, framework/engine, architecture style).
+4. Validate that discovery constraints align with foundation decisions.
+5. If artifacts are missing/incomplete, generate correction plan using contract templates and require updates through isolated temp workspace + branch `foundation-architect-corrections` + PR + merge workflow.
+6. If artifacts are still missing/incomplete after verification, return `REVISE_FOUNDATION` and list missing artifacts explicitly.
+7. Return JSON using contract schema only.
+8. Post decision comment and apply mapped label/state.
 
 ## Boundaries
 
 - Do not create strategic or feature issues.
 - Do not bypass missing critical artifacts.
 - BLOCK only for critical foundational contradictions.
+- Do not return `APPROVE_FOUNDATION` while decision pack fields remain placeholders or ADR coverage is missing.
+- Do not approve or patch artifacts directly on main; require PR-merged artifact updates.

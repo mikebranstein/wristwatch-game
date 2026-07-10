@@ -31,6 +31,10 @@ Return valid JSON only:
 - REVISE is default when information is incomplete but recoverable.
 - `discovery_focus` is a required artifact for approval decisions.
 - If `discovery_focus` is missing or empty, return `REVISE_FOUNDATION` with missing artifact noted.
+- Do not return `APPROVE_FOUNDATION` while key decision-pack sections remain placeholder-only.
+- Do not return `APPROVE_FOUNDATION` without ADR coverage for major decisions (runtime/language, framework/engine, architecture style at minimum).
+- Any artifact creation/update required for approval must be delivered via dedicated branch + PR + merge (never direct write on main).
+- Artifact generation and edits must be performed from an isolated temp workspace (`${TMPDIR:-/tmp}` on Bash, `$env:TEMP` on PowerShell) with cleanup after merge.
 
 ## Gate Rule
 - APPROVE_FOUNDATION -> foundation-approved
