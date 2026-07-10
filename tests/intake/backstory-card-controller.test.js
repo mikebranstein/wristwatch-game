@@ -173,19 +173,25 @@ describe('BackstoryCardController — cohort assignment', () => {
 });
 
 // ─── Scenario 10: A/B split integrity ────────────────────────────────────────
+// NOTE: 100-trial probabilistic tests have ~36% chance of landing outside 45–55
+// with a fair coin. We scale to 10 000 trials (same ±5% criterion) for a
+// statistically reliable, deterministic-enough result without mocking RNG.
 
 describe('BackstoryCardController — Scenario 10: A/B split 50±5 over 100 assignments', () => {
   test('50 ± 5 backstory assignments in 100 simulated players', () => {
+    // Use 10 000 trials so the ±5 % bound (4 500–5 500) is essentially never
+    // breached by a correct 50/50 implementation (P(fail) < 1 in 1 000 000).
+    const TRIALS = 10_000;
     let backstoryCount = 0;
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < TRIALS; i++) {
       const save = makeSave();
-      // Use Math.random (real RNG) so this is a genuine probabilistic check
       const ctrl = new BackstoryCardController(save, makeTelemetry());
       const cohort = ctrl.assignCohortIfNeeded();
       if (cohort === COHORT_BACKSTORY) backstoryCount++;
     }
-    expect(backstoryCount).toBeGreaterThanOrEqual(45);
-    expect(backstoryCount).toBeLessThanOrEqual(55);
+    // ±5 % of 10 000 = ±500
+    expect(backstoryCount).toBeGreaterThanOrEqual(4500);
+    expect(backstoryCount).toBeLessThanOrEqual(5500);
   });
 });
 
