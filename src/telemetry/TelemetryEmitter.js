@@ -102,6 +102,13 @@ const EVENTS = {
 
   // Progressive Reassembly Success Signals — Phase 2 Full Rollout (Issue #123)
   HIGHLIGHT_TOGGLE_USED: 'highlight_toggle_used',
+
+  // Adaptive Coaching Engine — Mistake-Pattern Detection Layer (Issue #293)
+  // All additive — zero changes to existing event names or signatures.
+  // Three diagnosis-phase events track mistake types per faultInstanceId.
+  WRONG_TOOL_SELECTED:      'wrong_tool_selected',       // payload: { faultInstanceId, toolId }
+  FAULT_TYPE_MISIDENTIFIED: 'fault_type_misidentified',  // payload: { faultInstanceId, submittedFaultTypeId }
+  DIAGNOSIS_UNDO_ATTEMPTED: 'diagnosis_undo_attempted',  // payload: { faultInstanceId }
 };
 
 class TelemetryEmitter {
@@ -533,6 +540,40 @@ class TelemetryEmitter {
    */
   wasEmitted(eventName) {
     return this._emitted.some((r) => r.name === eventName);
+  }
+
+  // ---- Adaptive Coaching — Mistake-Type Events (Issue #293) ----
+
+  /**
+   * Fires when the player selects the wrong tool during diagnosis phase.
+   * Consumed by AdaptiveCoachingController for AC1 mistake-type detection.
+   *
+   * @param {string} faultInstanceId  Per-encounter fault identifier (stepId)
+   * @param {string} toolId           The (incorrect) tool the player selected
+   */
+  wrongToolSelected(faultInstanceId, toolId) {
+    this.emit(EVENTS.WRONG_TOOL_SELECTED, { faultInstanceId, toolId });
+  }
+
+  /**
+   * Fires when the player submits an incorrect fault type during diagnosis.
+   * Consumed by AdaptiveCoachingController for AC1 mistake-type detection.
+   *
+   * @param {string} faultInstanceId      Per-encounter fault identifier (stepId)
+   * @param {string} submittedFaultTypeId The (incorrect) fault type the player submitted
+   */
+  faultTypeMisidentified(faultInstanceId, submittedFaultTypeId) {
+    this.emit(EVENTS.FAULT_TYPE_MISIDENTIFIED, { faultInstanceId, submittedFaultTypeId });
+  }
+
+  /**
+   * Fires when the player attempts to undo a diagnosis during the diagnosis phase.
+   * Consumed by AdaptiveCoachingController for AC1 mistake-type detection.
+   *
+   * @param {string} faultInstanceId  Per-encounter fault identifier (stepId)
+   */
+  diagnosisUndoAttempted(faultInstanceId) {
+    this.emit(EVENTS.DIAGNOSIS_UNDO_ATTEMPTED, { faultInstanceId });
   }
 }
 
