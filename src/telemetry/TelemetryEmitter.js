@@ -475,14 +475,18 @@ class TelemetryEmitter {
 
   /**
    * Fires when a part is damaged (over-torque, drop, snap) during restoration.
-   * AC5: Captures part ID, restoration ID, and damage event type.
+   * AC5: Captures part ID, restoration ID, damage event type, and severity tier classification.
    *
-   * @param {string} partId         Unique part identifier
-   * @param {string} restorationId  Unique restoration session identifier
-   * @param {string} eventType      'over_torque' | 'drop' | 'snap'
+   * Issue #153: Extended with tier_classification field (additive — backward-compatible).
+   * Existing callers that don't pass tierClassification receive null (no existing behaviour change).
+   *
+   * @param {string}      partId              Unique part identifier
+   * @param {string}      restorationId       Unique restoration session identifier
+   * @param {string}      eventType           'over_torque' | 'drop' | 'snap'
+   * @param {string|null} [tierClassification] 'minor_slip' | 'significant_damage' | 'extreme_negligence' | null
    */
-  partDamaged(partId, restorationId, eventType) {
-    this.emit(EVENTS.PART_DAMAGED, { partId, restorationId, eventType });
+  partDamaged(partId, restorationId, eventType, tierClassification = null) {
+    this.emit(EVENTS.PART_DAMAGED, { partId, restorationId, eventType, tier_classification: tierClassification });
   }
 
   /**
