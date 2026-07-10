@@ -65,6 +65,17 @@ const EVENTS = {
   ONBOARDING_SKIPPED: 'onboarding_skipped',
   ONBOARDING_COMPLETED: 'onboarding_completed',
   AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
+
+  // Two-Bench Workshop Probe — Issue #116 (Phase 1 A/B)
+  // All additive — zero changes to existing event names or signatures.
+  // Six events cover cohort stabilisation, session-frequency and session-start-behaviour
+  // telemetry, slot activation, and the 2-week qualitative feedback prompt.
+  SECOND_BENCH_COHORT_ASSIGNED:   'second_bench_cohort_assigned',
+  SESSION_FREQUENCY_PROBE:        'session_frequency_probe',
+  SESSION_START_BEHAVIOR_PROBE:   'session_start_behavior_probe',
+  SECOND_BENCH_SLOT_ACTIVATED:    'second_bench_slot_activated',
+  SECOND_BENCH_FEEDBACK_PROMPTED: 'second_bench_feedback_prompted',
+  SECOND_BENCH_FEEDBACK_RESPONSE: 'second_bench_feedback_response',
 };
 
 class TelemetryEmitter {
@@ -288,6 +299,76 @@ class TelemetryEmitter {
    */
   abCohortAssigned(cohort, jobId = '') {
     this.emit(EVENTS.AB_COHORT_ASSIGNED, { cohort, jobId });
+  }
+
+  // ---- Two-Bench Workshop Probe convenience methods (Issue #116) ----
+
+  /**
+   * Fires once when the player's second-bench probe cohort is assigned for the first time.
+   * Must be emitted before any session-frequency events (cohort stabilisation invariant).
+   *
+   * @param {string} playerId   Anonymised persistent player identifier
+   * @param {string} cohort     'probe' | 'control'
+   */
+  secondBenchCohortAssigned(playerId, cohort) {
+    this.emit(EVENTS.SECOND_BENCH_COHORT_ASSIGNED, { playerId, cohort });
+  }
+
+  /**
+   * Fires at every session start for all players in the probe window.
+   * Provides the session-frequency data required for probe vs. control comparison (AC4).
+   *
+   * @param {string} playerId
+   * @param {string} cohort     'probe' | 'control'
+   * @param {number} [timestamp]  Unix timestamp of session start (defaults to Date.now())
+   */
+  sessionFrequencyProbe(playerId, cohort, timestamp = Date.now()) {
+    this.emit(EVENTS.SESSION_FREQUENCY_PROBE, { playerId, cohort, timestamp });
+  }
+
+  /**
+   * Fires at session start; records whether Slot 1 is in sourcing wait (AC4 session-start behaviour).
+   *
+   * @param {string}  playerId
+   * @param {string}  cohort            'probe' | 'control'
+   * @param {boolean} slot1IsSourcing   True when Slot 1 has an active sourcing wait at load
+   * @param {boolean} slot2Available    True when player has an unlocked second slot
+   * @param {number}  [timestamp]
+   */
+  sessionStartBehaviorProbe(playerId, cohort, slot1IsSourcing, slot2Available, timestamp = Date.now()) {
+    this.emit(EVENTS.SESSION_START_BEHAVIOR_PROBE, {
+      playerId, cohort, slot1IsSourcing, slot2Available, timestamp,
+    });
+  }
+
+  /**
+   * Fires when a player first intakes a job into Slot 2 (probe activation event).
+   *
+   * @param {string} playerId
+   * @param {string} cohort
+   */
+  secondBenchSlotActivated(playerId, cohort) {
+    this.emit(EVENTS.SECOND_BENCH_SLOT_ACTIVATED, { playerId, cohort });
+  }
+
+  /**
+   * Fires when the 2-week qualitative feedback prompt is shown to a probe-arm player.
+   *
+   * @param {string} playerId
+   */
+  secondBenchFeedbackPrompted(playerId) {
+    this.emit(EVENTS.SECOND_BENCH_FEEDBACK_PROMPTED, { playerId });
+  }
+
+  /**
+   * Fires when the player responds to the 2-week feedback prompt.
+   *
+   * @param {string} playerId
+   * @param {string} sentiment       'positive' | 'neutral' | 'negative'
+   * @param {string} [responseText]  Optional free-text response
+   */
+  secondBenchFeedbackResponse(playerId, sentiment, responseText = '') {
+    this.emit(EVENTS.SECOND_BENCH_FEEDBACK_RESPONSE, { playerId, sentiment, responseText });
   }
 
   /**
