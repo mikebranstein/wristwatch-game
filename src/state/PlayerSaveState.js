@@ -91,6 +91,12 @@
  * Issue #132 — Full Audio Design Pass, Phase 2:
  *   Added `audio_volume: 100` (0–100, backward-compatible).
  *   Used by AudioVolumeSettings as a save-profile fallback when localStorage is absent.
+ *
+ * Issue #131 — Tool-Switching MVP: Core Repair Loop (6-8 Tools):
+ *   Added `tutorial_tool_switching_seen` (false default, backward-compatible).
+ *   Set to true after the player dismisses the tool-switching tutorial for the first time.
+ *   Ensures the tutorial displays exactly once per player profile lifetime
+ *   (Constraint: Tutorial persistence — stored in save file, not in-memory).
  */
 
 const DEFAULT_SAVE = {
@@ -172,6 +178,7 @@ const DEFAULT_SAVE = {
   // Pre-existing saves lacking these keys receive null via Object.assign defaults.
   crystal_outcome:           null,
   crystal_condition_before:  null,
+
   // Issue #148: In-Repair Part Damage Recovery — Core System (additive, backward-compatible)
   // Serialised snapshot written by DamageRecoveryController on every damage/order state change.
   // null = no damage events have occurred in the current restoration session.
@@ -215,6 +222,14 @@ const DEFAULT_SAVE = {
   //   Reset to null by IntakeInspectionChecklist.complete() after checklist is done.
   first_job_completed:              false,
   intake_checklist_item_states:     null,
+
+  // Issue #131: Tool-Switching MVP — first-time tutorial persistence (additive, backward-compatible)
+  // Set to true after the player dismisses the tool-switching tutorial for the first time.
+  // Stored here (not in-memory) so the tutorial displays exactly once per player profile lifetime
+  // across session close and game restart (Constraint: Tutorial persistence).
+  // Pre-existing saves lacking this key receive false (default ON — show tutorial to returning players
+  // who have not yet seen the tool-switching introduction).
+  tutorial_tool_switching_seen: false,
 
 };
 
