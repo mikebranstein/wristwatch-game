@@ -35,6 +35,13 @@
  *   Extended `completed_watches` entries with `before_portrait_url` (null default,
  *   backward-compatible). Captured at WatchIntake time; null for watches delivered
  *   before this feature shipped (AC5 / Test Scenario 3 handle the null case gracefully).
+ *
+ * Issue #143 — Strap Swap: Cosmetic Restoration Phase 1:
+ *   Added `strap_selection` (null default, backward-compatible).
+ *   Written by CosmeticPhaseController.confirmStrap() at strap-selection confirmation.
+ *   Read by CosmeticPhaseController.enterPhase() to restore prior selection on back-navigation (AC5).
+ *   Reflected in the restoration summary screen (AC4).
+ *   Values: strap variant id string (e.g. 'leather_black') | null (none selected yet).
  */
 
 const DEFAULT_SAVE = {
@@ -86,6 +93,12 @@ const DEFAULT_SAVE = {
   // before_portrait_url added by #129 (null for watches delivered before that feature shipped).
   // Pre-existing saves without this key receive [] via Object.assign defaults.
   completed_watches:      [],
+
+  // Issue #143: Strap Swap — Cosmetic Restoration Phase 1 (additive, backward-compatible)
+  // Written by CosmeticPhaseController.confirmStrap() at strap-selection confirmation.
+  // null = no strap selected yet for the current restoration job (defaults to baseline worn strap).
+  // Pre-existing saves lacking this key receive null via Object.assign defaults.
+  strap_selection:        null,
 
 };
 
