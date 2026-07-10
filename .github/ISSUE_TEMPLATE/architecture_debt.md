@@ -4,6 +4,7 @@ about: Track architecture debt identified by automated fitness review
 title: "[ARCH DEBT] "
 labels: architecture-debt
 assignees: ''
+
 ---
 
 ## Summary
