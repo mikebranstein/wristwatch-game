@@ -33,6 +33,16 @@ Include both happy path and failure path.
 ## Risk Level
 Choose one: Low / Medium / High
 
+## Value Scores
+User Value (1-5):
+Business Value (1-5):
+Technical Complexity (1-5):
+
+## Priority Score
+Priority Score: [NUMBER]
+
+Use format exactly as above so Dev Orchestrator can parse and route by priority.
+
 ## Dependencies
 List blockers, linked issues, or external dependencies.
 
