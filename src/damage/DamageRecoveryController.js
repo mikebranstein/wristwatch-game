@@ -91,6 +91,32 @@ class DamageRecoveryController {
   }
 
   /**
+   * Trigger a wrong_tool damage event for the given component (Issue #295 — Phase 1).
+   *
+   * Called by the onWrongTool wiring layer when OperationGatingSystem detects a
+   * wrong-tool attempt on a Phase 1 targeted operation. Produces 'degraded' component
+   * state (not 'broken') per the Phase 1 hard constraint.
+   *
+   * The failureMessage is forwarded through the damage event context so that
+   * DamageRecoveryPrompt can display the correct Phase 1 failure vocabulary
+   * (e.g. "Wrong-gauge screwdriver — screw head is burred.") — AC2.
+   *
+   * @param {string} componentId   The component/part that became degraded
+   * @param {string} restorationId The current restoration session identifier
+   * @param {string} failureMessage The Phase 1 failure mode message for the recovery prompt
+   * @returns {Object} The damage event record
+   */
+  triggerWrongToolDamage(componentId, restorationId, failureMessage) {
+    return this._detector.registerDamageEvent(
+      'wrong_tool',
+      componentId,
+      restorationId || this._restorationId,
+      'degraded',        // Phase 1 hard constraint: degraded only, never broken (Issue #295)
+      { failureMessage },
+    );
+  }
+
+  /**
    * Returns the visible prompt data for the UI to render (AC1).
    * @returns {{ state, context, message }|null}
    */

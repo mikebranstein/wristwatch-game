@@ -468,11 +468,12 @@ describe('TR4 — getRegisteredOperations() manifest enumeration (lines 108–11
     expect(ops).toHaveLength(2);
   });
 
-  test('DEFAULT_COMPONENT_MANIFEST exposes all 29 MVP operation IDs via getRegisteredOperations()', () => {
+  test('DEFAULT_COMPONENT_MANIFEST exposes all 34 MVP operation IDs via getRegisteredOperations()', () => {
     const gating = makeGatingSystem();
     const ops = gating.getRegisteredOperations();
-    // The DEFAULT_COMPONENT_MANIFEST contains 29 operations covering all 8 MVP tools
-    expect(ops.length).toBe(29);
+    // The DEFAULT_COMPONENT_MANIFEST contains 29 original operations covering all 8 MVP tools
+    // plus 5 Phase 1 wrong-tool consequence operations added in Issue #295.
+    expect(ops.length).toBe(34);
     // Spot-check a representative entry from each tool group
     expect(ops).toContain('handle-hour-hand');       // fine-tip-tweezers
     expect(ops).toContain('remove-movement-plate-screw'); // flat-blade-screwdriver
@@ -482,6 +483,12 @@ describe('TR4 — getRegisteredOperations() manifest enumeration (lines 108–11
     expect(ops).toContain('seat-movement');          // movement-holder
     expect(ops).toContain('set-hour-hand');          // hand-setting-tool
     expect(ops).toContain('clear-debris');           // dust-blower
+    // Phase 1 operations (Issue #295)
+    expect(ops).toContain('wind-mainspring');
+    expect(ops).toContain('remove-cannon-pinion');
+    expect(ops).toContain('remove-balance-wheel');
+    expect(ops).toContain('oil-jewel-seat');
+    expect(ops).toContain('set-crown');
   });
 });
 

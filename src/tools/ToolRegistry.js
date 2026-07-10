@@ -34,6 +34,8 @@ const TOOL_DEFINITIONS = [
       'handle-second-hand',
       'handle-dial',
       'position-jewel',
+      // Phase 1 wrong-tool consequence operation (Issue #295)
+      'remove-balance-wheel',
     ],
     ariaLabel: 'Fine-Tip Tweezers — handles delicate dial components and watch hands',
   },
@@ -46,6 +48,8 @@ const TOOL_DEFINITIONS = [
       'install-movement-plate-screw',
       'remove-bridge-screw',
       'install-bridge-screw',
+      // Phase 1 wrong-tool consequence operation (Issue #295)
+      'wind-mainspring',
     ],
     ariaLabel: 'Flat-Blade Screwdriver — drives flat-head screws on movement plates',
   },
@@ -92,6 +96,9 @@ const TOOL_DEFINITIONS = [
       'lift-movement',
       'stabilise-movement',
       'pick-up-component',
+      // Phase 1 wrong-tool consequence operations (Issue #295)
+      'remove-cannon-pinion',
+      'oil-jewel-seat',
     ],
     ariaLabel: 'Movement Holder and Rodico — holds and positions the movement during work',
   },
@@ -103,6 +110,8 @@ const TOOL_DEFINITIONS = [
       'set-hour-hand',
       'set-minute-hand',
       'set-second-hand',
+      // Phase 1 wrong-tool consequence operation (Issue #295)
+      'set-crown',
     ],
     ariaLabel: 'Hand-Setting Tool — presses watch hands onto movement posts',
   },

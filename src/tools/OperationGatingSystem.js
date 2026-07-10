@@ -4,6 +4,11 @@
  *
  * Issue #131 — Tool-Switching MVP: Core Repair Loop (6-8 Tools)
  *
+ * Issue #295 — Wrong-Tool Consequence System Phase 1
+ * Adds optional onWrongTool callback to wire wrong-tool attempts on the 5 Phase 1
+ * targeted operations to DamageEventDetector. The callback is optional — all existing
+ * usages (including existing tests) work unchanged with no callback.
+ *
  * Design contract (from approved design):
  *   - Declarative required-tool manifest: each component/operation declares its required
  *     tool in a static componentManifest injected at construction time, so gating
@@ -15,8 +20,9 @@
  *     informational message, not an error (Scenario 8).
  *   - Multi-step gating: each operation tracks an optional step index to enforce
  *     ordered sequences (Scenario 6 — no step-skip exploits).
- *   - Wrong-tool consequence (MVP): strictly operation-blocking + message.
- *     No damage-state data structures introduced (Constraint: wrong-tool consequence scope).
+ *   - Wrong-tool consequence (Phase 1): when phase1Consequence is true in the manifest
+ *     entry, a wrong-tool attempt fires onWrongTool(operationId, toolId, componentId)
+ *     in addition to the existing block + message behaviour (additive, not replacing).
  *
  * AC2: Correct tool → operation proceeds (allowed: true, confirmation cue).
  * AC3: Wrong tool → operation blocked, contextual message names the correct tool.
@@ -34,13 +40,22 @@ const { getToolsForOperation, canToolPerformOperation, getToolById } = require('
 
 class OperationGatingSystem {
   /**
-   * @param {Object.<string, { requiredTool: string, confirmationCue?: string, noActionMessage?: string }>} [componentManifest]
-   *   Declarative manifest: maps operationId → { requiredTool, confirmationCue, noActionMessage }.
+   * @param {Object.<string, { requiredTool: string, confirmationCue?: string, noActionMessage?: string, phase1Consequence?: boolean, componentId?: string }>} [componentManifest]
+   *   Declarative manifest: maps operationId → { requiredTool, confirmationCue, noActionMessage, phase1Consequence, componentId }.
    *   Operations not in the manifest are treated as no-action (Scenario 8).
    *   Injected at construction so coverage is statically verifiable.
+   *   phase1Consequence: true marks an operation as a Phase 1 wrong-tool consequence target (Issue #295).
+   *   componentId: the part/component affected by the operation (used in wrong_tool damage events).
+   * @param {Function|null} [onWrongTool=null]
+   *   Optional callback fired when a wrong-tool attempt is made on a phase1Consequence operation.
+   *   Signature: onWrongTool(operationId, toolId, componentId)
+   *   When null (default), Phase 1 consequence wiring is inactive — all existing behaviour preserved.
+   *   (Issue #295 — Wrong-Tool Consequence System Phase 1)
    */
-  constructor(componentManifest = {}) {
+  constructor(componentManifest = {}, onWrongTool = null) {
     this._manifest = { ...componentManifest };
+    // onWrongTool is optional — null preserves all pre-Phase-1 behaviour (Issue #295 constraint)
+    this._onWrongTool = typeof onWrongTool === 'function' ? onWrongTool : null;
   }
 
   /**
@@ -88,6 +103,14 @@ class OperationGatingSystem {
       const requiredTool = getToolById(requiredToolId);
       const requiredName = requiredTool ? requiredTool.name : requiredToolId;
       message = `Use the ${requiredName} to ${this._describeOperation(operationId)}.`;
+    }
+
+    // Phase 1 wrong-tool consequence (Issue #295):
+    // Fire onWrongTool callback for the 5 targeted operations when the callback is wired.
+    // This is ADDITIVE — the block + message above is always returned regardless.
+    if (manifest.phase1Consequence && this._onWrongTool) {
+      const componentId = manifest.componentId || operationId;
+      this._onWrongTool(operationId, toolId, componentId);
     }
 
     return { allowed: false, message };
@@ -176,6 +199,40 @@ const DEFAULT_COMPONENT_MANIFEST = {
   'clear-debris':       { requiredTool: 'dust-blower', confirmationCue: 'Debris cleared.' },
   'clean-dial-surface': { requiredTool: 'dust-blower', confirmationCue: 'Dial surface cleaned.' },
   'clean-crystal':      { requiredTool: 'dust-blower', confirmationCue: 'Crystal cleaned.' },
+
+  // ── Phase 1 Wrong-Tool Consequence targets (Issue #295) ─────────────────────
+  // phase1Consequence: true enables damage event wiring when onWrongTool is injected.
+  // componentId: the part affected (used as partId in DamageEventDetector).
+  'wind-mainspring': {
+    requiredTool: 'flat-blade-screwdriver',
+    confirmationCue: 'Mainspring wound carefully.',
+    phase1Consequence: true,
+    componentId: 'mainspring',
+  },
+  'remove-cannon-pinion': {
+    requiredTool: 'movement-holder',
+    confirmationCue: 'Cannon pinion removed safely.',
+    phase1Consequence: true,
+    componentId: 'cannon-pinion',
+  },
+  'remove-balance-wheel': {
+    requiredTool: 'fine-tip-tweezers',
+    confirmationCue: 'Balance wheel lifted without stress.',
+    phase1Consequence: true,
+    componentId: 'balance-wheel',
+  },
+  'oil-jewel-seat': {
+    requiredTool: 'movement-holder',
+    confirmationCue: 'Jewel seat oiled correctly.',
+    phase1Consequence: true,
+    componentId: 'jewel-seat',
+  },
+  'set-crown': {
+    requiredTool: 'hand-setting-tool',
+    confirmationCue: 'Crown set onto post without damage.',
+    phase1Consequence: true,
+    componentId: 'crown-wheel',
+  },
 };
 
 module.exports = { OperationGatingSystem, DEFAULT_COMPONENT_MANIFEST };
