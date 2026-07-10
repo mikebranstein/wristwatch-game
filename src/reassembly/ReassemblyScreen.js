@@ -20,9 +20,18 @@
  *
  * Playtest gate (AC5): TelemetryEmitter tracks undo_attempted events so post-
  * implementation undo frequency can be compared to the pre-implementation baseline.
+ *
+ * Issue #123 — Progressive Reassembly Phase 2 Full Rollout:
+ *   All 13 SNAP_ZONES parts are pre-registered at construction (design note: DEFAULT_TOLERANCES
+ *   only pre-loads 10 parts; SNAP_ZONES has all 13 — pre-registering ensures no
+ *   unregistered-part throws for the 3 additional components on first drag event).
+ *   An optional `highlightRenderHook` can be injected for the ambient 'highlight
+ *   remaining work' toggle.  This hook is INDEPENDENT of the FSM renderVisual
+ *   callback to prevent state collision between ambient persistent highlights and
+ *   per-seating confirmation highlights.
  */
 
-const { SnapZoneTolerance } = require('./SnapZoneTolerance');
+const { SnapZoneTolerance, SNAP_ZONES } = require('./SnapZoneTolerance');
 const { AssemblyFeedbackStateMachine, STATES } = require('./AssemblyFeedbackStateMachine');
 const { TelemetryEmitter } = require('../telemetry/TelemetryEmitter');
 
@@ -35,8 +44,13 @@ class ReassemblyScreen {
    * @param {string}   [opts.sessionId]         — optional session identifier for telemetry
    * @param {number}   [opts.minDwellMs]        — override dwell window (default: 250ms)
    * @param {Function} [opts.autosaveHook]      — Issue #82: async (stage: string) => void
+   * @param {Function} [opts.highlightRenderHook] — Issue #123: ({ active, unseatedParts? partId? }) => void
+   *                                               Called on toggle interactions and on individual
+   *                                               part clears after successful snap.
+   *                                               Independent of FSM renderVisual to prevent
+   *                                               state collision with per-seating highlights.
    */
-  constructor({ instrumentationHook, playAudio, renderVisual, sessionId = null, minDwellMs, autosaveHook = null, microConfirmationController = null }) {
+  constructor({ instrumentationHook, playAudio, renderVisual, sessionId = null, minDwellMs, autosaveHook = null, microConfirmationController = null, highlightRenderHook = null }) {
     this._telemetry = new TelemetryEmitter(instrumentationHook);
     this._snapZone = new SnapZoneTolerance('reassembly');
     this._fsm = new AssemblyFeedbackStateMachine({
@@ -51,6 +65,17 @@ class ReassemblyScreen {
     this._autosaveHook = autosaveHook;  // Issue #82
     this._microConfirmation = microConfirmationController;
     if (this._microConfirmation) { this._microConfirmation.startSession(); }
+
+    // Issue #123 — Phase 2: pre-register all 13 SNAP_ZONES parts so no
+    // unregistered-part throw fires on first drag for the 3 additional
+    // components not covered by DEFAULT_TOLERANCES.
+    for (const [partId, tolerances] of Object.entries(SNAP_ZONES)) {
+      this._snapZone.registerPart(partId, tolerances);
+    }
+
+    // Issue #123 — Phase 2: highlight remaining work toggle (session-scoped, defaults OFF)
+    this._highlightToggle = false;
+    this._highlightRenderHook = highlightRenderHook;
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -91,6 +116,9 @@ class ReassemblyScreen {
    * Attempt to confirm snap placement for a part.
    * Snap only succeeds when the FSM is in LOCKED_IN state (AC1: only lock zone + correct orientation).
    *
+   * Issue #123 — Phase 2: after a successful snap, if the highlight-remaining toggle is ON,
+   * the ambient highlight for this specific component is cleared via _highlightRenderHook.
+   *
    * @param {string} partId
    * @returns {{ success: boolean, reason: string|null }}
    */
@@ -102,6 +130,10 @@ class ReassemblyScreen {
     this._fsm.reset(partId);
     this._telemetry.reassemblyPartConfirmed(partId, this._sessionId);
     if (this._microConfirmation) { this._microConfirmation.onComponentSeated(partId); }
+    // Issue #123: clear ambient toggle highlight for this part after successful snap
+    if (this._highlightRenderHook && this._highlightToggle) {
+      this._highlightRenderHook({ partId, active: false, clearAmbient: true });
+    }
     return { success: true, reason: null };
   }
 
@@ -147,6 +179,39 @@ class ReassemblyScreen {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  // Issue #123 — Phase 2: Highlight remaining work toggle (AC3)
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Toggle the 'highlight remaining work' overlay on or off.
+   *
+   * When turned ON:  calls _highlightRenderHook({ active: true, unseatedParts })
+   *                  so the UI can apply a persistent ambient highlight to all
+   *                  unseated components at once.
+   * When turned OFF: calls _highlightRenderHook({ active: false, unseatedParts: [] })
+   *                  so the UI can remove all ambient highlights.
+   * On each toggle: emits highlight_toggle_used analytics event (AC4).
+   *
+   * Toggle state is session-scoped (defaults OFF, does not persist cross-session).
+   *
+   * @returns {boolean} The new state of the toggle (true = ON, false = OFF)
+   */
+  toggleHighlightRemaining() {
+    this._highlightToggle = !this._highlightToggle;
+    const state = this._highlightToggle ? 'on' : 'off';
+    this._telemetry.highlightToggleUsed(state, Date.now());
+    if (this._highlightRenderHook) {
+      // When ON: pass all currently unseated parts so UI can apply ambient highlights.
+      // When OFF: pass empty array — UI clears all ambient highlights.
+      const unseatedParts = this._highlightToggle
+        ? Object.keys(SNAP_ZONES).filter(p => !this._assembledParts.has(p))
+        : [];
+      this._highlightRenderHook({ active: this._highlightToggle, unseatedParts });
+    }
+    return this._highlightToggle;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Accessors (for testing & QA)
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -164,6 +229,10 @@ class ReassemblyScreen {
 
   /** Returns total undo attempts recorded this session. */
   getTotalUndoAttempts() { return this._totalUndoAttempts; }
+
+  /** Issue #123: Returns the current state of the highlight-remaining toggle. */
+  getHighlightToggle() { return this._highlightToggle; }
+
   abandonReassembly() { if (this._microConfirmation) { this._microConfirmation.onSessionAbandoned(); } }
   getMicroConfirmation() { return this._microConfirmation; }
 }
