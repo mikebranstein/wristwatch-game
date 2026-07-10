@@ -16,7 +16,27 @@ npm install
 
 ## Running Tests
 
-### Python tests
+### Run All Tests (recommended)
+
+Use the unified entry point to run both the JavaScript and Python test suites in a single command:
+
+```bash
+npm run test:all
+```
+
+Both suites always run to completion — the script does **not** short-circuit on the first failure, so you always see the full health picture of both layers. Exit code is 0 only when both Jest and pytest pass.
+
+To run both suites with coverage reporting:
+
+```bash
+npm run test:all:coverage
+```
+
+> **Exit-code contract:** `0` = both suites passed; `1` = at least one suite failed (both still ran).
+
+---
+
+### Python tests (individual)
 
 ```bash
 pytest
@@ -28,7 +48,7 @@ To run only the analytics tests:
 pytest tests/analytics/
 ```
 
-### JavaScript tests
+### JavaScript tests (individual)
 
 ```bash
 npm test
@@ -40,12 +60,12 @@ To run a specific test file:
 npx jest tests/completion/job-quality-aggregator.test.js
 ```
 
-Both test suites should be run before submitting changes:
+Both test suites should be run before submitting changes. Use `npm run test:all` for the combined run.
+If you prefer running them separately, use:
 
 ```bash
 npm test && pytest
 ```
-
 
 ## Language Boundary
 
