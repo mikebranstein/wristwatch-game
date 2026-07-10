@@ -331,39 +331,42 @@ describe('Scenario 2 — No false positive: incorrect placement -> no feedback',
     expect(audioLog.filter((c) => c === AUDIO_CUE)).toHaveLength(0);
     expect(highlightLog.filter((h) => h.active === true)).toHaveLength(0);
   });
-  test('non-prototype components do not trigger micro-confirmation feedback', () => {
+  test('non-prototype components DO trigger micro-confirmation feedback (Phase 2 full rollout)', () => {
+    // Phase 2: cohort gate and prototype restriction removed — ALL components get feedback
     const { controller, audioLog, highlightLog, log } = makeController({ randomFn: forceCohort(COHORTS.FEEDBACK_ON) });
     controller.startSession();
     controller.onComponentSeated('mainspring');
     controller.onComponentSeated('escapement');
-    expect(audioLog).toHaveLength(0);
-    expect(highlightLog).toHaveLength(0);
-    expect(log.filter((e) => e.name === EVENTS.REASSEMBLY_COMPONENT_SEATED_SUCCESS)).toHaveLength(0);
+    expect(audioLog.length).toBeGreaterThanOrEqual(2);
+    expect(highlightLog.filter((h) => h.active === true).length).toBeGreaterThanOrEqual(2);
+    expect(log.filter((e) => e.name === EVENTS.REASSEMBLY_COMPONENT_SEATED_SUCCESS)).toHaveLength(2);
   });
 });
 
-// ── Scenario 3 — Control cohort ───────────────────────────────────────────────
+// ── Scenario 3 — Phase 2 full rollout: all players receive feedback regardless of cohort ─
+// Phase 2 (Issue #123) removes the A/B split. The control/feedback-on cohort labels are
+// still assigned (for abandonment analytics) but no longer gate per-seating feedback.
 
-describe('Scenario 3 — Control cohort: no audio, no highlight, no seated_success event', () => {
-  test('no audio for control cohort on correct seating', () => {
+describe('Scenario 3 — Phase 2 full rollout: all cohorts receive audio, highlight, and analytics', () => {
+  test('audio DOES play for assigned cohort-label=control player on correct seating (Phase 2)', () => {
     const { controller, audioLog } = makeController({ randomFn: forceCohort(COHORTS.CONTROL) });
     controller.startSession();
     controller.onComponentSeated(PROTOTYPE_COMPONENT_ID);
-    expect(audioLog).toHaveLength(0);
+    expect(audioLog).toContain(AUDIO_CUE);
   });
-  test('no visual highlight for control cohort on correct seating', () => {
+  test('visual highlight DOES fire for assigned cohort-label=control player on correct seating (Phase 2)', () => {
     const { controller, highlightLog } = makeController({ randomFn: forceCohort(COHORTS.CONTROL) });
     controller.startSession();
     controller.onComponentSeated(PROTOTYPE_COMPONENT_ID);
-    expect(highlightLog).toHaveLength(0);
+    expect(highlightLog.find((h) => h.active === true)).toBeDefined();
   });
-  test('reassembly_component_seated_success NOT emitted for control cohort', () => {
+  test('reassembly_component_seated_success IS emitted for all players regardless of cohort label (Phase 2)', () => {
     const { controller, log } = makeController({ randomFn: forceCohort(COHORTS.CONTROL) });
     controller.startSession();
     controller.onComponentSeated(PROTOTYPE_COMPONENT_ID);
-    expect(log.find((e) => e.name === EVENTS.REASSEMBLY_COMPONENT_SEATED_SUCCESS)).toBeUndefined();
+    expect(log.find((e) => e.name === EVENTS.REASSEMBLY_COMPONENT_SEATED_SUCCESS)).toBeDefined();
   });
-  test('control cohort session is active after seating (abandonment tracking remains live)', () => {
+  test('session remains active after seating (abandonment tracking still live)', () => {
     const { controller } = makeController({ randomFn: forceCohort(COHORTS.CONTROL) });
     controller.startSession();
     controller.onComponentSeated(PROTOTYPE_COMPONENT_ID);

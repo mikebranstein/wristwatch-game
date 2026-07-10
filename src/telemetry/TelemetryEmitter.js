@@ -99,6 +99,9 @@ const EVENTS = {
   // AC5: captures part ID, restoration ID, damage event type, and player recovery choice.
   PART_DAMAGED:                  'part_damaged',                   // payload: { partId, restorationId, eventType }
   PART_DAMAGE_RECOVERY_CHOSEN:   'part_damage_recovery_chosen',    // payload: { partId, restorationId, playerChoice: 'ordered'|'declined' }
+
+  // Progressive Reassembly Success Signals — Phase 2 Full Rollout (Issue #123)
+  HIGHLIGHT_TOGGLE_USED: 'highlight_toggle_used',
 };
 
 class TelemetryEmitter {
@@ -492,6 +495,19 @@ class TelemetryEmitter {
    */
   partDamageRecoveryChosen(partId, restorationId, playerChoice) {
     this.emit(EVENTS.PART_DAMAGE_RECOVERY_CHOSEN, { partId, restorationId, playerChoice });
+  }
+
+  // ---- Progressive Reassembly Phase 2 convenience methods (Issue #123) ----
+
+  /**
+   * Fires each time the player interacts with the 'Highlight Remaining Work' toggle.
+   * Emitted on every toggle interaction with on/off state and timestamp.
+   *
+   * @param {'on'|'off'} state   The new state of the toggle after the interaction
+   * @param {number} timestamp   Unix timestamp of the toggle interaction
+   */
+  highlightToggleUsed(state, timestamp) {
+    this.emit(EVENTS.HIGHLIGHT_TOGGLE_USED, { state, timestamp });
   }
 
   /**

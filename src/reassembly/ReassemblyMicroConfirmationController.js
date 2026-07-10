@@ -1,6 +1,14 @@
 /**
- * ReassemblyMicroConfirmationController - A/B micro-feedback layer. Issue #122 Phase 1.
- * Observer pattern: ReassemblyScreen emits; this controller only listens and reacts.
+ * ReassemblyMicroConfirmationController — Phase 2 full rollout. Issue #123.
+ *
+ * Phase 2 removes the A/B cohort gate and the prototype-only restriction introduced
+ * in Phase 1 (Issue #122). Micro-confirmation feedback (audio click + visual highlight
+ * + analytics) now fires unconditionally for ALL correctly seated reassembly components
+ * and for ALL players.
+ *
+ * The cohort-tracking fields (_cohort, startSession) are retained for backward
+ * compatibility and for abandonment-rate analytics (AC5), but they no longer gate
+ * the per-seating feedback path.
  */
 const PROTOTYPE_COMPONENT_ID = 'balance_wheel';
 const COHORTS = { FEEDBACK_ON: 'feedback-on', CONTROL: 'control' };
@@ -37,6 +45,8 @@ class ReassemblyMicroConfirmationController {
   }
 
   startSession() {
+    // Cohort assignment is retained for abandonment analytics (AC5) but no longer
+    // gates per-seating feedback. Phase 2: all players receive feedback unconditionally.
     this._cohort = this._randomFn() < 0.5 ? COHORTS.FEEDBACK_ON : COHORTS.CONTROL;
     this._sessionActive = true;
     this._abandoned = false;
@@ -44,11 +54,13 @@ class ReassemblyMicroConfirmationController {
     return this._cohort;
   }
 
+  /**
+   * Phase 2: fires for ALL components regardless of cohort or component type.
+   * Phase 1 gates (prototype-only, feedback-ON cohort) have been removed.
+   */
   onComponentSeated(partId) {
-    if (!this._sessionActive)                  return;
-    if (partId !== this._prototypeComponentId) return;
-    if (this._cohort !== COHORTS.FEEDBACK_ON)  return;
-    if (this._seatedPartIds.has(partId))       return;
+    if (!this._sessionActive) return;
+    if (this._seatedPartIds.has(partId)) return;
     this._seatedPartIds.add(partId);
     this._telemetry.reassemblyComponentSeatedSuccess(partId, this._cohort);
     if (!this._isMuted()) this._playAudio(AUDIO_CUE);
