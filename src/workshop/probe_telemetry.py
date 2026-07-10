@@ -41,17 +41,27 @@ import time
 from typing import Any, Callable, Dict, List, Optional
 
 from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
+from src.workshop.probe_data_summary import (
+    EVENT_SESSION_FREQUENCY_PROBE,
+    EVENT_SESSION_START_BEHAVIOR,
+    EVENT_SLOT2_ACTIVATED,
+    EVENT_FEEDBACK_RESPONSE,
+    collect_session_counts,
+    collect_start_behavior_stats,
+    collect_slot2_activations,
+    collect_feedback_responses,
+)
 
 # ---------------------------------------------------------------------------
 # Event name constants
 # ---------------------------------------------------------------------------
 
 EVENT_COHORT_ASSIGNED            = "second_bench_cohort_assigned"
-EVENT_SESSION_FREQUENCY_PROBE    = "session_frequency_probe"
-EVENT_SESSION_START_BEHAVIOR     = "session_start_behavior_probe"
-EVENT_SLOT2_ACTIVATED            = "second_bench_slot_activated"
+# EVENT_SESSION_FREQUENCY_PROBE, EVENT_SESSION_START_BEHAVIOR,
+# EVENT_SLOT2_ACTIVATED, EVENT_FEEDBACK_RESPONSE are imported from
+# probe_data_summary (authoritative owner) and re-exported here so that
+# existing callers/tests that import them from probe_telemetry continue to work.
 EVENT_FEEDBACK_PROMPTED          = "second_bench_feedback_prompted"
-EVENT_FEEDBACK_RESPONSE          = "second_bench_feedback_response"
 
 PROBE_EVENTS_ALL = (
     EVENT_COHORT_ASSIGNED,
@@ -318,55 +328,20 @@ class ProbeTelemetry:
     # -----------------------------------------------------------------------
 
     def _collect_session_counts(self) -> tuple:
-        """
-        Return ``(probe_n, control_n)`` — counts of SESSION_FREQUENCY_PROBE
-        records segmented by cohort.
-        """
-        probe_n = len([
-            r for r in self._records
-            if r["name"] == EVENT_SESSION_FREQUENCY_PROBE
-            and r["payload"].get("cohort") == COHORT_PROBE
-        ])
-        control_n = len([
-            r for r in self._records
-            if r["name"] == EVENT_SESSION_FREQUENCY_PROBE
-            and r["payload"].get("cohort") == COHORT_CONTROL
-        ])
-        return probe_n, control_n
+        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
+        return collect_session_counts(self._records)
 
     def _collect_start_behavior_stats(self) -> tuple:
-        """
-        Return ``(probe_starts_with_sourcing, probe_immediate_slot2)`` from
-        SESSION_START_BEHAVIOR records for the probe cohort.
-        """
-        start_behavior = [
-            r for r in self._records if r["name"] == EVENT_SESSION_START_BEHAVIOR
-        ]
-        probe_starts_with_sourcing = sum(
-            1 for r in start_behavior
-            if r["payload"].get("cohort") == COHORT_PROBE
-            and r["payload"].get("slot1_is_sourcing")
-        )
-        probe_immediate_slot2 = sum(
-            1 for r in start_behavior
-            if r["payload"].get("cohort") == COHORT_PROBE
-            and r["payload"].get("slot1_is_sourcing")
-            and r["payload"].get("slot2_available")
-        )
-        return probe_starts_with_sourcing, probe_immediate_slot2
+        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
+        return collect_start_behavior_stats(self._records)
 
     def _collect_slot2_activations(self) -> int:
-        """Return the count of SLOT2_ACTIVATED events."""
-        return len([
-            r for r in self._records if r["name"] == EVENT_SLOT2_ACTIVATED
-        ])
+        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
+        return collect_slot2_activations(self._records)
 
     def _collect_feedback_responses(self) -> list:
-        """Return list of feedback response payloads."""
-        return [
-            r["payload"] for r in self._records
-            if r["name"] == EVENT_FEEDBACK_RESPONSE
-        ]
+        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
+        return collect_feedback_responses(self._records)
 
     # -----------------------------------------------------------------------
     # Internal helpers
