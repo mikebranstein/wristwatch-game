@@ -30,6 +30,11 @@
  *   Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey }.
  *   Populated by DeliveryHandler.completeDelivery() at delivery completion boundary.
  *   Pre-existing saves lacking this key receive [] via Object.assign defaults.
+ *
+ * Issue #119 — Full Workshop Queue Meta-Game (Phase 2):
+ *   Added `workshop_jobs`, `intake_queue`, `clients`, `reputation`, `queue_feature_flag`
+ *   (all null/false defaults, backward-compatible).  `bench_slots` already present from #116.
+ *   queue_feature_flag controls all new UI surfaces and IntakeQueueManager activation.
  */
 
 const DEFAULT_SAVE = {
@@ -79,6 +84,16 @@ const DEFAULT_SAVE = {
   // Populated by DeliveryHandler.completeDelivery() at the delivery-completion boundary.
   // Pre-existing saves without this key receive [] via Object.assign defaults.
   completed_watches:      [],
+
+  // Issue #119: Full Workshop Queue Meta-Game (Phase 2) — additive, backward-compatible.
+  // All keys default to null/false. Pre-feature saves that lack these keys load cleanly.
+  // queue_feature_flag controls all new UI surfaces and IntakeQueueManager activation.
+  // Note: bench_slots already declared above under Issue #116 — not repeated here.
+  workshop_jobs:       null,   // list of active bench job objects (WorkshopJob[])
+  intake_queue:        null,   // list of available unaccepted job objects
+  clients:             null,   // list of named client objects (ClientRegistry)
+  reputation:          null,   // workshop reputation state { score, tier, ... }
+  queue_feature_flag:  false,  // feature flag: false = flag-off (legacy flow); true = full queue UI
 
 };
 
