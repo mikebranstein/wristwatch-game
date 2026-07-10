@@ -279,3 +279,68 @@ class TestSaveSystem:
         # save_async must return well under 100 ms (file I/O happens on bg thread).
         assert elapsed < 0.1, f"save_async blocked for {elapsed:.3f}s"
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # Issue #127 — Collection Gallery: completed_watches null-safe load tests
+    # ─────────────────────────────────────────────────────────────────────────
+
+    def test_load_session_pre_feature_save_completed_watches_defaults_to_empty(self):
+        """Issue #127: save file without completed_watches key → empty list in output."""
+        ss = SaveSystem()
+        _, _, updated = ss.load_session({"gold": 100})
+        assert updated.get("completed_watches") == [], (
+            "Pre-feature save should get completed_watches: [] default"
+        )
+
+    def test_load_session_none_save_completed_watches_defaults_to_empty(self):
+        """Issue #127: None save data (new save) → completed_watches: [] in output."""
+        ss = SaveSystem()
+        _, _, updated = ss.load_session(None)
+        assert updated.get("completed_watches") == []
+
+    def test_load_session_preserves_existing_completed_watches(self):
+        """Issue #127: completed_watches from save file is preserved after load."""
+        ss = SaveSystem()
+        prior_watches = [
+            {
+                "watchId": "w-001",
+                "watchName": "Seiko 5 Sports",
+                "clientName": "Alice",
+                "completionDate": "2026-07-01",
+                "portraitAssetKey": "portraits/seiko-5.png",
+            }
+        ]
+        _, _, updated = ss.load_session({"completed_watches": prior_watches})
+        assert len(updated["completed_watches"]) == 1
+        assert updated["completed_watches"][0]["watchName"] == "Seiko 5 Sports"
+
+    def test_load_session_completed_watches_null_value_coerced_to_empty(self):
+        """Issue #127: null completed_watches in corrupted save → coerced to []."""
+        ss = SaveSystem()
+        _, _, updated = ss.load_session({"completed_watches": None})
+        assert updated["completed_watches"] == [], (
+            "Null completed_watches should be coerced to empty list"
+        )
+
+    def test_load_session_completed_watches_survives_round_trip(self):
+        """Issue #127: watches persisted to disk survive load → save → reload cycle."""
+        ss = SaveSystem()
+        prior_watches = [
+            {
+                "watchId": "w-001",
+                "watchName": "Omega Speedmaster",
+                "clientName": "Bob",
+                "completionDate": "2026-07-10",
+                "portraitAssetKey": None,
+            }
+        ]
+        # First load
+        q1, _, s1 = ss.load_session({"completed_watches": prior_watches})
+        # Save (adds order_queue but should preserve completed_watches)
+        saved = ss.save_session(q1, s1)
+        assert "completed_watches" in saved
+        assert len(saved["completed_watches"]) == 1
+
+        # Second load from saved state
+        _, _, s2 = ss.load_session(saved)
+        assert len(s2["completed_watches"]) == 1
+        assert s2["completed_watches"][0]["watchName"] == "Omega Speedmaster"

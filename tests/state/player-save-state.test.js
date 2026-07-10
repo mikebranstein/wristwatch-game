@@ -1,7 +1,9 @@
 /**
  * Tests: PlayerSaveState — Issue #82 backward-compatible new fields
+ *                          Issue #127 completed_watches gallery field
  *
  * AC1: current_stage, last_checkpoint_stage, autosave_slot fields
+ * Issue #127: completed_watches array, recordWatchDelivery, getCompletedWatches
  *
  * Run with: npm test
  */
@@ -116,6 +118,113 @@ describe('PlayerSaveState — Issue #82 save reliability fields', () => {
       const snap = state.snapshot();
       snap.current_stage = 'hacked';
       expect(state.get('current_stage')).toBeNull();
+    });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Issue #127 — Workshop Collection Gallery: completed_watches field
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('PlayerSaveState — Issue #127 completed_watches', () => {
+
+  // ── Default value ──────────────────────────────────────────────────────────
+
+  it('completed_watches defaults to empty array', () => {
+    const state = new PlayerSaveState();
+    expect(state.get('completed_watches')).toEqual([]);
+  });
+
+  it('pre-feature save without completed_watches gets [] default (backward-compat)', () => {
+    const state = new PlayerSaveState({ tutorial_first_fault_seen: true });
+    expect(state.getCompletedWatches()).toEqual([]);
+  });
+
+  it('existing saves preserve completed_watches when present', () => {
+    const prior = [{ watchId: 'w1', watchName: 'Seiko', clientName: 'Alice', completionDate: '2026-07-01', portraitAssetKey: null }];
+    const state = new PlayerSaveState({ completed_watches: prior });
+    expect(state.getCompletedWatches()).toHaveLength(1);
+    expect(state.getCompletedWatches()[0].watchName).toBe('Seiko');
+  });
+
+  // ── recordWatchDelivery ────────────────────────────────────────────────────
+
+  describe('recordWatchDelivery()', () => {
+    const ENTRY = {
+      watchId:          'watch-001',
+      watchName:        'Omega Speedmaster',
+      clientName:       'Bob Carter',
+      completionDate:   '2026-07-10',
+      portraitAssetKey: 'portraits/omega.png',
+    };
+
+    it('appends entry to completed_watches', () => {
+      const state = new PlayerSaveState();
+      state.recordWatchDelivery(ENTRY);
+      expect(state.getCompletedWatches()).toHaveLength(1);
+    });
+
+    it('stores all entry fields correctly', () => {
+      const state = new PlayerSaveState();
+      state.recordWatchDelivery(ENTRY);
+      const watches = state.getCompletedWatches();
+      expect(watches[0].watchName).toBe('Omega Speedmaster');
+      expect(watches[0].clientName).toBe('Bob Carter');
+      expect(watches[0].completionDate).toBe('2026-07-10');
+      expect(watches[0].portraitAssetKey).toBe('portraits/omega.png');
+    });
+
+    it('appends multiple entries in order', () => {
+      const state = new PlayerSaveState();
+      state.recordWatchDelivery({ ...ENTRY, watchId: 'w1', watchName: 'First' });
+      state.recordWatchDelivery({ ...ENTRY, watchId: 'w2', watchName: 'Second' });
+      const watches = state.getCompletedWatches();
+      expect(watches).toHaveLength(2);
+      expect(watches[0].watchName).toBe('First');
+      expect(watches[1].watchName).toBe('Second');
+    });
+
+    it('is non-destructive — existing entries are preserved', () => {
+      const prior = [{ watchId: 'old', watchName: 'Old Watch', clientName: 'X', completionDate: '2026-01-01', portraitAssetKey: null }];
+      const state = new PlayerSaveState({ completed_watches: prior });
+      state.recordWatchDelivery(ENTRY);
+      expect(state.getCompletedWatches()).toHaveLength(2);
+      expect(state.getCompletedWatches()[0].watchName).toBe('Old Watch');
+    });
+  });
+
+  // ── getCompletedWatches ────────────────────────────────────────────────────
+
+  describe('getCompletedWatches()', () => {
+    it('returns a copy — mutations do not affect internal store', () => {
+      const state = new PlayerSaveState();
+      state.recordWatchDelivery({ watchId: 'w1', watchName: 'Test', clientName: 'C', completionDate: '2026-07-10', portraitAssetKey: null });
+      const copy = state.getCompletedWatches();
+      copy.push({ watchId: 'injected' });
+      expect(state.getCompletedWatches()).toHaveLength(1);
+    });
+
+    it('returns [] when completed_watches is not an array (corrupt data guard)', () => {
+      const state = new PlayerSaveState({ completed_watches: null });
+      expect(state.getCompletedWatches()).toEqual([]);
+    });
+  });
+
+  // ── snapshot includes completed_watches ───────────────────────────────────
+
+  describe('snapshot() includes completed_watches', () => {
+    it('snapshot includes completed_watches array', () => {
+      const state = new PlayerSaveState();
+      state.recordWatchDelivery({ watchId: 'w1', watchName: 'Test', clientName: 'C', completionDate: '2026-07-10', portraitAssetKey: null });
+      const snap = state.snapshot();
+      expect(snap).toHaveProperty('completed_watches');
+      expect(snap.completed_watches).toHaveLength(1);
+    });
+
+    it('snapshot with empty completed_watches includes empty array', () => {
+      const state = new PlayerSaveState();
+      const snap  = state.snapshot();
+      expect(snap.completed_watches).toEqual([]);
     });
   });
 });
