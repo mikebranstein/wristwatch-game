@@ -109,6 +109,13 @@ const EVENTS = {
   WRONG_TOOL_SELECTED:      'wrong_tool_selected',       // payload: { faultInstanceId, toolId }
   FAULT_TYPE_MISIDENTIFIED: 'fault_type_misidentified',  // payload: { faultInstanceId, submittedFaultTypeId }
   DIAGNOSIS_UNDO_ATTEMPTED: 'diagnosis_undo_attempted',  // payload: { faultInstanceId }
+
+  // Wrong-Tool Consequence System Phase 1 (Issue #295)
+  // NOTE: Distinct from WRONG_TOOL_SELECTED (Issue #293) which tracks diagnosis-phase mistakes.
+  //       WRONG_TOOL_DAMAGE tracks wrong-tool attempts on the 5 Phase 1 targeted repair operations
+  //       and fires when a damage event (degraded component state) results from the wrong-tool use.
+  //       Consumer context: damage recovery flow, not adaptive coaching.
+  WRONG_TOOL_DAMAGE: 'wrong_tool_damage', // payload: { operationId, toolId, componentId, restorationId, timestamp }
 };
 
 class TelemetryEmitter {
@@ -567,13 +574,47 @@ class TelemetryEmitter {
   }
 
   /**
-   * Fires when the player attempts to undo a diagnosis during the diagnosis phase.
+   * Fires when the player attempts an undo during the diagnosis phase.
    * Consumed by AdaptiveCoachingController for AC1 mistake-type detection.
    *
    * @param {string} faultInstanceId  Per-encounter fault identifier (stepId)
    */
   diagnosisUndoAttempted(faultInstanceId) {
     this.emit(EVENTS.DIAGNOSIS_UNDO_ATTEMPTED, { faultInstanceId });
+  }
+
+  // ---- Wrong-Tool Consequence System Phase 1 convenience methods (Issue #295) ----
+
+  /**
+   * Fires when a wrong-tool damage event fires for a Phase 1 targeted operation.
+   *
+   * NOTE: This event is DISTINCT from wrongToolSelected() (Issue #293) which tracks
+   * diagnosis-phase mistakes. wrongToolDamage() tracks wrong-tool use during the repair
+   * phase that results in component degradation, enabling:
+   *   - Damage recovery flow activation
+   *   - Future craftsmanship score input (#253/#255) — data contract designed for
+   *     future integration without coupling in this sprint.
+   *
+   * Telemetry payload schema (Issue #295 AC1 — all fields required):
+   *   operationId   — which operation was attempted (e.g. 'wind-mainspring')
+   *   toolId        — the wrong tool the player used
+   *   componentId   — the part/component that became degraded (e.g. 'mainspring')
+   *   restorationId — unique restoration session identifier
+   *   timestamp     — Unix timestamp of the event (ms)
+   *
+   * @param {string} operationId    Operation ID (e.g. 'wind-mainspring')
+   * @param {string} toolId         The wrong tool the player used
+   * @param {string} componentId    The component that became degraded
+   * @param {string} restorationId  Unique restoration session identifier
+   */
+  wrongToolDamage(operationId, toolId, componentId, restorationId) {
+    this.emit(EVENTS.WRONG_TOOL_DAMAGE, {
+      operationId,
+      toolId,
+      componentId,
+      restorationId,
+      timestamp: Date.now(),
+    });
   }
 }
 
