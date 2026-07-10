@@ -68,10 +68,10 @@ describe('damage-state-hints: getDamageStateHints — unknown fault IDs return n
   });
 });
 
-describe('damage-state-hints: getAllDamageStateFaultIds — returns all Phase 1 fault IDs', () => {
-  test('returns all 3 Phase 1 damage-state fault IDs', () => {
+describe('damage-state-hints: getAllDamageStateFaultIds — returns Phase 1 + Phase 2 fault IDs', () => {
+  test('returns at least 3 Phase 1 damage-state fault IDs (Phase 2 additions are additive)', () => {
     const ids = getAllDamageStateFaultIds();
-    expect(ids).toHaveLength(3);
+    expect(ids.length).toBeGreaterThanOrEqual(3);
     for (const expected of EXPECTED_FAULT_IDS) {
       expect(ids).toContain(expected);
     }
