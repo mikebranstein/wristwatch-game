@@ -196,6 +196,7 @@ function _dimensionLabel(dim) {
     case 'economic':            return 'Economic Efficiency';
     case 'timing_calibration':  return 'Timing Calibration';    // Issue #255
     case 'sourcing_quality':    return 'Sourcing Quality';       // Issue #255
+    case 'regulation_accuracy': return 'Regulation Accuracy';   // Issue #294
     default:                    return dim;
   }
 }

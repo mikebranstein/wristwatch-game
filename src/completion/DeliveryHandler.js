@@ -17,6 +17,15 @@
  *   Backward-compatible: callers omitting cosmetic_grade receive no message and no
  *   multiplier, consistent with prior behavior (AC5, Scenario 8).
  *
+ * Issue #294 — Movement Regulation Phase 1:
+ *   handleDelivery() payload extended with optional `regulation_grade` field
+ *   ('acceptable'|'good'|'excellent'|'certified_chronometer'|null).
+ *   When present and a JobQualityAggregator is wired up, the regulation accuracy
+ *   score is injected as the new 'regulation_accuracy' dimension (7th dimension,
+ *   build-start decision per design mitigation — separate from timing_calibration).
+ *   Backward-compatible: callers omitting regulation_grade receive null default;
+ *   no craftsmanship impact for jobs without a regulation phase (AC5, Test Scenario 8).
+ *
  * Issue #253 — Holistic Craftsmanship Score Phase 1:
  *   handleDelivery() payload extended with optional `fault_instance_ids` field (string[]).
  *   constructor opts extended with optional `jobQualityAggregator` param.
@@ -100,6 +109,8 @@ class DeliveryHandler {
    * @param {string}      [payload.job_id]                    Issue #253: job ID for personal best record (optional)
    * @param {number|null} [payload.timing_calibration_score]  Issue #255: from TimingCalibrationTracker.computeJobScore()
    * @param {number|null} [payload.sourcing_quality_score]    Issue #255: from SourcingScreen.computeSourcingQualityScore()
+   * @param {string|null} [payload.regulation_grade]          Issue #294: from RegulationPhaseController.completePhase()
+   *                                                           'acceptable'|'good'|'excellent'|'certified_chronometer'|null
    * @returns {Object} The delivery entry (collection gallery record + economy summary + craftsmanship result)
    */
   handleDelivery({
@@ -115,6 +126,7 @@ class DeliveryHandler {
     job_id                    = null,   // Issue #253
     timing_calibration_score  = null,   // Issue #255
     sourcing_quality_score    = null,   // Issue #255
+    regulation_grade          = null,   // Issue #294
   }) {
     const entry = { watch_name, client_name, completion_date, portrait_asset_key, before_portrait_url };
 
@@ -153,6 +165,16 @@ class DeliveryHandler {
       if (sourcing_quality_score !== null && sourcing_quality_score !== undefined) {
         phaseInjections.sourcing_quality = sourcing_quality_score;
       }
+      // Issue #294: inject regulation_accuracy score when regulation_grade is present.
+      // Build-start decision: regulation_accuracy is a new 7th dimension separate from
+      // timing_calibration (see design mitigation in JobQualityAggregator.js).
+      if (regulation_grade !== null && regulation_grade !== undefined) {
+        const { RegulationGradeEngine } = require('../regulation/RegulationGradeEngine');
+        const regulationAccuracyScore = RegulationGradeEngine.gradeToAccuracyScore(regulation_grade);
+        if (regulationAccuracyScore !== null) {
+          phaseInjections.regulation_accuracy = regulationAccuracyScore;
+        }
+      }
 
       craftsmanshipResult = this._aggregator.computeScore({
         pricingTier:          pricing_tier,
@@ -176,6 +198,12 @@ class DeliveryHandler {
       entry.craftsmanship_score = craftsmanshipResult.score;
       entry.craftsmanship_tier  = craftsmanshipResult.tier;
     }
+
+      // Issue #294: attach regulation_grade to delivery entry for delivery summary display (AC5).
+      // null = job completed without a regulation phase (backward-compat, Test Scenario 8).
+      if (regulation_grade !== undefined) {
+        entry.regulation_grade = regulation_grade !== null ? regulation_grade : null;
+      }
 
     this._saveState.appendCompletedWatch(entry);
     if (this._saveAsyncFn) this._saveAsyncFn(this._saveState.snapshot());

@@ -64,8 +64,8 @@ const TIERS = [
   { label: 'Apprentice',  min: 0  },
 ];
 
-/** All possible dimension identifiers (Phase 1 + Phase 2). */
-const ALL_DIMENSIONS = ['cosmetic', 'mechanical', 'diagnostic', 'economic', 'timing_calibration', 'sourcing_quality'];
+/** All possible dimension identifiers (Phase 1 + Phase 2 + Issue #294). */
+const ALL_DIMENSIONS = ['cosmetic', 'mechanical', 'diagnostic', 'economic', 'timing_calibration', 'sourcing_quality', 'regulation_accuracy'];
 
 /** Default unlocked dimensions (early-game; diagnostic+economic added on tool unlock). */
 const DEFAULT_UNLOCKED_DIMENSIONS = ['cosmetic', 'mechanical'];
@@ -226,6 +226,14 @@ class JobQualityAggregator {
         case 'sourcing_quality':
           // Issue #255: score is pre-computed by SourcingScreen.computeSourcingQualityScore()
           // and injected via injectDimensionScores. Return null (injection fallback).
+          return null;
+        case 'regulation_accuracy':
+          // Issue #294 — Movement Regulation Phase 1.
+          // Build-start decision: regulation_accuracy is a NEW 7th dimension separate from
+          // timing_calibration (which tracks time-efficiency). regulation_accuracy tracks
+          // beat-rate precision from the Regulation Phase.
+          // Score is pre-computed by RegulationGradeEngine.gradeToAccuracyScore() and
+          // injected via injectDimensionScores. Return null (injection fallback).
           return null;
         default:
           console.warn(`[JobQualityAggregator] Unknown dimension '${dimension}' — skipped.`);

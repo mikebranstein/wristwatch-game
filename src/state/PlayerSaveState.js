@@ -302,6 +302,20 @@ const DEFAULT_SAVE = {
   // Set to true after the first display — hint shown only once, not as a permanent UI element.
   phase2_penetrant_hint_shown: false,    // rust_fused_fasteners: shows on first fused-fastener encounter
   phase2_scatter_hint_shown:   false,    // shock_damage: shows on first scattered-component encounter
+
+  // Issue #294: Movement Regulation Phase 1 (additive, backward-compatible)
+  //
+  // regulation_tutorial_seen: false until the first regulation phase encounter; set to true
+  //   when the player dismisses the first-run tutorial (or it auto-completes).
+  //   Stored here (not in-memory) so the tutorial displays exactly once per player profile
+  //   lifetime across session close and game restart (Test Scenario 7).
+  //   Pre-existing saves lacking this key receive false — tutorial will show on next encounter.
+  //
+  // Per-job regulation_grade is stored as an additive field on each completed_watches entry
+  // (not in DEFAULT_SAVE directly) following the same pattern as timing_calibration_score.
+  //   Shape: regulation_grade: 'acceptable'|'good'|'excellent'|'certified_chronometer'|null
+  //   null = job completed before this feature shipped; handled gracefully by delivery summary.
+  regulation_tutorial_seen: false,
 };
 
 class PlayerSaveState {
