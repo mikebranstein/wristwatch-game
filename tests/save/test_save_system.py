@@ -16,7 +16,7 @@ import tempfile
 
 import pytest
 from src.save.save_system import SaveSystem, CHECKPOINT_STAGES
-from src.orders.order_status import OrderStatus
+from src.orders.order_queue import OrderQueue
 
 
 class TestSaveSystem:
@@ -38,28 +38,32 @@ class TestSaveSystem:
     def test_scenario1_full_between_session_flow(self):
         """Scenario 1: order placed → save → reload → part Arrived."""
         # Session 1: place order and save
-        q1, _, save1 = self.save_system.load_session(None)
+        q1_data, _, save1 = self.save_system.load_session(None)
+        q1 = OrderQueue(q1_data)
         q1.place_order(**self.make_part())
-        saved_after_order = self.save_system.save_session(q1, save1)
+        saved_after_order = self.save_system.save_session(q1.to_save_data(), save1)
 
         # Session 2: reload — resolve_arrivals fires → part arrives
-        q2, arrived, _ = self.save_system.load_session(saved_after_order)
+        q2_data, arrived, _ = self.save_system.load_session(saved_after_order)
+        q2 = OrderQueue(q2_data)
 
         assert len(arrived) == 1
-        assert arrived[0].part_name == "Mainspring"
-        assert arrived[0].status == OrderStatus.ARRIVED
+        assert arrived[0]["part_name"] == "Mainspring"
+        assert arrived[0]["status"] == "Arrived"
         assert q2.is_part_arrived("job-seiko", "part-mainspring")
 
     # ── New save / pre-feature saves ──────────────────────────────────────────
 
     def test_load_session_on_new_save_initialises_empty_queue(self):
-        queue, arrived, _ = self.save_system.load_session(None)
+        queue_data, arrived, _ = self.save_system.load_session(None)
+        queue = OrderQueue(queue_data)
         assert arrived == []
         assert queue.get_all_orders() == []
 
     def test_load_session_on_pre_feature_save_no_order_queue_node(self):
         """Backward compat: save file exists but has no order_queue key."""
-        queue, arrived, _ = self.save_system.load_session({"player_name": "Alice"})
+        queue_data, arrived, _ = self.save_system.load_session({"player_name": "Alice"})
+        queue = OrderQueue(queue_data)
         assert arrived == []
         assert queue.get_all_orders() == []
 
@@ -67,29 +71,33 @@ class TestSaveSystem:
 
     def test_scenario8_order_survives_crash_recovery(self):
         """Scenario 8: order persisted at placement time survives abnormal exit."""
-        q1, _, s1 = self.save_system.load_session(None)
+        q1_data, _, s1 = self.save_system.load_session(None)
+        q1 = OrderQueue(q1_data)
         q1.place_order(**self.make_part())
         # Atomic write immediately after placement
-        saved_after_placement = self.save_system.save_session(q1, s1)
+        saved_after_placement = self.save_system.save_session(q1.to_save_data(), s1)
 
         # Simulate crash: discard q1, reload from persisted data
-        q2, arrived, _ = self.save_system.load_session(saved_after_placement)
+        q2_data, arrived, _ = self.save_system.load_session(saved_after_placement)
+        q2 = OrderQueue(q2_data)
         assert len(arrived) == 1
         assert q2.is_part_arrived("job-seiko", "part-mainspring")
 
     # ── Save data integrity ───────────────────────────────────────────────────
 
     def test_save_session_preserves_other_save_data_fields(self):
-        queue, _, save_data = self.save_system.load_session({"gold": 500, "player_level": 3})
-        saved = self.save_system.save_session(queue, save_data)
+        queue_data, _, save_data = self.save_system.load_session({"gold": 500, "player_level": 3})
+        queue = OrderQueue(queue_data)
+        saved = self.save_system.save_session(queue.to_save_data(), save_data)
         assert saved["gold"] == 500
         assert saved["player_level"] == 3
         assert "order_queue" in saved
 
     def test_scenario6_no_spurious_notification_on_reload_with_no_orders(self):
         """Scenario 6: player saves with no pending orders → no notification on reload."""
-        queue, _, save_data = self.save_system.load_session(None)
-        saved = self.save_system.save_session(queue, save_data)
+        queue_data, _, save_data = self.save_system.load_session(None)
+        queue = OrderQueue(queue_data)
+        saved = self.save_system.save_session(queue.to_save_data(), save_data)
         _, arrived_next, _ = self.save_system.load_session(saved)
         assert arrived_next == []
 
@@ -334,9 +342,10 @@ class TestSaveSystem:
             }
         ]
         # First load
-        q1, _, s1 = ss.load_session({"completed_watches": prior_watches})
+        q1_data, _, s1 = ss.load_session({"completed_watches": prior_watches})
+        q1 = OrderQueue(q1_data)
         # Save (adds order_queue but should preserve completed_watches)
-        saved = ss.save_session(q1, s1)
+        saved = ss.save_session(q1.to_save_data(), s1)
         assert "completed_watches" in saved
         assert len(saved["completed_watches"]) == 1
 

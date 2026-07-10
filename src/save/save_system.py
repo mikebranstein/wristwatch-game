@@ -5,10 +5,12 @@ SaveSystem – session boundary event and order queue persistence
 load_session(raw_save_data)
     - Deserialises the save file (null-safe for pre-feature saves with no order queue node).
     - Fires resolve_arrivals() so order states are current for this session.
-    - Returns (order_queue, arrived_orders, updated_save_data).
+    - Returns (queue_data, arrived_orders, updated_save_data) as raw dicts.
+      Callers construct OrderQueue(queue_data) locally when domain behaviour is needed.
 
-save_session(order_queue, existing_save_data)
+save_session(order_queue_data, existing_save_data)
     - Writes the latest order queue state into the save-data dict.
+    - Callers pass order_queue.to_save_data() as the first argument.
     - Returns the updated save-data dict ready for JSON serialisation to disk.
 
 autosave_checkpoint(stage, game_state, save_path)
@@ -44,7 +46,6 @@ import threading
 from typing import Callable, Optional
 
 from src.orders.order_queue import OrderQueue
-from src.orders.order import Order
 
 # ---------------------------------------------------------------------------
 # Stage constants
@@ -62,7 +63,7 @@ class CHECKPOINT_STAGES:
 
 class SaveSystem:
 
-    def load_session(self, raw_save_data: Optional[dict]) -> tuple[OrderQueue, list[Order], dict]:
+    def load_session(self, raw_save_data: Optional[dict]) -> tuple[dict, list[dict], dict]:
         """
         Load session: deserialise order queue and resolve session-start arrivals.
 
@@ -74,13 +75,17 @@ class SaveSystem:
 
         Returns
         -------
-        (order_queue, arrived_orders, updated_save_data)
+        (queue_data, arrived_orders, updated_save_data)
+            queue_data       : raw dict (pass to OrderQueue(queue_data) to get a domain object)
+            arrived_orders   : list of raw order dicts that transitioned to Arrived this session
+            updated_save_data: full save-data dict with resolved queue state written back
         """
         queue_data = (raw_save_data or {}).get("order_queue", None)
         order_queue = OrderQueue(queue_data)
 
         # Session-boundary event: resolve In-Transit orders that are now due.
-        arrived_orders = order_queue.resolve_arrivals()
+        arrived_order_objects = order_queue.resolve_arrivals()
+        arrived_orders = [o.to_dict() for o in arrived_order_objects]
 
         # Write resolved state back so callers get a consistent snapshot.
         # Issue #127: ensure completed_watches always exists (null-safe default for
@@ -117,17 +122,24 @@ class SaveSystem:
             if key not in updated_save_data:
                 updated_save_data[key] = None
 
-        return order_queue, arrived_orders, updated_save_data
+        return order_queue.to_save_data(), arrived_orders, updated_save_data
 
-    def save_session(self, order_queue: OrderQueue, existing_save_data: Optional[dict]) -> dict:
+    def save_session(self, order_queue_data: dict, existing_save_data: Optional[dict]) -> dict:
         """
         Persist order queue state into save data.
+
+        Parameters
+        ----------
+        order_queue_data : dict
+            Serialised queue state — callers pass order_queue.to_save_data().
+        existing_save_data : dict or None
+            Existing save-data dict to merge into.
 
         Returns the updated save-data dict (does not write to disk — caller handles I/O).
         """
         return {
             **(existing_save_data or {}),
-            "order_queue": order_queue.to_save_data(),
+            "order_queue": order_queue_data,
         }
 
     # -----------------------------------------------------------------------
