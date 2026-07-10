@@ -125,6 +125,39 @@ class DamageRecoveryPrompt {
   }
 
   /**
+   * Display a non-recoverable Extreme Negligence screen (Issue #153 — AC3).
+   *
+   * The Extreme Negligence screen:
+   *   - Clearly explains why the damage cannot be reversed (non-shaming tone — game design lead reviewed)
+   *   - Does NOT present the replacement ordering option (AC3: must use checkpoint/restart)
+   *   - Provides the checkpoint/restart guidance
+   *
+   * @param {{ partId: string, restorationId: string, eventType: string }} damageEvent
+   * @returns {{ state: string, context: Object, message: Object }}
+   */
+  showNonRecoverable(damageEvent) {
+    const { partId, restorationId, eventType } = damageEvent;
+
+    this._currentContext = {
+      partId,
+      restorationId,
+      eventType,
+      shownAt: Date.now(),
+      isNonRecoverable: true,
+      isCriticalPath: false,
+      currentBalance: null,
+      replacementCost: null,
+    };
+    this._state = PROMPT_STATE.VISIBLE;
+
+    return {
+      state: this._state,
+      context: Object.assign({}, this._currentContext),
+      message: this._buildNonRecoverableMessage(),
+    };
+  }
+
+  /**
    * Resets the prompt to hidden state (for next damage event).
    */
   reset() {
@@ -163,6 +196,25 @@ class DamageRecoveryPrompt {
     }
 
     return { title, body, canAfford };
+  }
+
+  /**
+   * Builds the Extreme Negligence non-recoverable screen message (Issue #153 — AC3).
+   * Tone: clear, explanatory, non-shaming — consistent with Accessible Mastery pillar.
+   * Ordering option is intentionally absent — player must use checkpoint or restart.
+   *
+   * @returns {{ title: string, body: string, canAfford: boolean, isNonRecoverable: boolean, checkpointPrompt: string }}
+   */
+  _buildNonRecoverableMessage() {
+    return {
+      title: 'This damage cannot be reversed',
+      body:  'The force applied exceeded what this part can withstand. ' +
+             'Some damage is irreversible — this is part of authentic restoration. ' +
+             'Your work up to your last checkpoint is safe.',
+      canAfford:       false,
+      isNonRecoverable: true,
+      checkpointPrompt: 'Return to your last checkpoint or start this restoration over.',
+    };
   }
 }
 

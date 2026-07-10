@@ -77,6 +77,12 @@
  *     cozy_mode_enabled        {boolean}  Cozy Mode toggle (display-only financial layer).
  *   Updated by LedgerManager at the delivery-completion boundary.
  *   Cozy Mode toggle semantics: applies from next job forward, never retroactively.
+ *
+ * Issue #153 — Part Damage Recovery — Severity Tiers:
+ *   Added `severity_tier_state` (null default, backward-compatible).
+ *   Written by DamageRecoveryController when Extreme Negligence fires (_handleExtremeNegligence).
+ *   When non-null, the restoration is in non_recoverable state and cannot be completed normally.
+ *   Persisted so that non-recoverable state survives save/resume (Test Scenario 8 — circumvention guard).
  */
 
 const DEFAULT_SAVE = {
@@ -183,6 +189,13 @@ const DEFAULT_SAVE = {
   ledger_balance:          0,
   workshop_upgrades:       [],
   cozy_mode_enabled:       false,
+
+  // Issue #153: Part Damage Recovery — Severity Tiers (additive, backward-compatible)
+  // Written by DamageRecoveryController when Extreme Negligence fires (_handleExtremeNegligence).
+  // null = no Extreme Negligence events have occurred in the current restoration session.
+  // When non-null, the restoration is in non_recoverable state and cannot be completed normally.
+  // Persisted so that non-recoverable state survives save/resume (Test Scenario 8 — circumvention guard).
+  severity_tier_state:    null,
 
 };
 
