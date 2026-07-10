@@ -20,6 +20,7 @@ const { TooltipSystem } = require('../tooltips/TooltipSystem');
 const { TutorialOverlay } = require('../tutorials/TutorialOverlay');
 const { TelemetryEmitter } = require('../telemetry/TelemetryEmitter');
 const { PlayerSaveState } = require('../state/PlayerSaveState');
+const { AdaptiveCoachingController } = require('./AdaptiveCoachingController');
 
 class DiagnosisScreen {
   /**
@@ -30,6 +31,11 @@ class DiagnosisScreen {
    * @param {Object}    opts.eventBus             — existing UI event bus
    * @param {Function}  opts.onConfidenceUpdate   — callback for confidence changes
    * @param {Object}    [opts.initialSaveState]   — pre-loaded save data (optional)
+   * @param {Function}  [opts.onCoachingTrigger]  — called when coaching_trigger fires
+   *                                                 payload: { type, stepId, failureCount }
+   *                                                 (Issue #293 — AC1 integration hook)
+   * @param {number}    [opts.coachingThreshold]  — mistake threshold for coaching trigger
+   *                                                 (Issue #293 — AC3; defaults to 2)
    */
   constructor(opts) {
     const {
@@ -39,6 +45,8 @@ class DiagnosisScreen {
       eventBus,
       onConfidenceUpdate,
       initialSaveState = {},
+      onCoachingTrigger = () => {},
+      coachingThreshold,
     } = opts;
 
     this._saveState = new PlayerSaveState(initialSaveState);
@@ -48,6 +56,14 @@ class DiagnosisScreen {
     this._tooltipSystem = new TooltipSystem();
     this._tutorialOverlay = new TutorialOverlay(this._saveState, this._telemetry);
     this._confidenceIndicator = new ConfidenceIndicator(eventBus, onConfidenceUpdate);
+
+    // Issue #293 — Adaptive Coaching Engine: mistake-pattern detection controller.
+    // Direct-callback integration pattern: DiagnosisScreen calls the controller
+    // explicitly on each mistake interaction rather than via TelemetryEmitter
+    // subscription (AC1, AC6 — additive, no existing signatures modified).
+    const coachingOpts = { onCoachingTrigger };
+    if (coachingThreshold !== undefined) coachingOpts.threshold = coachingThreshold;
+    this._coachingController = new AdaptiveCoachingController(coachingOpts);
 
     this._activeFaultInstanceId = null;
     this._activeFaultTypeId = null;
@@ -72,6 +88,9 @@ class DiagnosisScreen {
 
     // Show tutorial overlay on first-ever fault (AC4 / Scenarios 3, 4, 8)
     this._tutorialOverlay.tryShow(faultInstanceId);
+
+    // Issue #293 — Reset coaching counters for the new fault step (AC4 / Scenario 5)
+    this._coachingController.resetStep(faultInstanceId);
   }
 
   /**
@@ -143,6 +162,57 @@ class DiagnosisScreen {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  // Adaptive Coaching — mistake-type event hooks (Issue #293)
+  //
+  // Called by the game engine / UI layer when a diagnosis-phase mistake
+  // interaction occurs.  Each method:
+  //   1. Emits the corresponding named telemetry event (additive TelemetryEmitter
+  //      convenience method — AC6, zero breaking changes).
+  //   2. Records the mistake with the AdaptiveCoachingController so the
+  //      per-step counter increments and coaching_trigger fires at threshold (AC1–AC3).
+  //
+  // AC5 phase isolation: these methods must only be called while the player
+  // is in the diagnosis phase (i.e., after enterDiagnosis and before navigation
+  // away from the diagnosis screen).  Non-diagnosis undo events (e.g. reassembly)
+  // go through their own paths and never touch this controller.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Signal that the player selected an incorrect tool during diagnosis.
+   * Emits wrong_tool_selected telemetry and increments the coaching counter.
+   *
+   * @param {string} toolId  The (incorrect) tool the player selected
+   */
+  onWrongToolSelected(toolId) {
+    if (!this._activeFaultInstanceId) return;
+    this._telemetry.wrongToolSelected(this._activeFaultInstanceId, toolId);
+    this._coachingController.recordWrongToolSelected(this._activeFaultInstanceId, toolId);
+  }
+
+  /**
+   * Signal that the player submitted an incorrect fault type during diagnosis.
+   * Emits fault_type_misidentified telemetry and increments the coaching counter.
+   *
+   * @param {string} submittedFaultTypeId  The (incorrect) fault type the player submitted
+   */
+  onFaultTypeMisidentified(submittedFaultTypeId) {
+    if (!this._activeFaultInstanceId) return;
+    this._telemetry.faultTypeMisidentified(this._activeFaultInstanceId, submittedFaultTypeId);
+    this._coachingController.recordFaultTypeMisidentified(this._activeFaultInstanceId, submittedFaultTypeId);
+  }
+
+  /**
+   * Signal that the player attempted to undo a diagnosis during the diagnosis phase.
+   * Emits diagnosis_undo_attempted telemetry and increments the coaching counter.
+   * Note: does NOT respond to reassembly-phase undo_attempted events (AC5).
+   */
+  onDiagnosisUndoAttempted() {
+    if (!this._activeFaultInstanceId) return;
+    this._telemetry.diagnosisUndoAttempted(this._activeFaultInstanceId);
+    this._coachingController.recordDiagnosisUndoAttempted(this._activeFaultInstanceId);
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Tutorial overlay (AC4)
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -176,6 +246,15 @@ class DiagnosisScreen {
 
   getTooltipSystem() {
     return this._tooltipSystem;
+  }
+
+  /**
+   * Returns the AdaptiveCoachingController instance (Issue #293).
+   * Exposed for testing and QA; not intended for production callers.
+   * @returns {AdaptiveCoachingController}
+   */
+  getAdaptiveCoachingController() {
+    return this._coachingController;
   }
 
   /**
