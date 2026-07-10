@@ -36,7 +36,7 @@ class ReassemblyScreen {
    * @param {number}   [opts.minDwellMs]        — override dwell window (default: 250ms)
    * @param {Function} [opts.autosaveHook]      — Issue #82: async (stage: string) => void
    */
-  constructor({ instrumentationHook, playAudio, renderVisual, sessionId = null, minDwellMs, autosaveHook = null }) {
+  constructor({ instrumentationHook, playAudio, renderVisual, sessionId = null, minDwellMs, autosaveHook = null, microConfirmationController = null }) {
     this._telemetry = new TelemetryEmitter(instrumentationHook);
     this._snapZone = new SnapZoneTolerance('reassembly');
     this._fsm = new AssemblyFeedbackStateMachine({
@@ -49,6 +49,8 @@ class ReassemblyScreen {
     this._assembledParts = new Set();
     this._totalUndoAttempts = 0;
     this._autosaveHook = autosaveHook;  // Issue #82
+    this._microConfirmation = microConfirmationController;
+    if (this._microConfirmation) { this._microConfirmation.startSession(); }
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -99,6 +101,7 @@ class ReassemblyScreen {
     this._assembledParts.add(partId);
     this._fsm.reset(partId);
     this._telemetry.reassemblyPartConfirmed(partId, this._sessionId);
+    if (this._microConfirmation) { this._microConfirmation.onComponentSeated(partId); }
     return { success: true, reason: null };
   }
 
@@ -116,6 +119,7 @@ class ReassemblyScreen {
     this._totalUndoAttempts += 1;
     if (this._assembledParts.has(partId)) {
       this._assembledParts.delete(partId);
+      if (this._microConfirmation) { this._microConfirmation.onComponentUnseated(partId); }
     }
     this._telemetry.undoAttempted(partId, this._sessionId, this._totalUndoAttempts);
   }
@@ -160,6 +164,8 @@ class ReassemblyScreen {
 
   /** Returns total undo attempts recorded this session. */
   getTotalUndoAttempts() { return this._totalUndoAttempts; }
+  abandonReassembly() { if (this._microConfirmation) { this._microConfirmation.onSessionAbandoned(); } }
+  getMicroConfirmation() { return this._microConfirmation; }
 }
 
 module.exports = { ReassemblyScreen };

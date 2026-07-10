@@ -65,7 +65,6 @@ const EVENTS = {
   ONBOARDING_SKIPPED: 'onboarding_skipped',
   ONBOARDING_COMPLETED: 'onboarding_completed',
   AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
-
   // Two-Bench Workshop Probe — Issue #116 (Phase 1 A/B)
   // All additive — zero changes to existing event names or signatures.
   // Six events cover cohort stabilisation, session-frequency and session-start-behaviour
@@ -83,6 +82,10 @@ const EVENTS = {
   JOB_ACCEPTED:         'job_accepted',          // payload: { job_id, job_type, has_backstory }
   JOB_DECLINED:         'job_declined',           // payload: { job_id, job_type, has_backstory }
   BACKSTORY_CARD_SHOWN: 'backstory_card_shown',  // payload: { job_id, job_type, template_id }
+
+  // Reassembly Micro-Confirmation events (Issue #122)
+  REASSEMBLY_COMPONENT_SEATED_SUCCESS: 'reassembly_component_seated_success',
+  REASSEMBLY_SESSION_ABANDONED: 'reassembly_session_abandoned',
 };
 
 class TelemetryEmitter {
@@ -416,6 +419,20 @@ class TelemetryEmitter {
     this.emit(EVENTS.BACKSTORY_CARD_SHOWN, { job_id: jobId, job_type: jobType, template_id: templateId });
   }
 
+  // ---- Reassembly Micro-Confirmation convenience methods (Issue #122) ----
+
+  reassemblyComponentSeatedSuccess(componentId, cohortId) {
+    this.emit(EVENTS.REASSEMBLY_COMPONENT_SEATED_SUCCESS, {
+      componentId, cohortId, timestamp: Date.now(),
+    });
+  }
+
+  reassemblySessionAbandoned(cohortId) {
+    this.emit(EVENTS.REASSEMBLY_SESSION_ABANDONED, {
+      cohortId, timestamp: Date.now(),
+    });
+  }
+
   /**
    * Returns a copy of every event emitted so far (for testing / QA).
    * @returns {Array<{eventName: string, payload: Object, timestamp: number}>}
@@ -435,3 +452,4 @@ class TelemetryEmitter {
 }
 
 module.exports = { TelemetryEmitter, EVENTS };
+// TEST_WRITE_124036
