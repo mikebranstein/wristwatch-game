@@ -232,6 +232,17 @@ const DEFAULT_SAVE = {
   // who have not yet seen the tool-switching introduction).
   tutorial_tool_switching_seen: false,
 
+  // Issue #297: Per-Tool Mastery Progression — Core Engine (2–3 Tools, Tier 1–5)
+  // (additive, backward-compatible — null default = all tools start at Tier 0 on pre-feature saves)
+  //
+  // Structure: { [toolId]: { tier: number, points: number } }
+  // Only populated for the 3 Phase 1 designated tools (fine-tip-tweezers,
+  // flat-blade-screwdriver, spring-bar-tool) when proficiency has been earned.
+  // null = pre-feature save; ProficiencyEngine defaults all tools to Tier 0, 0 points.
+  // Written by ProficiencyEngine.serialize() via PlayerSaveState.setToolProficiency()
+  // after each operation where proficiency is earned.
+  tool_proficiency: null,
+
   // Issue #253: Holistic Craftsmanship Score Phase 1 (additive, backward-compatible)
   //
   // craftsmanship_dimensions_unlocked: which scoring dimensions are available to the player.
@@ -399,6 +410,29 @@ class PlayerSaveState {
    */
   snapshot() {
     return Object.assign({}, this._store);
+  }
+
+  // ── Issue #297: Per-Tool Mastery Progression ─────────────────────────────────
+
+  /**
+   * Returns the raw tool_proficiency object from the save state, or null if absent.
+   * Passed to ProficiencyEngine constructor on game load (AC4 — backward compatibility).
+   *
+   * @returns {Object.<string, { tier: number, points: number }>|null}
+   */
+  getToolProficiency() {
+    return this._store.tool_proficiency || null;
+  }
+
+  /**
+   * Persists the serialised proficiency state from ProficiencyEngine.
+   * Called after each proficiency-earning tool use (AC4).
+   *
+   * @param {Object.<string, { tier: number, points: number }>} proficiencySnapshot
+   *   — return value of ProficiencyEngine.serialize()
+   */
+  setToolProficiency(proficiencySnapshot) {
+    this._store.tool_proficiency = proficiencySnapshot;
   }
 }
 

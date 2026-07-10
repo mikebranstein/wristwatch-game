@@ -48,6 +48,8 @@ class ToolPanel {
     this._toolIds = [...ids];
     this._activeToolId = this._toolIds[0] || null;
     this._subscribers = [];
+    /** @type {import('./ProficiencyEngine').ProficiencyEngine|null} — Issue #297 */
+    this._proficiencyEngine = null;
   }
 
   // ── Selection ──────────────────────────────────────────────────────────────
@@ -177,6 +179,52 @@ class ToolPanel {
     return () => {
       this._subscribers = this._subscribers.filter((s) => s !== callback);
     };
+  }
+
+  // ── Proficiency Bar (Issue #297 — Per-Tool Mastery Progression) ───────────────
+
+  /**
+   * Inject the ProficiencyEngine so ToolPanel can expose proficiency bar data.
+   * Called during game initialisation after the engine is loaded from save state.
+   * Additive — does not alter existing ToolPanel behaviour when not set.
+   *
+   * @param {import('./ProficiencyEngine').ProficiencyEngine|null} engine
+   */
+  setProficiencyEngine(engine) {
+    this._proficiencyEngine = engine;
+  }
+
+  /**
+   * Returns proficiency bar data for the given tool ID (AC5 — ToolPanel display accuracy).
+   *
+   * Returns null when:
+   *   - No proficiency engine is attached (pre-FR1 code paths).
+   *   - The tool is not in the Phase 1 designated set (out-of-scope tools show no bar).
+   *
+   * Returns bar data when:
+   *   - Engine is attached AND toolId is a designated proficiency tool.
+   *
+   * @param {string} toolId
+   * @returns {{ tier: number, tierName: string, progressFraction: number,
+   *             isMaxTier: boolean, label: string }|null}
+   */
+  getProficiencyBarData(toolId) {
+    if (!this._proficiencyEngine) return null;
+    return this._proficiencyEngine.getProficiencyBarData(toolId);
+  }
+
+  /**
+   * Returns proficiency bar data for all tools in the panel.
+   * Tools without proficiency (non-designated) will have null entries.
+   * Suitable for bulk rendering of all proficiency bars in the panel UI.
+   *
+   * @returns {Array<{ id: string, proficiencyBar: Object|null }>}
+   */
+  getAllProficiencyBarData() {
+    return this._toolIds.map((id) => ({
+      id,
+      proficiencyBar: this.getProficiencyBarData(id),
+    }));
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
