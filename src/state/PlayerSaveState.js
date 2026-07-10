@@ -14,6 +14,11 @@
  *   Added `ab_first_job_cohort` (null default, backward-compatible).
  *   Written once at session start before any game-loop code runs (AC5 / Test Scenario 8).
  *   Values: 'guided' | 'control' | null (null = not yet assigned).
+ *
+ * Issue #116 — Two-Bench Workshop Probe: Second Parallel Bench Slot (Phase 1 A/B):
+ *   Added `restorations_completed` (0 default), `ab_second_bench_cohort` (null default),
+ *   `second_bench_feedback_prompted` (false default), and `bench_slots` (null default).
+ *   All are additive and backward-compatible.
  */
 
 const DEFAULT_SAVE = {
@@ -35,6 +40,23 @@ const DEFAULT_SAVE = {
   // Written synchronously before any game-loop code runs (Test Scenario 8 invariant).
   // Values: 'guided' | 'control' | null (null = not yet assigned for this player)
   ab_first_job_cohort:    null,
+
+  // Issue #116: Two-Bench Workshop Probe — Second Parallel Bench Slot (Phase 1 A/B)
+  // All fields are additive and backward-compatible; pre-existing saves that lack these
+  // keys receive their defaults and load correctly.
+  //
+  // restorations_completed: running count of fully delivered watch restorations (used for
+  //   the ≥2 mastery unlock gate and for retention-analytics cohort segmentation).
+  // ab_second_bench_cohort: stable per-player A/B arm assigned once at first session.
+  //   Values: 'probe' | 'control' | null (null = not yet assigned)
+  // second_bench_feedback_prompted: true once the 2-week qualitative feedback prompt has
+  //   been shown to a probe-arm player (prevents duplicate prompts).
+  // bench_slots: null until BenchSlotManager serialises its snapshot here; null = single
+  //   legacy slot still in use (BenchSlotManager migration layer handles upgrade on load).
+  restorations_completed:          0,
+  ab_second_bench_cohort:          null,
+  second_bench_feedback_prompted:  false,
+  bench_slots:                     null,
 
 };
 
