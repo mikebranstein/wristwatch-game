@@ -65,6 +65,14 @@ const EVENTS = {
   ONBOARDING_SKIPPED: 'onboarding_skipped',
   ONBOARDING_COMPLETED: 'onboarding_completed',
   AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
+
+  // Scaffolded Fault-Signal System — Phase 1 (Issue #117)
+  // All additive — zero changes to existing event names or signatures.
+  // Three events capture A/B arm assignment, time-before-first-hint, and
+  // per-session diagnosis-without-hint % for post-test analysis (AC4).
+  LOUPE_CUE_ARM_ASSIGNED:              'loupe_cue_arm_assigned',
+  LOUPE_TIME_BEFORE_FIRST_HINT:        'loupe_time_before_first_hint',
+  LOUPE_DIAGNOSIS_WITHOUT_HINT_SAMPLE: 'loupe_diagnosis_without_hint_sample',
 };
 
 class TelemetryEmitter {
@@ -288,6 +296,49 @@ class TelemetryEmitter {
    */
   abCohortAssigned(cohort, jobId = '') {
     this.emit(EVENTS.AB_COHORT_ASSIGNED, { cohort, jobId });
+  }
+
+  // ---- Scaffolded Fault-Signal System convenience methods (Issue #117) ----
+
+  /**
+   * Fires once at session creation when the loupe cue A/B arm is assigned (AC3 / AC4).
+   * Emitted before any game-loop code runs; arm is read-only for the session lifetime.
+   *
+   * @param {'treatment'|'control'} arm
+   * @param {string} [sessionId]
+   */
+  loupeCueArmAssigned(arm, sessionId = '') {
+    this.emit(EVENTS.LOUPE_CUE_ARM_ASSIGNED, { arm, sessionId });
+  }
+
+  /**
+   * Fires when the player requests the first hint during a diagnosis session (AC4).
+   * Carries elapsed milliseconds since diagnosis start and the A/B arm.
+   * Emitted at most once per diagnosis instance.
+   *
+   * @param {string} faultInstanceId
+   * @param {number|null} elapsedMs  Milliseconds from diagnosis entry to first hint, or null if unavailable
+   * @param {'treatment'|'control'|null} arm
+   */
+  loupeTimeBeforeFirstHint(faultInstanceId, elapsedMs, arm) {
+    this.emit(EVENTS.LOUPE_TIME_BEFORE_FIRST_HINT, { faultInstanceId, elapsedMs, arm });
+  }
+
+  /**
+   * Fires at the end of each diagnosis with the running session-level
+   * diagnosis-without-hint percentage (AC4). Segmented by A/B arm.
+   * Use these per-session samples for post-test analysis.
+   *
+   * @param {string} faultInstanceId
+   * @param {number} diagnosisWithoutHintPct  0–100, running % for this session
+   * @param {'treatment'|'control'|null} arm
+   */
+  loupeDiagnosisWithoutHintSample(faultInstanceId, diagnosisWithoutHintPct, arm) {
+    this.emit(EVENTS.LOUPE_DIAGNOSIS_WITHOUT_HINT_SAMPLE, {
+      faultInstanceId,
+      diagnosisWithoutHintPct,
+      arm,
+    });
   }
 
   /**

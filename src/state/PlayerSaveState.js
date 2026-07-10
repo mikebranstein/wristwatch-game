@@ -14,6 +14,12 @@
  *   Added `ab_first_job_cohort` (null default, backward-compatible).
  *   Written once at session start before any game-loop code runs (AC5 / Test Scenario 8).
  *   Values: 'guided' | 'control' | null (null = not yet assigned).
+ *
+ * Issue #117 — Scaffolded Fault-Signal System: Phase 1 Loupe Visual Cues:
+ *   Added `ab_loupe_cues_arm` (null default, backward-compatible).
+ *   Written once at session creation, read-only for the session lifetime (AC3).
+ *   Survives pause/resume and reload without re-randomisation.
+ *   Values: 'treatment' | 'control' | null (null = not yet assigned).
  */
 
 const DEFAULT_SAVE = {
@@ -35,6 +41,12 @@ const DEFAULT_SAVE = {
   // Written synchronously before any game-loop code runs (Test Scenario 8 invariant).
   // Values: 'guided' | 'control' | null (null = not yet assigned for this player)
   ab_first_job_cohort:    null,
+
+  // Issue #117: Scaffolded Fault-Signal System — loupe cue A/B arm (additive, backward-compatible)
+  // Written once at session creation; read-only for the session lifetime (AC3).
+  // Survives pause/resume and reload without re-randomisation.
+  // Values: 'treatment' | 'control' | null (null = not yet assigned)
+  ab_loupe_cues_arm:      null,
 
 };
 
