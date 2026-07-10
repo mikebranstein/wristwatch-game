@@ -3,6 +3,7 @@
 const { FirstTickSequence } = require('./FirstTickSequence');
 const { CameraAnimationSystem } = require('./CameraAnimationSystem');
 const { BalanceWheelHighlightEffect } = require('./BalanceWheelHighlightEffect');
+const { BalanceWheelOscillationController } = require('./BalanceWheelOscillationController');
 const { PlayerInputSuspension } = require('./PlayerInputSuspension');
 const { AUDIO_CUES } = require('./FirstTickAudioController');
 
@@ -38,6 +39,8 @@ class FirstTickCinematicController {
     holdDurationMs = 2000,
     totalWindSteps,
     tensionWindowSteps,
+    bphProvider = null,
+    oscillationController = null,
   } = {}) {
     this._savedViewProvider = typeof savedViewProvider === 'function' ? savedViewProvider : () => ({ position: {}, angle: {} });
     this._instrumentationHook = typeof instrumentationHook === 'function' ? instrumentationHook : null;
@@ -47,6 +50,22 @@ class FirstTickCinematicController {
     // Tracks the watchId passed to prepareForWatch so _startCinematic can resolve
     // it even when the audio hook does not forward a payload (main API compat).
     this._currentWatchId = null;
+
+    // Issue #147: bph provider — injected at construction time (DI pattern).
+    // Called with watchId at prepareForWatch(); resolved bph is used to start
+    // the oscillation animation in _startCinematic().
+    // Defaults to null provider (no animation); the game integration layer injects
+    // (watchId) => movementData.getBph(watchId) at boot time.
+    this._bphProvider = typeof bphProvider === 'function' ? bphProvider : null;
+
+    // Issue #147: balance-wheel oscillation controller — injected for testability.
+    // Defaults to a real BalanceWheelOscillationController instance.
+    this._oscillation = (oscillationController instanceof BalanceWheelOscillationController)
+      ? oscillationController
+      : new BalanceWheelOscillationController();
+
+    // bph resolved for the current watch at prepareForWatch() time (Issue #147).
+    this._currentBph = null;
 
     this._camera = new CameraAnimationSystem({
       savedViewProvider: this._savedViewProvider,
@@ -81,6 +100,13 @@ class FirstTickCinematicController {
   prepareForWatch(watchId, assembledCorrectly) {
     this._currentWatchId = watchId;  // cache for _startCinematic fallback (main API compat)
     this._activeWatchId = null;
+
+    // Issue #147: resolve bph at prepareForWatch time so _startCinematic has it
+    // synchronously when AUDIO_CUES.FIRST_TICK fires (Constraint #4 / Design Decision).
+    this._currentBph = (this._bphProvider && watchId)
+      ? (this._bphProvider(watchId) || null)
+      : null;
+
     return this._phase1.prepareForWatch(watchId, assembledCorrectly);
   }
 
@@ -101,6 +127,7 @@ class FirstTickCinematicController {
     this._camera.abort();
     this._highlight.deactivateAll();
     this._inputSuspension.forceResume();
+    this._oscillation.stop();   // Issue #147: clean scene-boundary teardown (Constraint #8)
     this._activeWatchId = null;
     this._emitInstrumentation('first_tick_cinematic_aborted', {});
   }
@@ -129,6 +156,11 @@ class FirstTickCinematicController {
     return this._inputSuspension;
   }
 
+  /** @returns {BalanceWheelOscillationController} The oscillation controller (Issue #147). */
+  getOscillationController() {
+    return this._oscillation;
+  }
+
   _startCinematic(watchId) {
     if (!watchId || this._camera.isAnimating()) {
       return;
@@ -137,6 +169,11 @@ class FirstTickCinematicController {
     this._activeWatchId = watchId;
     this._inputSuspension.suspend();
     this._highlight.activate(watchId);
+
+    // Issue #147: start balance-wheel oscillation at the frequency resolved for
+    // this watch (Constraint #4 — bph from movement data, never hardcoded).
+    // Fail-safe: if bph is null/zero, start() is a no-op (no wrong animation).
+    this._oscillation.start(this._currentBph);
 
     const targetView = this._buildCloseUpTarget();
     this._camera.animateTo(targetView, {
@@ -167,6 +204,7 @@ class FirstTickCinematicController {
     if (watchId) {
       this._highlight.deactivate(watchId);
     }
+    this._oscillation.stop();   // Issue #147: stop oscillation when scene completes (Constraint #8)
     this._activeWatchId = null;
     this._emitInstrumentation('first_tick_cinematic_completed', {
       watchId,
