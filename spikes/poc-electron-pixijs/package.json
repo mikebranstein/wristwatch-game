@@ -1,0 +1,20 @@
+{
+  "name": "wristwatch-poc-electron-pixijs",
+  "version": "0.0.1",
+  "description": "THROWAWAY proof-of-concept: Electron + Pixi.js renderer spike for Wristwatch Revival Simulator. NOT for production use.",
+  "private": true,
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "verify-imports": "node src/verify-module-imports.js"
+  },
+  "keywords": ["spike", "throwaway"],
+  "dependencies": {
+    "electron": "^30.0.0",
+    "pixi.js": "^8.0.0"
+  },
+  "notes": [
+    "This is a throwaway proof-of-concept for issue #163.",
+    "Do not wire this into production. Superseded by the Minimal Playable Shell sprint."
+  ]
+}
