@@ -58,3 +58,42 @@ describe('PlayerSaveState — Issue #126: ab_backstory_cohort field', () => {
     expect(state.get('ab_backstory_cohort')).toBe('backstory');
   });
 });
+
+describe('PlayerSaveState — Issue #130: client_persona_history', () => {
+  test('client_persona_history defaults to null for new saves', () => {
+    const state = new PlayerSaveState();
+    expect(state.get('client_persona_history')).toBeNull();
+  });
+
+  test('pre-feature saves without client_persona_history get null default', () => {
+    const state = new PlayerSaveState({ tutorial_first_fault_seen: true });
+    expect(state.get('client_persona_history')).toBeNull();
+  });
+
+  test('getPersonaHistory() returns null when no history exists', () => {
+    const state = new PlayerSaveState();
+    expect(state.getPersonaHistory('persona-margaret')).toBeNull();
+  });
+
+  test('recordPersonaJobCompletion() stores persona history correctly', () => {
+    const state = new PlayerSaveState();
+    state.recordPersonaJobCompletion('persona-margaret', 'job-42', 2);
+
+    expect(state.get('client_persona_history')).toEqual({
+      'persona-margaret': {
+        last_job_id: 'job-42',
+        arc_position: 2,
+      },
+    });
+  });
+
+  test('getPersonaHistory() retrieves recorded values', () => {
+    const state = new PlayerSaveState();
+    state.recordPersonaJobCompletion('persona-helen', 'job-77', 3);
+
+    expect(state.getPersonaHistory('persona-helen')).toEqual({
+      last_job_id: 'job-77',
+      arc_position: 3,
+    });
+  });
+});

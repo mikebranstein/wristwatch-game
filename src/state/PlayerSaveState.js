@@ -107,6 +107,11 @@ const DEFAULT_SAVE = {
   second_bench_feedback_prompted:  false,
   bench_slots:                     null,
 
+  // Issue #130: Backstory Card Expansion — Post-Launch
+  // Client persona history: maps persona_id → { last_job_id, arc_position }
+  // null default; backward-compatible with all pre-feature saves.
+  client_persona_history:          null,
+
   // Issue #126: Client Backstory Card System — A/B cohort assignment (additive, backward-compatible)
   // Written synchronously before any intake-screen code runs (AC1 / AC2).
   // Values: 'backstory' | 'control' | null (null = not yet assigned for this player)
@@ -189,6 +194,34 @@ class PlayerSaveState {
       this._store.completed_watches = [];
     }
     this._store.completed_watches.push(entry);
+  }
+
+  /**
+   * Get client persona history for a specific persona.
+   * Issue #130 — called by BackstoryCardSelector before card draw.
+   * @param {string} personaId
+   * @returns {{ last_job_id: string|null, arc_position: number }|null}
+   */
+  getPersonaHistory(personaId) {
+    const history = this._store.client_persona_history;
+    if (!history) return null;
+    return history[personaId] || null;
+  }
+
+  /**
+   * Record that a job was completed for a client persona, advancing arc position.
+   * @param {string} personaId
+   * @param {string} jobId
+   * @param {number} arcPosition
+   */
+  recordPersonaJobCompletion(personaId, jobId, arcPosition) {
+    if (!this._store.client_persona_history) {
+      this._store.client_persona_history = {};
+    }
+    this._store.client_persona_history[personaId] = {
+      last_job_id: jobId,
+      arc_position: arcPosition,
+    };
   }
 
   /**

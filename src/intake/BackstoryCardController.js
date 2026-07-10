@@ -127,6 +127,9 @@ class BackstoryCardController {
       job_id:      jobId,
       job_type:    watchType,
       template_id: template.id,
+      card_variant_id: template.id,
+      client_persona_id: null,
+      arc_position: null,
     });
 
     return {
