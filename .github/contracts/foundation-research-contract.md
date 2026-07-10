@@ -8,6 +8,7 @@ Evaluate foundational technology options and produce evidence-backed recommendat
 - team_constraints
 - non_functional_requirements
 - candidate_options
+- discovery_focus (`docs/discovery-focus.md`, required)
 
 ## Output Schema (JSON only)
 Return valid JSON only:
@@ -31,6 +32,8 @@ Return valid JSON only:
 - Do not finalize foundation approval.
 - Do not create feature-request issues.
 - Do not bypass missing evidence for high-impact decisions.
+- Do not emit `RECOMMEND` when `discovery_focus` is missing or empty.
+- Recommendations must explicitly reference audience/problem/outcome context from `discovery_focus`.
 
 ## Gate Rule
 - RECOMMEND -> foundation-review

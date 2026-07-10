@@ -29,6 +29,8 @@ Return valid JSON only:
 - Foundation can be approved only when required artifacts exist and risks are documented.
 - BLOCK is reserved for unresolved foundational contradictions or critical unknowns.
 - REVISE is default when information is incomplete but recoverable.
+- `discovery_focus` is a required artifact for approval decisions.
+- If `discovery_focus` is missing or empty, return `REVISE_FOUNDATION` with missing artifact noted.
 
 ## Gate Rule
 - APPROVE_FOUNDATION -> foundation-approved
