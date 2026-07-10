@@ -69,6 +69,10 @@ When decision is REVISE, `clarifications_needed` should explicitly list what asp
 - Keep design within issue scope and non-goals.
 - Do not approve design if acceptance criteria are ambiguous.
 - **Verify that acceptance criteria include testable requirements:** Before PASS, confirm acceptance criteria describe behaviors that can be tested via UI tests and manual scenarios. If test requirements are missing, respond with REVISE and ask intake to add them.
+- Before PASS, verify design alignment with foundation decisions in `docs/foundation-decision-pack.md`.
+- Before PASS, verify design alignment with applicable ADR constraints in `docs/adr/`.
+- Before PASS, consult wiki context (via `wiki-manager` search) for existing architecture/research decisions relevant to the issue.
+- If foundation/ADR/wiki context is missing or conflicting, return `REVISE` with explicit `clarifications_needed`.
 - Do not turn design output into a build plan or file-by-file implementation list.
 - Keep interface and data-model decisions explicit when impact exists.
 - Use `PASS` only when the design is ready for implementation.

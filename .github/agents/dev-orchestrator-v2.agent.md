@@ -111,6 +111,9 @@ Before selecting any issue for stage execution, validate parseable priority:
 - If missing or malformed:
   - Post comment: `Transition validation failed: G4 missing or malformed Priority Score. Expected line: Priority Score: [NUMBER]`
   - Apply label: `transition-validation-failed`
+  - If issue has `refactor-request` label:
+    - Apply label: `requirements-needs-human`
+    - Post comment: `Dev Orchestrator: Routed for priority repair. Add a parseable Priority Score line to proceed.`
   - Skip the issue for this cycle (do not run Intake/Design/Build/QA/Policy tasks)
 
 Use PO-provided priority score to order work; do not fall back to creation order except tie-break.

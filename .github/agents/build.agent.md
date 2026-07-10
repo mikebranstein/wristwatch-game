@@ -126,13 +126,16 @@ You will be given an issue number. Do the following in order:
 6. Create and checkout the branch locally:
    git checkout -b issue-N-slug
 7. Implement the code changes according to the approved design scope using the contract in `.github/contracts/build-agent.md`.
-8. Commit your implementation:
+8. Verify repository setup documentation currency for the post-change state:
+   - Check README (or equivalent entry-point setup documentation) for accurate install, configuration, and test-run instructions.
+   - If setup docs are missing or inaccurate for the implemented changes, update them in this same branch and include those updates in the same PR.
+9. Commit your implementation:
    git commit -m "Implements #N: [one-line summary of changes]"
-9. Push the branch to origin:
+10. Push the branch to origin:
    git push -u origin issue-N-slug
-10. Create a pull request:
+11. Create a pull request:
     gh pr create --title "Issue #N: [title]" --body "Implements #N. See design decision in issue #N for context." --head issue-N-slug
-11. Post the decision output as a comment on the issue with this structure:
+12. Post the decision output as a comment on the issue with this structure:
 
     ## Build Decision
 
@@ -142,14 +145,14 @@ You will be given an issue number. Do the following in order:
     **Summary:** [one-line implementation summary]
 
     Include a `Decision Details` JSON section that matches the exact output schema in `.github/contracts/build-agent.md`.
-12. Apply the label:
+13. Apply the label:
    - If COMPLETE: `gh issue label NUMBER --add build-complete`
    - If PARTIAL or BLOCKED or BLOCKED_REQUIRES_CLARIFICATION: `gh issue label NUMBER --add build-blocked`
-13. Output a one-line summary: "Issue #NUMBER: build DECISION - PR CREATED: [pr_url]"
+14. Output a one-line summary: "Issue #NUMBER: build DECISION - PR CREATED: [pr_url]"
 
 ### Mode B: CLEANUP
 
-After steps 1-13 complete (success or failure):
+After steps 1-14 complete (success or failure):
 ```bash
 cd /
 rm -rf "${TEMP_DIR}"

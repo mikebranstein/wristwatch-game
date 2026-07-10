@@ -27,6 +27,7 @@ Return valid JSON only:
   "changes_summary": "string",
   "files_changed": ["string"],
   "tests_updated": ["string"],
+  "documentation_updated": true,
   "acceptance_criteria_covered": ["string"],
   "remaining_work": ["string"],
   "blocker_reason": "string|null",
@@ -53,6 +54,7 @@ Return valid JSON only:
 - `pr_url` must contain the actual GitHub PR link in the output.
 - `acceptance_criteria_covered` should list only criteria actually implemented by the current output.
 - `tests_updated` must include all UI tests created for this build.
+- Verify repository setup documentation (README or equivalent entry-point setup documentation) accurately reflects install, configuration, and test-run instructions for the post-PR implementation; if missing or inaccurate, update it in the same branch/PR and set `documentation_updated` accordingly.
 - `remaining_work` should be empty when decision is `COMPLETE`.
 - `blocker_reason` should be `null` unless decision is `BLOCKED`.
 - Use `COMPLETE` only when the approved scope is implemented, all UI tests are created and passing, PR is created, and ready for QA.

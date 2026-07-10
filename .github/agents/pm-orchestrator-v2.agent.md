@@ -214,8 +214,12 @@ task(description="Run market research on issue #NUMBER: TITLE", agent_id="resear
 # (Allow up to 5 research tasks concurrently)
 ```
 **Wait for all research tasks to complete.** Then for each issue's Research Decision:
-- If HIGH priority: `gh issue label NUMBER --add research-complete --add research-priority-high`
-- If MEDIUM/LOW: `gh issue label NUMBER --add research-complete --add research-priority-medium`
+- Validate research wiki persistence from Research Decision JSON before any `research-complete` transition:
+   - Require `wiki_write_committed=true`
+   - Require `wiki_updates` is non-empty and references written subjects/pages
+   - If either check fails: post `**PM Orchestrator:** Transition validation failed: G4 missing verified wiki commit evidence from research-agent.`, apply `transition-validation-failed`, and apply `research-blocked` for that issue.
+- If HIGH priority and wiki persistence checks pass: `gh issue label NUMBER --add research-complete --add research-priority-high`
+- If MEDIUM/LOW and wiki persistence checks pass: `gh issue label NUMBER --add research-complete --add research-priority-medium`
 - If BLOCKED: `gh issue label NUMBER --add research-blocked`
 
 #### 4c. Phase 2 Gate - High Priority (Parallel)
@@ -284,12 +288,17 @@ Only `strategic-opportunity` creation is valid in PM flow.
 3. Post waiting visibility comment with exact issue numbers (or "none found") before running research.
 4. `task(description="Run market research on issue #NUMBER: TITLE", agent_id="research-agent", model_tier="STANDARD")`
 5. Wait for completion. Read the Research Decision comment.
-6. Extract priority from decision (priority-high, priority-medium, priority-low).
-7. If **priority-high** AND research confidence HIGH:
+6. Validate wiki persistence evidence in decision JSON (`wiki_write_committed=true` and non-empty `wiki_updates`).
+7. If wiki persistence evidence is missing:
+   - `gh issue comment NUMBER --body "**PM Orchestrator:** Transition validation failed: G4 missing verified wiki commit evidence from research-agent. Blocking progression."`
+   - `gh issue label NUMBER --add transition-validation-failed --add research-blocked`
+   - Skip remaining research-complete transitions for this issue.
+8. Extract priority from decision (priority-high, priority-medium, priority-low).
+9. If **priority-high** AND research confidence HIGH:
    - `gh issue label NUMBER --add research-complete --add research-priority-high`
-8. If **priority-medium** or **priority-low**:
+10. If **priority-medium** or **priority-low**:
    - `gh issue label NUMBER --add research-complete --add research-priority-medium`
-9. If **BLOCKED** (research couldn't complete):
+11. If **BLOCKED** (research couldn't complete):
    - `gh issue label NUMBER --add research-blocked`
    - Post: `gh issue comment NUMBER --body "**PM Orchestrator:** Research blocked. Manual review needed."`
 

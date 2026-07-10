@@ -13,6 +13,7 @@ Generate evidence-backed `pm-idea` hypotheses from product signals while preserv
 - open_pm_ideas_index
 - open_strategic_opportunities_index
 - strategic_pillars (from PM context)
+- foundation_artifacts_snapshot (review of foundation orchestrator/agent artifacts from isolated temp clone, required)
 
 If `discovery_focus_doc` is missing or empty, do not run discovery synthesis.
 
@@ -49,6 +50,14 @@ Return valid JSON only:
 - Require explicit evidence summary for each created idea.
 - Respect bounded-run controls provided by orchestrator (batch cap, creation cap, timeout).
 - If confidence is below threshold, defer or drop instead of creating low-quality issue noise.
+- Before synthesis, review foundation artifacts from a fresh temp clone (`${TMPDIR:-/tmp}` on Bash, `$env:TEMP` on PowerShell):
+  - `templates-v2/orchestration/.prompts/foundation-orchestrator-v2.agent.md`
+  - `templates-v2/agents/foundation-research.agent.md`
+  - `templates-v2/agents/foundation-architect.agent.md`
+  - `templates-v2/contracts/foundation-research-contract.md`
+  - `templates-v2/contracts/foundation-architect-contract.md`
+- If temp-clone foundation artifact review fails, halt and return blocked status to orchestrator.
+- Cleanup temp workspace regardless of outcome.
 
 ### Missing Focus Guardrail
 - If `docs/discovery-focus.md` is missing or empty, halt and return a blocked status to the orchestrator.

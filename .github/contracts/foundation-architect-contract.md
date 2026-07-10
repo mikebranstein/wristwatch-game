@@ -35,6 +35,7 @@ Return valid JSON only:
 - Do not return `APPROVE_FOUNDATION` without ADR coverage for major decisions (runtime/language, framework/engine, architecture style at minimum).
 - Any artifact creation/update required for approval must be delivered via dedicated branch + PR + merge (never direct write on main).
 - Artifact generation and edits must be performed from an isolated temp workspace (`${TMPDIR:-/tmp}` on Bash, `$env:TEMP` on PowerShell) with cleanup after merge.
+- Foundation issue closure is allowed only on `APPROVE_FOUNDATION`; for `REVISE_FOUNDATION` or `BLOCK_FOUNDATION`, issue must remain open with explicit next actions.
 
 ## Gate Rule
 - APPROVE_FOUNDATION -> foundation-approved

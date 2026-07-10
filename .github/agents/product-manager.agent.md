@@ -578,133 +578,38 @@ Ideas (pm-idea) → Phase 1 Gate (pm-validating + research items created)
 
 ### First Run: Research Wiki Setup
 
-On your first execution, set up the Research Wiki infrastructure:
+On your first execution, set up the Research Wiki infrastructure using **wiki-manager only**.
 
 **Check: Is GitHub Wiki enabled?**
 ```bash
 # The learner enables this manually in Module 13 Step 3b
 # Settings → Features → Check "Wiki" → Save
-# No CLI command needed; just a one-time setup
 ```
 
-**Create Research Wiki skeleton pages** (PM agent does this on first run):
+**Create Research Wiki skeleton pages via wiki-manager `write-content`** (no direct `gh wiki create`):
 
-```bash
-# Create Research Wiki home page
-gh wiki create "Home" --body "# Product Research Wiki
+For each required skeleton subject (Home, Personas-[Segment-Name], Journey-Maps-[Segment-Name], Interview-Transcripts-[Quarter], Research-to-Decision-Index, Strategic-Decisions-[Year], Quarterly-Summary-[Quarter]):
 
-Central repository for customer research, personas, and journey maps.
-
-## Sections
-
-- **Personas** — Customer segments and archetypes
-- **Journey Maps** — Stage-by-stage customer experience
-- **Interview Data** — Raw findings and transcripts
-- **Research-to-Decision Index** — Links research to opportunities
-- **Strategic Decisions** — Recorded decisions with evidence
-- **Quarterly Summaries** — Themes, signals, and implications
-
-Use the templates and quarterly update process defined in this agent prompt."
-
-# Create skeleton pages (learner will fill in content as research accumulates)
-gh wiki create "Personas-[Segment-Name]" --body "# Persona: [Segment Name]
-
-**Last Updated:** [Current Quarter]
-**Interview Count:** 0 (update as you conduct interviews)
-
-## Demographics & Firmographics
-[To be filled in from customer interviews]
-
-## Primary Job to Be Done
-[To be filled in]
-
-## Goals & Success Metrics
-[To be filled in]
-
-## Frustrations & Pain Points
-[To be filled in]
-
-Use this page as the canonical persona template."
-
-gh wiki create "Journey-Maps-[Segment-Name]" --body "# Journey Map: [Segment Name]
-
-**Persona(s):** [Relevant personas]
-**Last Updated:** [Current Quarter]
-**Research Basis:** [Interview count and dates]
-
-## Stage 1: Discovery
-[To be filled in]
-
-## Stage 2: Onboarding
-[To be filled in]
-
-## Stage 3: Regular Usage
-[To be filled in]
-
-## Stage 4: Problem Resolution
-[To be filled in]
-
-Use this page as the canonical journey map template."
-
-gh wiki create "Interview-Transcripts-[Quarter]" --body "# Interview Transcripts: [Quarter Year]
-
-Recording and transcribing interviews from [Quarter]. Update weekly as interviews are conducted.
-
-## Interview Log
-
-| Date | Customer | Role | Key Findings | Recording Link |
-|------|----------|------|--------------|----------------|
-| [date] | [name] | [title] | [summary] | [link] |
-
-Use this page as the canonical interview logging template and methodology record."
-
-gh wiki create "Research-to-Decision-Index" --body "# Research-to-Decision Index
-
-Links customer problems, research findings, and personas to strategic opportunities.
-
-Update quarterly as new interview data is analyzed.
-
-| Problem | Persona | Journey Stage | Interview Count | Research Quote | Strategic Opportunity | Decision |
-|---------|---------|---------------|-----------------|----------------|-----------------------|----------|
-| [problem] | [persona] | [stage] | [N interviews] | [quote] | [issue link] | [status] |
-
-Use this page as the canonical indexing structure for research-to-decision traceability."
-
-gh wiki create "Strategic-Decisions-2026" --body "# Strategic Decisions: 2026
-
-Record all PM strategic decisions with evidence, tradeoffs, and dissenting opinions.
-
-## Decision Template
-
-For each major decision, use:
-- **Context:** What decision needed to be made?
-- **Positions & Evidence:** What were the options?
-- **Decision Made:** What did we decide and why?
-- **Dissenting Opinion:** Who disagreed?
-- **Revisit Criteria:** When would we reconsider?
-
-Use this decision template directly in the wiki as the standard documentation format."
-
-gh wiki create "Quarterly-Summary-[Quarter]" --body "# Quarterly Research Summary: [Quarter Year]
-
-Synthesis of all research conducted this quarter: interviews, themes, churn signals, strategic implications.
-
-## Research Conducted
-- **Total Interviews:** [N]
-- **Customer Segments:** [list]
-- **Interviews Per Segment:** [breakdown]
-
-## Major Themes
-[To be filled in from 15-20 interviews]
-
-## Churn Signals
-[Patterns of why customers leave]
-
-## Strategic Implications
-[What this means for product strategy and OKRs]
-
-Use this quarterly summary page as the canonical synthesis process template (8-10 hours)."
+CALL SKILL: `wiki-manager`
+```json
+{
+  "action": "write-content",
+  "repo": "[owner]/[repo]",
+  "content_type": "research-setup",
+  "subject": "[skeleton subject]",
+  "content": "[template markdown content from this prompt]",
+  "status": "In Progress",
+  "confidence": "MEDIUM",
+  "github_issue": "#[pm-idea or setup issue]",
+  "findings_summary": "Initialized wiki skeleton page for research operations"
+}
 ```
+
+After each call, verify success and commit:
+- `status=success`
+- `committed=true`
+
+If any setup write fails, do not continue setup via alternate tools; retry via wiki-manager and escalate if unresolved.
 
 **What to do manually:**
 

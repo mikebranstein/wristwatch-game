@@ -37,18 +37,31 @@ You will be given a trigger context and run controls. Do the following in order:
     - Required: `docs/discovery-focus.md`
     - If missing or empty, do not continue. Return blocked status and reason:
        - `Discovery focus required: add docs/discovery-focus.md before running Idea Scout.`
-3. Read trigger context, `docs/discovery-focus.md`, and active strategic pillars.
-4. Gather current signals from provided sources (support, usage metrics, incident trends, competitor notes, backlog gaps).
-5. Cluster signals into candidate opportunity hypotheses.
-6. Rank candidates by impact, urgency, and evidence quality.
-7. Select up to `batch_cap` candidates for deep evaluation.
-8. Run dedupe checks against open `pm-idea` and `strategic-opportunity` issues.
-9. For each candidate, produce contract output decision (`CREATE_PM_IDEA|DEFER|DROP`).
-10. Create at most `creation_cap` new `pm-idea` issues:
+3. Review foundation orchestration and agent artifacts from isolated temp clone before hypothesis generation:
+    - Create temp workspace:
+       - Bash: `TEMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/idea-scout-foundation-review-XXXXXX") && cd "${TEMP_DIR}"`
+       - PowerShell: `$TempDir = Join-Path $env:TEMP ("idea-scout-foundation-review-" + [guid]::NewGuid().ToString()); New-Item -ItemType Directory -Path $TempDir -Force | Out-Null; Set-Location $TempDir`
+    - Clone repository fresh:
+       - `git clone <REPO_URL> .`
+    - Review and align against:
+       - `templates-v2/orchestration/.prompts/foundation-orchestrator-v2.agent.md`
+       - `templates-v2/agents/foundation-research.agent.md`
+       - `templates-v2/agents/foundation-architect.agent.md`
+       - `templates-v2/contracts/foundation-research-contract.md`
+       - `templates-v2/contracts/foundation-architect-contract.md`
+    - Cleanup temp workspace regardless of outcome.
+4. Read trigger context, `docs/discovery-focus.md`, and active strategic pillars.
+5. Gather current signals from provided sources (support, usage metrics, incident trends, competitor notes, backlog gaps).
+6. Cluster signals into candidate opportunity hypotheses.
+7. Rank candidates by impact, urgency, and evidence quality.
+8. Select up to `batch_cap` candidates for deep evaluation.
+9. Run dedupe checks against open `pm-idea` and `strategic-opportunity` issues.
+10. For each candidate, produce contract output decision (`CREATE_PM_IDEA|DEFER|DROP`).
+11. Create at most `creation_cap` new `pm-idea` issues:
    - Title format: `[pm-idea]: concise hypothesis title`
    - Include: problem statement, evidence summary, signal strength, confidence, and source links.
-11. For deferred candidates, post/update a short backlog note without creating new PM-stage terminal decisions.
-12. Output a run summary with counts:
+12. For deferred candidates, post/update a short backlog note without creating new PM-stage terminal decisions.
+13. Output a run summary with counts:
    - candidates evaluated
    - pm-ideas created
    - deferred
@@ -67,3 +80,4 @@ Use consistent command formatting:
 - Do not create `feature-request` issues.
 - Do not assign PM terminal labels.
 - Do not claim PM recommendation outcomes.
+- Do not proceed with hypothesis generation if foundation artifact review from temp clone fails.

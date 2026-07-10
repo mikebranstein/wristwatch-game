@@ -67,7 +67,7 @@ If any gate fails:
 
 ## Per-Loop Hard Gate Notes
 
-- Foundation loop: artifact existence gate (`docs/foundation-decision-pack.md`, `docs/adr/0000-template.md`) before approvals.
+- Foundation loop: artifact existence gate (`docs/foundation-decision-pack.md`, `docs/adr/0000-template.md`) before approvals; keep foundation issue open until `foundation-approved`.
 - Discovery loop: foundation-approved and `docs/discovery-focus.md` gate before Idea Scout invocation.
 - PM loop: linked `research` issue closure gate before Phase 2 validation transitions.
 - PO loop: `strategic-opportunity` source-state and decision-schema gate before creating feature requests.
@@ -112,10 +112,10 @@ Gate review for foundational artifacts and ADR coverage.
 
 ---
 
-### Stages: foundation-approved, foundation-blocked (Terminal)
+### Stages: foundation-approved (Terminal), foundation-blocked (Open Hold)
 
 - `foundation-approved` enables Discovery and PM loops.
-- `foundation-blocked` halts startup progression until revised.
+- `foundation-blocked` halts startup progression until revised and must remain open until resolved and approved.
 
 ---
 

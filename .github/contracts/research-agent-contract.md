@@ -24,6 +24,8 @@ Return valid JSON only:
   "confidence_level": "low|medium|high",
   "risks_or_biases": ["string"],
   "recommended_actions": ["string"],
+  "wiki_write_committed": true,
+  "wiki_reorganized": false,
   "wiki_updates": ["string"],
   "next_state": "Ready for PM Validation|More Research Needed|Blocked"
 }
@@ -34,6 +36,9 @@ Return valid JSON only:
 - Cite source quality for each major finding.
 - Do not claim high confidence without Tier 1 or corroborated Tier 2 evidence.
 - Keep outputs actionable for PM decision-making.
+- All research persistence must go through `wiki-manager` `write-content`; do not use direct wiki git/CLI writes.
+- `COMPLETE` is valid only when at least one required `write-content` call returns `status=success` and `committed=true`, and `wiki_updates` lists the stored wiki pages/subjects.
+- If required wiki writes fail or are unverified, return `BLOCKED` (not `COMPLETE`).
 
 ## Gate Rule
 - `COMPLETE` maps to `next_state = Ready for PM Validation`.

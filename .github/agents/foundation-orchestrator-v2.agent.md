@@ -50,6 +50,7 @@ Ensure foundational architecture decisions are explicit, approved, and documente
    - G3 Route check: `(state, decision)` exists in `orchestration/routing-registry.md`.
    - G4 Preconditions check: required artifacts exist and are populated enough before approving, including non-empty `docs/discovery-focus.md` and non-placeholder foundation decision entries.
    - G5 Atomic update: remove old state label and add next state label without conflicting active states.
+   - G6 Close guard (foundation-specific): foundation issue may be closed only after transition to `foundation-approved`; keep issue open for `foundation-needed`, `foundation-in-progress`, `foundation-review`, and `foundation-blocked`.
    - On failure: post `Transition validation failed: <gate> <reason>`, add `transition-validation-failed`, skip transition.
 7. For each actionable issue:
     - If label is `foundation-needed`:
@@ -65,9 +66,9 @@ Ensure foundational architecture decisions are explicit, approved, and documente
        - Run foundation architect gate:
           - `task(description="Run foundation gate on issue #NUMBER; validate decisions against docs/discovery-focus.md", agent_id="foundation-architect", model_tier="STANDARD")`
        - Read foundation-architect decision:
-          - `APPROVE_FOUNDATION` -> apply `foundation-approved`
-          - `REVISE_FOUNDATION` -> apply `foundation-in-progress`
-          - `BLOCK_FOUNDATION` -> apply `foundation-blocked`
+          - `APPROVE_FOUNDATION` -> apply `foundation-approved` (issue may close)
+          - `REVISE_FOUNDATION` -> apply `foundation-in-progress` (issue remains open)
+          - `BLOCK_FOUNDATION` -> apply `foundation-blocked` (issue remains open pending revision)
 8. Post run summary and stop.
 
 ## Run Summary Format

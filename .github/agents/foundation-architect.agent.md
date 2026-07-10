@@ -31,3 +31,4 @@ This agent assembles the Foundation Decision Pack, checks ADR coverage, and deci
 - BLOCK only for critical foundational contradictions.
 - Do not return `APPROVE_FOUNDATION` while decision pack fields remain placeholders or ADR coverage is missing.
 - Do not approve or patch artifacts directly on main; require PR-merged artifact updates.
+- Do not close the foundation issue unless decision is `APPROVE_FOUNDATION`; keep issue open for `REVISE_FOUNDATION` and `BLOCK_FOUNDATION`.

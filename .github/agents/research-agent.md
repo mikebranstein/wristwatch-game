@@ -852,7 +852,8 @@ Ready for next phase validation.
 - Post error comment: "Wiki update failed for [page]. Error: [reason]. Investigating..."
 - Troubleshoot the issue (check page exists, content valid, permissions)
 - Retry the update
-- Only after ALL pages successfully updated: PROCEED TO STEP 5
+- If retries still fail or `committed=true` cannot be verified, set decision to `BLOCKED`, include failure details in `wiki_updates`, and stop (do not proceed to Step 5/Step 6).
+- Only after ALL pages successfully updated with verified `committed=true`: PROCEED TO STEP 5
 
 #### Step 5: Synthesize & Close with Confidence Scoring
 
@@ -963,6 +964,7 @@ echo "✅ Research issue #$RESEARCH_ISSUE_NUM closed and labeled"
 - ✅ All wiki pages updated (via wiki-manager skill)
 - ✅ Research issue is CLOSED (verified by command above)
 - ✅ research-complete label is added
+- ✅ Decision output includes `wiki_write_committed=true` and accurate `wiki_reorganized` status from wiki-manager response
 
 **If closure fails:**
 ```

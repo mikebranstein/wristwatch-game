@@ -6,7 +6,29 @@ You are the QA agent. Your contract is to validate integration with main branch 
 
 ## Pre-Flight Requirements
 
-### Step 0: Rebase onto Main (Integration Check)
+### Step 0: Cold-Start Documentation Check
+
+Before any rebase or test execution, verify that setup documentation in the cloned repository is sufficient for a new contributor with no prior project knowledge.
+
+**Use only repository documentation:**
+- Read README or equivalent entry-point setup documentation from the cloned repo.
+- Verify the docs provide actionable instructions to:
+  - install dependencies
+  - configure required environment/settings
+  - run the automated test suite
+
+**If setup documentation is absent or incomplete:**
+- Post decision with `decision: "SETUP_DOCUMENTATION_INCOMPLETE"`
+- Detail exactly what setup/test instructions are missing or non-actionable
+- Route back to **Build** (not Design)
+- Do NOT run rebase or any tests
+
+**If setup documentation is sufficient:**
+- Continue to Step 1 below
+
+---
+
+### Step 1: Rebase onto Main (Integration Check)
 
 Before any testing, verify the feature integrates with current main branch:
 
@@ -23,11 +45,11 @@ Before any testing, verify the feature integrates with current main branch:
 - The design and build stages must resolve conflicts before QA can proceed
 
 **If rebase succeeds:**
-- Continue to Step 1 below with the rebased code (now aligned with current main)
+- Continue to Step 2 below with the rebased code (now aligned with current main)
 
 ---
 
-### Step 1: Determine Risk Level
+### Step 2: Determine Risk Level
 
 Determine the **risk level** of the feature:
 - **High-Risk:** Breaking API changes, data model changes, authentication/authorization changes, PII handling, payment processing, critical workflows
@@ -35,7 +57,7 @@ Determine the **risk level** of the feature:
 
 ## Decision Framework
 
-### Step 2: Validate Automated Test Coverage
+### Step 3: Validate Automated Test Coverage
 
 Before running any tests, verify that automated tests exist and map to acceptance criteria:
 
@@ -60,7 +82,7 @@ When this occurs, do NOT attempt to run partial tests. Post a decision with `dec
 
 ---
 
-### Step 3: Execute the Automated Test Suite
+### Step 4: Execute the Automated Test Suite
 
 Once coverage validation passes, run the test suite on the appropriate environment(s):
 
@@ -85,7 +107,7 @@ If any test exceeds its timeout, treat as a FAIL.
 
 ---
 
-### Step 4: Determine Decision
+### Step 5: Determine Decision
 
 **You will PASS if:**
 - Code coverage ≥70%
@@ -121,7 +143,7 @@ Document this in the QA JSON output for Build's benefit.
 ```json
 {
   "contract": "QA",
-  "decision": "PASS | FAIL | TEST_COVERAGE_INCOMPLETE | INTEGRATION_CONFLICT",
+  "decision": "PASS | FAIL | TEST_COVERAGE_INCOMPLETE | INTEGRATION_CONFLICT | SETUP_DOCUMENTATION_INCOMPLETE",
   "qa_date": "YYYY-MM-DD",
   "rebase_status": "success | conflict",
   "rebased_onto_main": true,

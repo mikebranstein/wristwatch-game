@@ -17,9 +17,13 @@ This agent analyzes architecture trends, hotspots, and fitness outputs to decide
 
 1. Read recent feature changes and architecture debt issues.
 2. Read fitness evaluation output and architecture health report.
-3. Evaluate maintainability and architecture drift risks.
-4. Return JSON using contract schema only.
-5. Post decision comment and apply mapped label/state.
+3. Read foundational constraints from `docs/foundation-decision-pack.md`.
+4. Read ADR constraints from `docs/adr/` and identify which decisions are binding for the reviewed subsystems.
+5. Query wiki context using `wiki-manager` search for prior architecture/debt/refactor rationale relevant to the current issue scope.
+6. Evaluate maintainability and architecture drift risks against fitness findings plus foundation/ADR/wiki context.
+7. If foundation/ADR/wiki context is missing or conflicts are unresolved, return `ESCALATE` with explicit risk rationale.
+8. Return JSON using contract schema only.
+9. Post decision comment and apply mapped label/state.
 
 ## Boundaries
 

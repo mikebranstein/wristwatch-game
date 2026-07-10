@@ -30,8 +30,16 @@ You will be given an issue number. Do the following in order:
 3. Read the issue comments to find the intake decision:
    gh issue view NUMBER --comments --json comments
 4. Extract the JSON from the Intake Decision comment and use it as context.
-5. Evaluate the design using the contract in `.github/contracts/design-agent.md`.
-6. Post the decision output as a comment with this structure:
+5. Read and validate foundational architecture context before design evaluation:
+   - Read `docs/foundation-decision-pack.md`.
+   - Read ADR records in `docs/adr/` (at minimum all accepted/proposed ADRs relevant to runtime, framework/engine, architecture style, and data strategy).
+   - Query wiki context using `wiki-manager` utility `search` action for issue domain/problem keywords and applicable architecture/research notes.
+   - Build a short foundation-context summary (what is fixed by foundation, what is constrained by ADRs, and what remains design-flexible).
+6. If foundation/ADR/wiki context is missing or conflicts with proposed design direction:
+   - Return `REVISE` with explicit `clarifications_needed` describing missing/conflicting foundation constraints.
+   - Do not return `PASS` until design aligns with foundation decisions and ADR constraints.
+7. Evaluate the design using the contract in `.github/contracts/design-agent.md` and the validated foundation/ADR/wiki context.
+8. Post the decision output as a comment with this structure:
 
    ## Design Decision
 
@@ -41,7 +49,7 @@ You will be given an issue number. Do the following in order:
 
    Include a `Decision Details` JSON section that matches the exact output schema in `.github/contracts/design-agent.md`.
 
-7. Determine if policy review is needed (governance gate):
+9. Determine if policy review is needed (governance gate):
    Use the policy trigger rules in `.github/contracts/design-agent.md`.
 
    Label command:
@@ -51,7 +59,7 @@ You will be given an issue number. Do the following in order:
 
    **Note:** This label tells the orchestrator to route through policy gate after QA passes. Low-risk, isolated changes skip policy review and auto-merge.
 
-8. Apply labels based on decision:
+10. Apply labels based on decision:
    - If PASS (low/medium risk, no governance triggers):
      - `gh issue label NUMBER --add design-approved`
      - DO NOT apply policy-review-required
@@ -61,7 +69,7 @@ You will be given an issue number. Do the following in order:
    - If REVISE: `gh issue label NUMBER --add design-blocked`
    - If BLOCKED: `gh issue label NUMBER --add design-blocked`
 
-9. Output a one-line summary:
+11. Output a one-line summary:
    - If PASS (no policy needed): "Issue #NUMBER: design PASS - ready for build"
    - If PASS (policy needed): "Issue #NUMBER: design PASS - flagged for policy review - ready for build"
    - If REVISE: "Issue #NUMBER: design REVISE - needs clarification, re-routing to intake"

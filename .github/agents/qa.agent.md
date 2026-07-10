@@ -68,6 +68,15 @@ Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue
 
 You will be given an issue number that is ready for QA (already passed build).
 
+0. **Cold-Start Documentation Check (in this isolated temp workspace):**
+    - Read the repository setup documentation (README or equivalent entry-point setup documentation).
+    - Determine whether docs provide actionable instructions for a new contributor to install dependencies, configure required settings, and run the automated test suite.
+    - If setup documentation is absent or incomplete:
+       - Post decision with `decision: "SETUP_DOCUMENTATION_INCOMPLETE"`
+       - Detail missing/non-actionable setup and test-run instructions
+       - Route back to Build (not Design)
+       - Exit immediately; do not continue to rebase or tests
+
 1. Read the issue using the GitHub MCP `issue_read` tool.
 
 2. Read the issue comments to find the build decision:
