@@ -14,6 +14,12 @@
  *   Added `ab_first_job_cohort` (null default, backward-compatible).
  *   Written once at session start before any game-loop code runs (AC5 / Test Scenario 8).
  *   Values: 'guided' | 'control' | null (null = not yet assigned).
+ * Issue #119 — Workshop Queue Meta-Game Phase 2:
+ *   Added five new null-safe save keys: workshop_jobs, intake_queue (replenishment metadata),
+ *   clients, reputation, bench_slots.
+ *   Added queue_feature_flag (staged rollout gate, default false).
+ *   All additions are backward-compatible — pre-existing saves lacking these keys initialise
+ *   to null defaults and load correctly.
  */
 
 const DEFAULT_SAVE = {
@@ -35,6 +41,15 @@ const DEFAULT_SAVE = {
   // Written synchronously before any game-loop code runs (Test Scenario 8 invariant).
   // Values: 'guided' | 'control' | null (null = not yet assigned for this player)
   ab_first_job_cohort:    null,
+
+  // Issue #119: Workshop Queue Meta-Game Phase 2 (additive, null-safe, backward-compatible)
+  // Pre-feature saves lacking these keys initialise to null and load correctly.
+  workshop_jobs:      null,   // active bench jobs and completed job history
+  intake_queue:       null,   // intake queue replenishment metadata (job IDs and session info)
+  clients:            null,   // client registry (named clients + trust level state)
+  reputation:         null,   // workshop reputation state {score: float}
+  bench_slots:        null,   // bench slot allocation map {slot_number: job_id}
+  queue_feature_flag: false,  // staged-rollout gate: false = flag-off (single-bench legacy flow)
 
 };
 

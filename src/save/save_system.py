@@ -1,6 +1,6 @@
 """
-SaveSystem – session boundary event and order queue persistence
-==============================================================
+SaveSystem – session boundary event, order queue, and workshop state persistence
+================================================================================
 
 load_session(raw_save_data)
     - Deserialises the save file (null-safe for pre-feature saves with no order queue node).
@@ -10,6 +10,19 @@ load_session(raw_save_data)
 save_session(order_queue, existing_save_data)
     - Writes the latest order queue state into the save-data dict.
     - Returns the updated save-data dict ready for JSON serialisation to disk.
+
+Issue #119 – Workshop Queue Meta-Game Phase 2 (additive, null-safe extensions):
+
+load_workshop_state(raw_save_data)
+    - Deserialises the five new Phase 2 save keys using the same null-safe get() pattern
+      proven by OrderQueue.  Pre-feature saves lacking these keys initialise to empty/default
+      state — no migration step required.
+    - Returns (bench_slot_manager, client_registry, reputation_system, intake_queue_manager).
+
+save_workshop_state(bench_slot_manager, client_registry, reputation_system,
+                    intake_queue_manager, existing_save_data)
+    - Merges all five Phase 2 state objects back into the save-data dict.
+    - Returns the updated save-data dict (does not write to disk).
 
 autosave_checkpoint(stage, game_state, save_path)
     - Atomically writes an autosave checkpoint for the given restoration stage.
@@ -45,6 +58,10 @@ from typing import Callable, Optional
 
 from src.orders.order_queue import OrderQueue
 from src.orders.order import Order
+from src.bench.bench_slot_manager import BenchSlotManager
+from src.clients.client_registry import ClientRegistry
+from src.reputation.reputation_system import ReputationSystem
+from src.queue.intake_queue_manager import IntakeQueueManager
 
 # ---------------------------------------------------------------------------
 # Stage constants
@@ -99,6 +116,72 @@ class SaveSystem:
         return {
             **(existing_save_data or {}),
             "order_queue": order_queue.to_save_data(),
+        }
+
+    # -----------------------------------------------------------------------
+    # Phase 2 – Workshop Queue Meta-Game (Issue #119)
+    # Additive, null-safe extensions using the proven OrderQueue pattern.
+    # -----------------------------------------------------------------------
+
+    def load_workshop_state(
+        self,
+        raw_save_data: Optional[dict],
+    ) -> tuple[BenchSlotManager, ClientRegistry, ReputationSystem, IntakeQueueManager]:
+        """
+        Deserialise the five Phase 2 save keys from *raw_save_data*.
+
+        Uses the same null-safe get(key, None) pattern proven by OrderQueue:
+        pre-feature saves lacking these keys initialise to empty/default state —
+        no migration step required.
+
+        Parameters
+        ----------
+        raw_save_data : dict | None
+            Full save-file object.  May be None or lack Phase 2 keys.
+
+        Returns
+        -------
+        (bench_slot_manager, client_registry, reputation_system, intake_queue_manager)
+        """
+        data = raw_save_data or {}
+
+        # Each key uses the established null-safe get(key, None) pattern.
+        bench_slots_data   = data.get("bench_slots",    None)
+        clients_data       = data.get("clients",        None)
+        reputation_data    = data.get("reputation",     None)
+        workshop_jobs_data = data.get("workshop_jobs",  None)
+
+        bench_slot_manager   = BenchSlotManager({"bench_slots": bench_slots_data} if bench_slots_data is not None else None)
+        client_registry      = ClientRegistry({"clients": clients_data} if clients_data is not None else None)
+        reputation_system    = ReputationSystem({"reputation": reputation_data} if reputation_data is not None else None)
+        intake_queue_manager = IntakeQueueManager({"workshop_jobs": workshop_jobs_data} if workshop_jobs_data is not None else None)
+
+        return bench_slot_manager, client_registry, reputation_system, intake_queue_manager
+
+    def save_workshop_state(
+        self,
+        bench_slot_manager: BenchSlotManager,
+        client_registry: ClientRegistry,
+        reputation_system: ReputationSystem,
+        intake_queue_manager: IntakeQueueManager,
+        existing_save_data: Optional[dict],
+    ) -> dict:
+        """
+        Merge all five Phase 2 state objects into the save-data dict.
+
+        Returns the updated save-data dict (does not write to disk — caller handles I/O).
+        """
+        bench_save   = bench_slot_manager.to_save_data()     # {"bench_slots": {...}}
+        clients_save = client_registry.to_save_data()        # {"clients": [...]}
+        rep_save     = reputation_system.to_save_data()      # {"reputation": {...}}
+        queue_save   = intake_queue_manager.to_save_data()   # {"workshop_jobs": [...]}
+
+        return {
+            **(existing_save_data or {}),
+            "bench_slots":   bench_save["bench_slots"],
+            "clients":       clients_save["clients"],
+            "reputation":    rep_save["reputation"],
+            "workshop_jobs": queue_save["workshop_jobs"],
         }
 
     # -----------------------------------------------------------------------
