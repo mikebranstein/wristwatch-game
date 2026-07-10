@@ -231,6 +231,24 @@ const DEFAULT_SAVE = {
   // who have not yet seen the tool-switching introduction).
   tutorial_tool_switching_seen: false,
 
+  // Issue #253: Holistic Craftsmanship Score Phase 1 (additive, backward-compatible)
+  //
+  // craftsmanship_dimensions_unlocked: which scoring dimensions are available to the player.
+  //   Type: string[] — subset of ['cosmetic', 'mechanical', 'diagnostic', 'economic'].
+  //   Default: ['cosmetic', 'mechanical'] — these two dimensions are available from game start.
+  //   'diagnostic' and 'economic' are added when the player unlocks the relevant tools during gameplay.
+  //   TODO: hook — craft_dimensions_unlocked is populated by the tool-unlock progression system
+  //   (future issue); currently defaults to ['cosmetic', 'mechanical'] for all early-game players.
+  //   Pre-existing saves lacking this key receive the default via Object.assign.
+  craftsmanship_dimensions_unlocked: ['cosmetic', 'mechanical'],
+
+  // craftsmanship_personal_best: player's best composite craftsmanship score and tier.
+  //   Type: { score: number, tier: string, jobId: string | null } | null
+  //   Default: null — first load after feature ships (no prior best); triggers graceful-degradation
+  //   path in CraftsmanshipScoreDisplay (personal best section omitted, no error thrown).
+  //   Shape follows additive backward-compatibility pattern per ADR-0004.
+  craftsmanship_personal_best: null,
+
 };
 
 class PlayerSaveState {
