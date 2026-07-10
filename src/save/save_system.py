@@ -122,6 +122,14 @@ class SaveSystem:
             if key not in updated_save_data:
                 updated_save_data[key] = None
 
+        # Issue #253: Holistic Craftsmanship Score Phase 1 — null-safe defaults.
+        # Pre-feature saves that lack these keys receive safe defaults, mirroring
+        # the guard pattern established by Issues #127 and #145.
+        if not isinstance(updated_save_data.get('craftsmanship_dimensions_unlocked'), list):
+            updated_save_data['craftsmanship_dimensions_unlocked'] = ['cosmetic', 'mechanical']
+        if 'craftsmanship_personal_best' not in updated_save_data:
+            updated_save_data['craftsmanship_personal_best'] = None
+
         return order_queue.to_save_data(), arrived_orders, updated_save_data
 
     def save_session(self, order_queue_data: dict, existing_save_data: Optional[dict]) -> dict:

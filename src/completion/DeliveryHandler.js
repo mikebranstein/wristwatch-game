@@ -16,6 +16,14 @@
  *   satisfaction_message is appended to the delivery entry.
  *   Backward-compatible: callers omitting cosmetic_grade receive no message and no
  *   multiplier, consistent with prior behavior (AC5, Scenario 8).
+ *
+ * Issue #253 — Holistic Craftsmanship Score Phase 1:
+ *   handleDelivery() payload extended with optional `fault_instance_ids` field (string[]).
+ *   constructor opts extended with optional `jobQualityAggregator` param.
+ *   After recordJobCompletion() (ledger write) and before save flush, the aggregator is
+ *   invoked to compute the composite score. Personal best updated if score improves.
+ *   Backward-compatible: callers omitting jobQualityAggregator or fault_instance_ids are
+ *   unaffected — no craftsmanship score is computed, no existing logic is altered.
  */
 'use strict';
 
@@ -32,16 +40,18 @@ const SATISFACTION_MESSAGES = {
 class DeliveryHandler {
   /**
    * @param {Object}         opts
-   * @param {Object}         opts.saveState       PlayerSaveState-compatible object
-   * @param {Function|null}  opts.saveAsyncFn     Optional async save callback
-   * @param {Function|null}  opts.onDelivered     Optional delivery notification callback
-   * @param {Object|null}    opts.ledgerManager   Issue #145: LedgerManager instance (optional, backward-compat)
+   * @param {Object}         opts.saveState           PlayerSaveState-compatible object
+   * @param {Function|null}  opts.saveAsyncFn         Optional async save callback
+   * @param {Function|null}  opts.onDelivered         Optional delivery notification callback
+   * @param {Object|null}    opts.ledgerManager       Issue #145: LedgerManager instance (optional, backward-compat)
+   * @param {Object|null}    opts.jobQualityAggregator Issue #253: JobQualityAggregator instance (optional, backward-compat)
    */
-  constructor({ saveState, saveAsyncFn = null, onDelivered = null, ledgerManager = null }) {
+  constructor({ saveState, saveAsyncFn = null, onDelivered = null, ledgerManager = null, jobQualityAggregator = null }) {
     this._saveState    = saveState;
     this._saveAsyncFn  = saveAsyncFn;
     this._onDelivered  = onDelivered;
-    this._ledger       = ledgerManager;  // Issue #145: null-safe (backward-compat)
+    this._ledger       = ledgerManager;        // Issue #145: null-safe (backward-compat)
+    this._aggregator   = jobQualityAggregator; // Issue #253: null-safe (backward-compat)
   }
 
   /**
@@ -57,26 +67,35 @@ class DeliveryHandler {
    * Backward-compatible: omitting `cosmetic_grade` produces no satisfaction_message and no
    * grade multiplier — existing callers unaffected (AC5, Scenario 8).
    *
-   * @param {Object}  payload
-   * @param {string}  payload.watch_name
-   * @param {string}  payload.client_name
-   * @param {string}  payload.completion_date
-   * @param {string}  payload.portrait_asset_key
-   * @param {string}  [payload.before_portrait_url]
-   * @param {string}  [payload.pricing_tier]    Issue #145: 'simple_service'|'complex_service'|'full_restoration'
-   * @param {number}  [payload.parts_cost]      Issue #145: total parts cost for this job (≥0)
-   * @param {string}  [payload.cosmetic_grade]  Issue #254: 'adequate'|'good'|'mirror' (optional)
-   * @returns {Object} The delivery entry (collection gallery record + economy summary)
+   * Issue #253 extension: optional `fault_instance_ids` payload field (string[], default []).
+   * When a `jobQualityAggregator` is provided, the composite craftsmanship score is computed
+   * after recordJobCompletion() and before the save flush. Personal best is updated when the
+   * new score exceeds the stored value. No aggregator → no score computed (backward-compat).
+   *
+   * @param {Object}   payload
+   * @param {string}   payload.watch_name
+   * @param {string}   payload.client_name
+   * @param {string}   payload.completion_date
+   * @param {string}   payload.portrait_asset_key
+   * @param {string}   [payload.before_portrait_url]
+   * @param {string}   [payload.pricing_tier]         Issue #145: 'simple_service'|'complex_service'|'full_restoration'
+   * @param {number}   [payload.parts_cost]           Issue #145: total parts cost for this job (≥0)
+   * @param {string}   [payload.cosmetic_grade]       Issue #254: 'adequate'|'good'|'mirror' (optional)
+   * @param {string[]} [payload.fault_instance_ids]   Issue #253: fault IDs registered for this job (default [])
+   * @param {string}   [payload.job_id]               Issue #253: job ID for personal best record (optional)
+   * @returns {Object} The delivery entry (collection gallery record + economy summary + craftsmanship result)
    */
   handleDelivery({
     watch_name,
     client_name,
     completion_date,
     portrait_asset_key,
-    before_portrait_url = null,
-    pricing_tier        = null,   // Issue #145
-    parts_cost          = 0,      // Issue #145
-    cosmetic_grade      = null,   // Issue #254
+    before_portrait_url  = null,
+    pricing_tier         = null,   // Issue #145
+    parts_cost           = 0,      // Issue #145
+    cosmetic_grade       = null,   // Issue #254
+    fault_instance_ids   = [],     // Issue #253
+    job_id               = null,   // Issue #253
   }) {
     const entry = { watch_name, client_name, completion_date, portrait_asset_key, before_portrait_url };
 
@@ -98,16 +117,47 @@ class DeliveryHandler {
       entry.satisfaction_message = SATISFACTION_MESSAGES[cosmetic_grade];
     }
 
+    // Issue #253: Holistic Craftsmanship Score Phase 1.
+    // Compute composite score AFTER ledger write and BEFORE save flush.
+    // Null-safe: if no aggregator was supplied, skip entirely (backward-compat).
+    let craftsmanshipResult = null;
+    if (this._aggregator) {
+      craftsmanshipResult = this._aggregator.computeScore({
+        pricingTier:      pricing_tier,
+        partsCost:        parts_cost,
+        faultInstanceIds: Array.isArray(fault_instance_ids) ? fault_instance_ids : [],
+      });
+
+      // Update personal best when the new score exceeds the stored value.
+      // Personal best save-flush is handled by the existing saveAsyncFn call below.
+      const prev = this._saveState.get('craftsmanship_personal_best');
+      if (prev === null || prev === undefined || craftsmanshipResult.score > prev.score) {
+        this._saveState.set('craftsmanship_personal_best', {
+          score:  craftsmanshipResult.score,
+          tier:   craftsmanshipResult.tier,
+          jobId:  job_id !== undefined ? job_id : null,
+        });
+      }
+
+      // Attach craftsmanship summary to delivery entry for caller/display layer.
+      entry.craftsmanship_score = craftsmanshipResult.score;
+      entry.craftsmanship_tier  = craftsmanshipResult.tier;
+    }
+
     this._saveState.appendCompletedWatch(entry);
     if (this._saveAsyncFn) this._saveAsyncFn(this._saveState.snapshot());
     if (this._onDelivered) this._onDelivered(entry);
-    return entry;
+    // Issue #253: return craftsmanshipResult on the entry for display layer (null when no aggregator)
+    return Object.assign({}, entry, craftsmanshipResult ? { craftsmanship: craftsmanshipResult } : {});
   }
 
   getSaveState() { return this._saveState; }
 
   /** Issue #145: convenience accessor for the ledger manager. */
   getLedger() { return this._ledger; }
+
+  /** Issue #253: convenience accessor for the job quality aggregator. */
+  getJobQualityAggregator() { return this._aggregator; }
 }
 
 module.exports = { DeliveryHandler };
