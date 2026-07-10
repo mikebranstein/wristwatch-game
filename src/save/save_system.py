@@ -43,9 +43,8 @@ import json
 import os
 import tempfile
 import threading
+import time
 from typing import Callable, Optional
-
-from src.orders.order_queue import OrderQueue
 
 # ---------------------------------------------------------------------------
 # Stage constants
@@ -81,11 +80,10 @@ class SaveSystem:
             updated_save_data: full save-data dict with resolved queue state written back
         """
         queue_data = (raw_save_data or {}).get("order_queue", None)
-        order_queue = OrderQueue(queue_data)
 
         # Session-boundary event: resolve In-Transit orders that are now due.
-        arrived_order_objects = order_queue.resolve_arrivals()
-        arrived_orders = [o.to_dict() for o in arrived_order_objects]
+        # Pure-dict helper — no src.orders import required.
+        resolved_queue_dict, arrived_orders = SaveSystem._resolve_arrivals(queue_data)
 
         # Write resolved state back so callers get a consistent snapshot.
         # Issue #127: ensure completed_watches always exists (null-safe default for
@@ -93,7 +91,7 @@ class SaveSystem:
         completed_watches = (raw_save_data or {}).get("completed_watches", [])
         updated_save_data = {
             **(raw_save_data or {}),
-            "order_queue": order_queue.to_save_data(),
+            "order_queue": resolved_queue_dict,
             "completed_watches": completed_watches if isinstance(completed_watches, list) else [],
         }
 
@@ -130,7 +128,7 @@ class SaveSystem:
         if 'craftsmanship_personal_best' not in updated_save_data:
             updated_save_data['craftsmanship_personal_best'] = None
 
-        return order_queue.to_save_data(), arrived_orders, updated_save_data
+        return resolved_queue_dict, arrived_orders, updated_save_data
 
     def save_session(self, order_queue_data: dict, existing_save_data: Optional[dict]) -> dict:
         """
@@ -258,6 +256,87 @@ class SaveSystem:
     # -----------------------------------------------------------------------
     # Internal helpers
     # -----------------------------------------------------------------------
+
+    @staticmethod
+    def _resolve_arrivals(queue_dict: Optional[dict]) -> tuple[dict, list[dict]]:
+        """
+        Pure-dict session-boundary arrival resolution.
+
+        Replicates the behaviour of ``OrderQueue(queue_dict).resolve_arrivals()``
+        without importing any domain objects from ``src.orders``, keeping
+        ``save/`` dependency-layer compliant (may import from ``config`` only).
+
+        Algorithm (mirrors ``OrderQueue.resolve_arrivals()``):
+          1. Increment ``session_boundary_count`` by 1.
+          2. Clear all ``arrived_this_session`` flags from the previous session.
+          3. For every order whose ``status`` is ``"In-Transit"`` and whose
+             ``estimated_arrival_session`` is ≤ the new counter, transition it to
+             ``"Arrived"``, stamp ``arrived_at`` with the current epoch time, and
+             set ``arrived_this_session = True``.
+
+        .. note::
+            The string literals ``"In-Transit"`` and ``"Arrived"`` used here
+            correspond to ``OrderStatus.IN_TRANSIT`` and ``OrderStatus.ARRIVED``
+            in ``src/orders/order_status.py``.  If those enum values are ever
+            renamed, update the literals here to match — otherwise arrivals will
+            silently stop being resolved.
+
+        Parameters
+        ----------
+        queue_dict : dict or None
+            Raw ``order_queue`` dict with keys ``session_boundary_count`` (int)
+            and ``orders`` (list[dict]).  May be ``None`` for pre-feature saves;
+            handled gracefully (returns an empty resolved queue).
+
+        Returns
+        -------
+        tuple[dict, list[dict]]
+            ``(resolved_queue_dict, arrived_orders)``
+
+            resolved_queue_dict
+                Full queue state with the incremented counter and resolved order
+                statuses written in — ready to be used as ``queue_data`` and
+                persisted as the ``order_queue`` node in the save file.
+            arrived_orders
+                List of order dicts that transitioned to ``"Arrived"`` this
+                session.  Each dict is a shallow copy — callers receive an
+                independent snapshot.
+        """
+        # Null-safe: handle pre-feature saves that lack an order_queue node,
+        # mirroring OrderQueue.__init__ null-safe defaults.
+        if queue_dict and isinstance(queue_dict.get("orders"), list):
+            orders: list[dict] = [dict(o) for o in queue_dict["orders"]]
+            session_boundary_count: int = queue_dict.get("session_boundary_count", 0)
+        else:
+            orders = []
+            session_boundary_count = 0
+
+        # 1. Increment session boundary counter (mirrors OrderQueue.resolve_arrivals step 1).
+        session_boundary_count += 1
+
+        # 2. Clear previous session's arrival flags (step 2).
+        for o in orders:
+            o["arrived_this_session"] = False
+
+        # 3. Mark qualifying In-Transit orders as Arrived (step 3).
+        # "In-Transit" → OrderStatus.IN_TRANSIT  (src/orders/order_status.py)
+        # "Arrived"    → OrderStatus.ARRIVED      (src/orders/order_status.py)
+        arrived_orders: list[dict] = []
+        for o in orders:
+            if (
+                o.get("status") == "In-Transit"
+                and session_boundary_count >= o.get("estimated_arrival_session", 0)
+            ):
+                o["status"] = "Arrived"
+                o["arrived_at"] = time.time()
+                o["arrived_this_session"] = True
+                arrived_orders.append(dict(o))  # independent snapshot for the caller
+
+        resolved_queue_dict = {
+            "session_boundary_count": session_boundary_count,
+            "orders": orders,
+        }
+        return resolved_queue_dict, arrived_orders
 
     @staticmethod
     def _atomic_write(path: str, data: dict) -> None:
