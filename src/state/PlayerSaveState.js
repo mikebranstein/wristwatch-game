@@ -19,6 +19,11 @@
  *   Added `restorations_completed` (0 default), `ab_second_bench_cohort` (null default),
  *   `second_bench_feedback_prompted` (false default), and `bench_slots` (null default).
  *   All are additive and backward-compatible.
+ *
+ * Issue #126 — Client Backstory Card System:
+ *   Added `ab_backstory_cohort` (null default, backward-compatible).
+ *   Written once before any intake-screen code runs (AC1 / AC2).
+ *   Values: 'backstory' | 'control' | null (null = not yet assigned).
  */
 
 const DEFAULT_SAVE = {
@@ -57,6 +62,11 @@ const DEFAULT_SAVE = {
   ab_second_bench_cohort:          null,
   second_bench_feedback_prompted:  false,
   bench_slots:                     null,
+
+  // Issue #126: Client Backstory Card System — A/B cohort assignment (additive, backward-compatible)
+  // Written synchronously before any intake-screen code runs (AC1 / AC2).
+  // Values: 'backstory' | 'control' | null (null = not yet assigned for this player)
+  ab_backstory_cohort:    null,
 
 };
 
@@ -114,4 +124,3 @@ class PlayerSaveState {
 }
 
 module.exports = { PlayerSaveState };
-
