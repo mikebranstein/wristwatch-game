@@ -248,3 +248,77 @@ class TestAC5FilterControls:
         for p in results:
             assert p.part_type == PartType.MAINSPRING
             assert p.movement_family in (MovementFamily.ETA_2824, None)
+
+
+# ---------------------------------------------------------------------------
+# Private helper methods — direct unit tests (refactor acceptance criteria)
+# ---------------------------------------------------------------------------
+
+class TestPrivateFilterHelpers:
+    """Direct tests for the four extracted private helper methods on CatalogFilter.
+
+    Each helper is tested with:
+      - a None-guard case  (helper returns the input list unchanged when filter is None)
+      - a match case       (helper correctly narrows the list when a value is provided)
+    """
+
+    def setup_method(self):
+        self.f = CatalogFilter()
+        self.all_parts = list(PARTS_CATALOG)
+
+    # -- _apply_name_filter --------------------------------------------------
+
+    def test_apply_name_filter_none_returns_all(self):
+        """_apply_name_filter: None guard — returns input list unchanged."""
+        result = self.f._apply_name_filter(self.all_parts, None)
+        assert result == self.all_parts
+
+    def test_apply_name_filter_match_narrows_results(self):
+        """_apply_name_filter: match case — returns only parts whose name contains the query."""
+        result = self.f._apply_name_filter(self.all_parts, "mainspring")
+        assert len(result) > 0
+        assert all("mainspring" in p.name.lower() for p in result)
+        assert len(result) < len(self.all_parts)
+
+    # -- _apply_part_type_filter ---------------------------------------------
+
+    def test_apply_part_type_filter_none_returns_all(self):
+        """_apply_part_type_filter: None guard — returns input list unchanged."""
+        result = self.f._apply_part_type_filter(self.all_parts, None)
+        assert result == self.all_parts
+
+    def test_apply_part_type_filter_match_narrows_results(self):
+        """_apply_part_type_filter: match case — returns only parts of the given type."""
+        result = self.f._apply_part_type_filter(self.all_parts, PartType.MAINSPRING)
+        assert len(result) > 0
+        assert all(p.part_type == PartType.MAINSPRING for p in result)
+        assert len(result) < len(self.all_parts)
+
+    # -- _apply_movement_family_filter ---------------------------------------
+
+    def test_apply_movement_family_filter_none_returns_all(self):
+        """_apply_movement_family_filter: None guard — returns input list unchanged."""
+        result = self.f._apply_movement_family_filter(self.all_parts, None)
+        assert result == self.all_parts
+
+    def test_apply_movement_family_filter_match_includes_universal_parts(self):
+        """_apply_movement_family_filter: match case — includes matching + universal parts."""
+        result = self.f._apply_movement_family_filter(self.all_parts, MovementFamily.ETA_2824)
+        assert len(result) > 0
+        for p in result:
+            assert p.movement_family in (MovementFamily.ETA_2824, None)
+        assert len(result) < len(self.all_parts)
+
+    # -- _apply_condition_filter ---------------------------------------------
+
+    def test_apply_condition_filter_none_returns_all(self):
+        """_apply_condition_filter: None guard — returns input list unchanged."""
+        result = self.f._apply_condition_filter(self.all_parts, None)
+        assert result == self.all_parts
+
+    def test_apply_condition_filter_match_narrows_results(self):
+        """_apply_condition_filter: match case — returns only parts with the given condition."""
+        result = self.f._apply_condition_filter(self.all_parts, PartCondition.NEW)
+        assert len(result) > 0
+        assert all(p.condition == PartCondition.NEW for p in result)
+        assert len(result) < len(self.all_parts)

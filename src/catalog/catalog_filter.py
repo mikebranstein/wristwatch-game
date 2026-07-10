@@ -112,26 +112,43 @@ class CatalogFilter:
         Applies all active filters in combination.
         """
         results = list(self._catalog)
-
-        if self._filter_state.name_query:
-            lc = self._filter_state.name_query.lower()
-            results = [p for p in results if lc in p.name.lower()]
-
-        if self._filter_state.part_type:
-            results = [p for p in results if p.part_type == self._filter_state.part_type]
-
-        if self._filter_state.movement_family:
-            # Universal parts (movement_family is None) are always included
-            results = [
-                p for p in results
-                if p.movement_family == self._filter_state.movement_family
-                or p.movement_family is None
-            ]
-
-        if self._filter_state.condition:
-            results = [p for p in results if p.condition == self._filter_state.condition]
-
+        results = self._apply_name_filter(results, self._filter_state.name_query)
+        results = self._apply_part_type_filter(results, self._filter_state.part_type)
+        results = self._apply_movement_family_filter(results, self._filter_state.movement_family)
+        results = self._apply_condition_filter(results, self._filter_state.condition)
         return results
+
+    # -------------------------------------------------------------------------
+    # Private filter-step helpers
+    # -------------------------------------------------------------------------
+
+    def _apply_name_filter(self, results: list[Part], name_query: str | None) -> list[Part]:
+        """Return parts whose name contains name_query (case-insensitive); pass through if None."""
+        if not name_query:
+            return results
+        lc = name_query.lower()
+        return [p for p in results if lc in p.name.lower()]
+
+    def _apply_part_type_filter(self, results: list[Part], part_type: str | None) -> list[Part]:
+        """Return parts matching part_type exactly; pass through if None."""
+        if not part_type:
+            return results
+        return [p for p in results if p.part_type == part_type]
+
+    def _apply_movement_family_filter(self, results: list[Part], movement_family: str | None) -> list[Part]:
+        """Return parts matching movement_family or universal parts (movement_family=None); pass through if None."""
+        if not movement_family:
+            return results
+        return [
+            p for p in results
+            if p.movement_family == movement_family or p.movement_family is None
+        ]
+
+    def _apply_condition_filter(self, results: list[Part], condition: str | None) -> list[Part]:
+        """Return parts matching condition exactly; pass through if None."""
+        if not condition:
+            return results
+        return [p for p in results if p.condition == condition]
 
     @property
     def filter_state(self) -> FilterState:
