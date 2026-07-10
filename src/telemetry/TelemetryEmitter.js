@@ -65,6 +65,14 @@ const EVENTS = {
   ONBOARDING_SKIPPED: 'onboarding_skipped',
   ONBOARDING_COMPLETED: 'onboarding_completed',
   AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
+
+  // Scaffolded Fault-Signal System — Phase 1 (Issue #117)
+  // All additive — zero changes to existing event names or signatures.
+  // Three events cover the A/B instrumentation required for diagnosis-without-hint %
+  // and time-before-first-hint tracking, segmented by A/B arm (AC4).
+  LOUPE_AB_ARM_ASSIGNED:           'loupe_ab_arm_assigned',
+  TIME_BEFORE_FIRST_HINT_RECORDED: 'time_before_first_hint_recorded',
+  DIAGNOSIS_SESSION_COMPLETED:     'diagnosis_session_completed',
   // Two-Bench Workshop Probe — Issue #116 (Phase 1 A/B)
   // All additive — zero changes to existing event names or signatures.
   // Six events cover cohort stabilisation, session-frequency and session-start-behaviour
@@ -381,6 +389,37 @@ class TelemetryEmitter {
     this.emit(EVENTS.SECOND_BENCH_FEEDBACK_RESPONSE, { playerId, sentiment, responseText });
   }
 
+
+  // ---- Scaffolded Fault-Signal System convenience methods (Issue #117) ----
+
+  /**
+   * Fires once at session creation when the loupe A/B arm is assigned (AC3, AC4).
+   * @param {string|null} sessionId
+   * @param {'treatment'|'control'} arm
+   */
+  loupeAbArmAssigned(sessionId, arm) {
+    this.emit(EVENTS.LOUPE_AB_ARM_ASSIGNED, { sessionId, arm });
+  }
+
+  /**
+   * Fires when the player first requests a hint during the diagnosis phase (AC4).
+   * @param {string|null} sessionId
+   * @param {'treatment'|'control'} arm
+   * @param {number} elapsedMs  Milliseconds from diagnosis start to first hint request
+   */
+  timeBeforeFirstHintRecorded(sessionId, arm, elapsedMs) {
+    this.emit(EVENTS.TIME_BEFORE_FIRST_HINT_RECORDED, { sessionId, arm, elapsedMs });
+  }
+
+  /**
+   * Fires when the player submits their diagnosis (AC4).
+   * @param {string|null} sessionId
+   * @param {'treatment'|'control'} arm
+   * @param {boolean} diagnosedWithoutHint
+   */
+  diagnosisSessionCompleted(sessionId, arm, diagnosedWithoutHint) {
+    this.emit(EVENTS.DIAGNOSIS_SESSION_COMPLETED, { sessionId, arm, diagnosedWithoutHint });
+  }
   // ---- Client Backstory Card System convenience methods (Issue #126) ----
 
   /**
