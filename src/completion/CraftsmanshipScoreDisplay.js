@@ -190,11 +190,13 @@ class CraftsmanshipScoreDisplay {
  */
 function _dimensionLabel(dim) {
   switch (dim) {
-    case 'cosmetic':    return 'Cosmetic Restoration';
-    case 'mechanical':  return 'Mechanical Precision';
-    case 'diagnostic':  return 'Diagnostic Accuracy';
-    case 'economic':    return 'Economic Efficiency';
-    default:            return dim;
+    case 'cosmetic':            return 'Cosmetic Restoration';
+    case 'mechanical':          return 'Mechanical Precision';
+    case 'diagnostic':          return 'Diagnostic Accuracy';
+    case 'economic':            return 'Economic Efficiency';
+    case 'timing_calibration':  return 'Timing Calibration';    // Issue #255
+    case 'sourcing_quality':    return 'Sourcing Quality';       // Issue #255
+    default:                    return dim;
   }
 }
 

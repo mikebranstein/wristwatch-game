@@ -1,5 +1,5 @@
 /**
- * JobQualityAggregator — 4-Dimension Craftsmanship Score synthesis at job delivery.
+ * JobQualityAggregator — 6-Dimension Craftsmanship Score synthesis at job delivery.
  *
  * Issue #253 — Holistic Craftsmanship Score Phase 1
  *
@@ -12,25 +12,41 @@
  *   diagnostic  — HintSystem.wasHintUsed(): faultsWithoutHints / totalFaults × 100
  *   economic    — LedgerManager.revenueForTier(): (revenue − partsCost) / revenue × 100
  *
+ * Issue #255 — Holistic Craftsmanship Score Phase 2
+ *
+ * Dimensions (Phase 2 additions — slots 5 and 6):
+ *   timing_calibration — TimingCalibrationTracker.computeJobScore(): arithmetic mean of
+ *                        per-phase scores = clamp(actual_s / par_s, 0, 1) × 100
+ *   sourcing_quality   — SourcingScreen.computeSourcingQualityScore(): passing parts / total × 100
+ *
+ *   Both new dimensions are injected via the existing injectDimensionScores interface (AC5).
+ *   When not yet unlocked (phase-gate), callers pass null — dimension excluded from composite.
+ *   Same phase-gate exclusion logic as Phase 1 (design constraint: no new gating architecture).
+ *
  * Phase-gate: only dimensions in craftsmanship_dimensions_unlocked contribute to composite.
- * Default unlock: ['cosmetic', 'mechanical'] (early-game; diagnostic/economic added later).
+ * Default unlock: ['cosmetic', 'mechanical'] (early-game; diagnostic/economic added later;
+ * timing_calibration/sourcing_quality unlocked when player reaches the relevant tools).
  *
  * Tier assignment: Apprentice (0–49) | Journeyman (50–74) | Master (75–89) | Grandmaster (90–100)
  *
  * Constraints:
  *   - Does NOT call LedgerManager.recordJobCompletion() — that is done by DeliveryHandler.
  *   - Does NOT import or use HintEscalationAnalyzer (batch telemetry tool — no runtime role).
- *   - Interface-immutable: no modifications to CosmeticRestorationSummary, CompletionScreenState,
- *     HintSystem, or LedgerManager public APIs.
+ *   - Interface-immutable (Issue #255): no structural modifications to the public contract;
+ *     new dimensions integrate via the existing injectDimensionScores slot interface.
  *   - Synchronous, pure arithmetic — ≤16ms budget trivially satisfied.
  *   - Null-safe: if any source system returns null/undefined, that dimension is excluded from
  *     composite with a console.warn rather than throwing.
  *
  * Acceptance Criteria covered:
- *   AC1 — composite score + tier computed at delivery boundary from 4 dimensions
+ *   AC1 — composite score + tier computed at delivery boundary from 4 dimensions (Phase 1)
  *   AC3 — phase-gate: unlocked dimensions only; denominator = count of unlocked dimensions
  *   AC4 — personal best update (logic in DeliveryHandler; aggregator returns score/tier)
  *   AC5 — unit-testable via direct numeric injection (accepts dimension scores as params)
+ *   #255 AC1 — timing_calibration and sourcing_quality integrate as slots 5+6
+ *   #255 AC3 — 6-dimension composite when both new dimensions are available and unlocked
+ *   #255 AC4 — phase-gate exclusion applies to both new dimensions
+ *   #255 AC5 — Phase 1 regression: existing 4-dimension scoring unchanged when Phase 2 null
  */
 
 'use strict';
@@ -48,8 +64,8 @@ const TIERS = [
   { label: 'Apprentice',  min: 0  },
 ];
 
-/** All possible dimension identifiers. */
-const ALL_DIMENSIONS = ['cosmetic', 'mechanical', 'diagnostic', 'economic'];
+/** All possible dimension identifiers (Phase 1 + Phase 2). */
+const ALL_DIMENSIONS = ['cosmetic', 'mechanical', 'diagnostic', 'economic', 'timing_calibration', 'sourcing_quality'];
 
 /** Default unlocked dimensions (early-game; diagnostic+economic added on tool unlock). */
 const DEFAULT_UNLOCKED_DIMENSIONS = ['cosmetic', 'mechanical'];
@@ -180,6 +196,13 @@ class JobQualityAggregator {
   /**
    * Compute a single dimension score from the real source systems.
    * Returns null on any failure (null-safe contract).
+   *
+   * Issue #255: timing_calibration and sourcing_quality are pre-computed externally
+   * (by TimingCalibrationTracker and SourcingScreen respectively) and injected via
+   * injectDimensionScores. The _computeDimensionScore cases for these dimensions
+   * always return null (no internal source system) — callers must use injection.
+   * This is consistent with the existing interface-immutable contract (Issue #255).
+   *
    * @param {string} dimension
    * @param {Object} opts
    * @returns {number|null}
@@ -196,6 +219,14 @@ class JobQualityAggregator {
           return this._diagnosticScore(faultInstanceIds);
         case 'economic':
           return this._economicScore(pricingTier, partsCost);
+        case 'timing_calibration':
+          // Issue #255: score is pre-computed by TimingCalibrationTracker and
+          // injected via injectDimensionScores. Return null (injection fallback).
+          return null;
+        case 'sourcing_quality':
+          // Issue #255: score is pre-computed by SourcingScreen.computeSourcingQualityScore()
+          // and injected via injectDimensionScores. Return null (injection fallback).
+          return null;
         default:
           console.warn(`[JobQualityAggregator] Unknown dimension '${dimension}' — skipped.`);
           return null;

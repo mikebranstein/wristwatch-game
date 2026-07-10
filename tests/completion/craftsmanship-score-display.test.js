@@ -1,8 +1,9 @@
 /**
- * Tests: CraftsmanshipScoreDisplay — Holistic Craftsmanship Score Phase 1 (Issue #253)
+ * Tests: CraftsmanshipScoreDisplay — Holistic Craftsmanship Score Phases 1+2 (Issues #253/#255)
  *
- * Covers AC2: tier label, narrative, expandable subscores with progress bars,
- * personal best comparison (null-omission), and improvement tip logic.
+ * Covers AC2 plus Phase 2 display additions: tier label, narrative, expandable
+ * subscores with progress bars, personal best comparison (null-omission),
+ * improvement tip logic, and Phase 2 timing/sourcing dimension rendering.
  *
  * Spec groups per QA Clarification (design-clarified comment):
  *   AC2-T1 — renderProgressBar() input/output pairs
@@ -46,6 +47,14 @@ function captureViewModel(result, personalBest = null) {
   const display = new CraftsmanshipScoreDisplay((vm) => { captured = vm; });
   display.render(result, personalBest);
   return captured;
+}
+
+
+/** Build a display that captures the last rendered view model. */
+function makeDisplay() {
+  let captured = null;
+  const display = new CraftsmanshipScoreDisplay((vm) => { captured = vm; });
+  return { display, lastVM: () => captured };
 }
 
 // ---------------------------------------------------------------------------
@@ -446,6 +455,233 @@ describe('AC2-T6: render() view-model shape', () => {
       expect(received.score).toBe(77);
       expect(received.tier).toBe('Master');
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC6 — "Timing Calibration" label rendered for timing_calibration dimension
+// ---------------------------------------------------------------------------
+
+describe('CraftsmanshipScoreDisplay — AC6: "Timing Calibration" label', () => {
+  it('AC6: renders label "Timing Calibration" for timing_calibration dimension', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { timing_calibration: 72 },
+      unlockedDimensions: ['timing_calibration'],
+    }));
+
+    const rows = lastVM().dimensionRows;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe('Timing Calibration');
+  });
+
+  it('AC6: progress bar for timing_calibration score of 72 contains "72%"', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { timing_calibration: 72 },
+      unlockedDimensions: ['timing_calibration'],
+    }));
+
+    const rows = lastVM().dimensionRows;
+    expect(rows[0].bar).toContain('72%');
+    expect(rows[0].score).toBe(72);
+    expect(rows[0].available).toBe(true);
+  });
+
+  it('AC6: timing_calibration row is available when score is numeric', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { timing_calibration: 100 },
+      unlockedDimensions: ['timing_calibration'],
+    }));
+
+    expect(lastVM().dimensionRows[0].available).toBe(true);
+    expect(lastVM().dimensionRows[0].bar).toContain('100%');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC7 — "Sourcing Quality" label rendered for sourcing_quality dimension
+// ---------------------------------------------------------------------------
+
+describe('CraftsmanshipScoreDisplay — AC7: "Sourcing Quality" label', () => {
+  it('AC7: renders label "Sourcing Quality" for sourcing_quality dimension', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { sourcing_quality: 85 },
+      unlockedDimensions: ['sourcing_quality'],
+    }));
+
+    const rows = lastVM().dimensionRows;
+    expect(rows).toHaveLength(1);
+    expect(rows[0].label).toBe('Sourcing Quality');
+  });
+
+  it('AC7: progress bar for sourcing_quality score of 85 contains "85%"', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { sourcing_quality: 85 },
+      unlockedDimensions: ['sourcing_quality'],
+    }));
+
+    const rows = lastVM().dimensionRows;
+    expect(rows[0].bar).toContain('85%');
+    expect(rows[0].score).toBe(85);
+    expect(rows[0].available).toBe(true);
+  });
+
+  it('AC7: sourcing_quality row with score 0 shows 0% bar', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { sourcing_quality: 0 },
+      unlockedDimensions: ['sourcing_quality'],
+    }));
+
+    const rows = lastVM().dimensionRows;
+    expect(rows[0].bar).toContain('0%');
+    expect(rows[0].score).toBe(0);
+    expect(rows[0].available).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC8 — 6 dimension rows when all Phase 1 + Phase 2 scores provided
+// ---------------------------------------------------------------------------
+
+describe('CraftsmanshipScoreDisplay — AC8: 6 dimension rows for full Phase 1 + Phase 2', () => {
+  const allSixDims = ['cosmetic', 'mechanical', 'diagnostic', 'economic', 'timing_calibration', 'sourcing_quality'];
+  const allSixScores = {
+    cosmetic:           90,
+    mechanical:         80,
+    diagnostic:         70,
+    economic:           60,
+    timing_calibration: 72,
+    sourcing_quality:   85,
+  };
+
+  it('AC8: renders exactly 6 dimension rows when all 6 scores are provided', () => {
+    const { display, lastVM } = makeDisplay();
+    display.render(makeResult({
+      score:               76,
+      tier:                'Master',
+      dimensionScores:     allSixScores,
+      unlockedDimensions:  allSixDims,
+    }));
+    expect(lastVM().dimensionRows).toHaveLength(6);
+  });
+
+  it('AC8: rows appear in order — cosmetic, mechanical, diagnostic, economic, timing_calibration, sourcing_quality', () => {
+    const { display, lastVM } = makeDisplay();
+    display.render(makeResult({
+      dimensionScores:    allSixScores,
+      unlockedDimensions: allSixDims,
+    }));
+
+    const labels = lastVM().dimensionRows.map(r => r.label);
+    expect(labels[0]).toBe('Cosmetic Restoration');
+    expect(labels[1]).toBe('Mechanical Precision');
+    expect(labels[2]).toBe('Diagnostic Accuracy');
+    expect(labels[3]).toBe('Economic Efficiency');
+    expect(labels[4]).toBe('Timing Calibration');
+    expect(labels[5]).toBe('Sourcing Quality');
+  });
+
+  it('AC8: each row carries the correct score and a non-empty progress bar', () => {
+    const { display, lastVM } = makeDisplay();
+    display.render(makeResult({
+      dimensionScores:    allSixScores,
+      unlockedDimensions: allSixDims,
+    }));
+
+    const rows = lastVM().dimensionRows;
+    expect(rows[4].score).toBe(72);
+    expect(rows[4].bar).toContain('72%');
+    expect(rows[5].score).toBe(85);
+    expect(rows[5].bar).toContain('85%');
+
+    rows.forEach(row => {
+      expect(row.available).toBe(true);
+      expect(typeof row.bar).toBe('string');
+      expect(row.bar.length).toBeGreaterThan(0);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC9 — Graceful degradation to 4 rows when Phase 2 scores are absent
+// ---------------------------------------------------------------------------
+
+describe('CraftsmanshipScoreDisplay — AC9: graceful degradation to 4 rows without Phase 2', () => {
+  it('AC9: renders exactly 4 rows when only Phase 1 dimensions are unlocked', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      score:               80,
+      tier:                'Master',
+      dimensionScores:     { cosmetic: 90, mechanical: 80, diagnostic: 70, economic: 60 },
+      unlockedDimensions:  ['cosmetic', 'mechanical', 'diagnostic', 'economic'],
+    }));
+
+    expect(lastVM().dimensionRows).toHaveLength(4);
+  });
+
+  it('AC9: no timing_calibration or sourcing_quality rows present without Phase 2', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    { cosmetic: 90, mechanical: 80, diagnostic: 70, economic: 60 },
+      unlockedDimensions: ['cosmetic', 'mechanical', 'diagnostic', 'economic'],
+    }));
+
+    const labels = lastVM().dimensionRows.map(r => r.label);
+    expect(labels).not.toContain('Timing Calibration');
+    expect(labels).not.toContain('Sourcing Quality');
+  });
+
+  it('AC9: does not crash when unlockedDimensions is empty', () => {
+    const { display, lastVM } = makeDisplay();
+
+    expect(() => {
+      display.render(makeResult({
+        dimensionScores:    {},
+        unlockedDimensions: [],
+      }));
+    }).not.toThrow();
+
+    expect(lastVM().dimensionRows).toHaveLength(0);
+  });
+
+  it('AC9: does not crash when unlockedDimensions is null/undefined', () => {
+    const { display, lastVM } = makeDisplay();
+
+    expect(() => {
+      display.render(makeResult({
+        dimensionScores:    {},
+        unlockedDimensions: null,
+      }));
+    }).not.toThrow();
+
+    expect(lastVM().dimensionRows).toHaveLength(0);
+  });
+
+  it('AC9: row with no matching score shows "(unavailable)" bar and available=false', () => {
+    const { display, lastVM } = makeDisplay();
+
+    display.render(makeResult({
+      dimensionScores:    {},   // no scores provided
+      unlockedDimensions: ['cosmetic'],
+    }));
+
+    const row = lastVM().dimensionRows[0];
+    expect(row.available).toBe(false);
+    expect(row.bar).toBe('(unavailable)');
+    expect(row.score).toBeNull();
   });
 });
 

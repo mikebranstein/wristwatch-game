@@ -24,6 +24,15 @@
  *   invoked to compute the composite score. Personal best updated if score improves.
  *   Backward-compatible: callers omitting jobQualityAggregator or fault_instance_ids are
  *   unaffected — no craftsmanship score is computed, no existing logic is altered.
+ *
+ * Issue #255 — Holistic Craftsmanship Score Phase 2:
+ *   handleDelivery() payload extended with two optional Phase 2 score fields:
+ *     timing_calibration_score  {number|null}  From TimingCalibrationTracker.computeJobScore()
+ *     sourcing_quality_score    {number|null}  From SourcingScreen.computeSourcingQualityScore()
+ *   Both are forwarded to JobQualityAggregator via injectDimensionScores (slots 5 and 6).
+ *   Backward-compatible: callers omitting these fields receive null defaults; aggregator
+ *   excludes null dimensions from composite per phase-gate logic (existing behavior).
+ *   Pre-Phase-2 jobs (null scores) continue to compute correctly using Phase 1 logic.
  */
 'use strict';
 
@@ -72,17 +81,25 @@ class DeliveryHandler {
    * after recordJobCompletion() and before the save flush. Personal best is updated when the
    * new score exceeds the stored value. No aggregator → no score computed (backward-compat).
    *
-   * @param {Object}   payload
-   * @param {string}   payload.watch_name
-   * @param {string}   payload.client_name
-   * @param {string}   payload.completion_date
-   * @param {string}   payload.portrait_asset_key
-   * @param {string}   [payload.before_portrait_url]
-   * @param {string}   [payload.pricing_tier]         Issue #145: 'simple_service'|'complex_service'|'full_restoration'
-   * @param {number}   [payload.parts_cost]           Issue #145: total parts cost for this job (≥0)
-   * @param {string}   [payload.cosmetic_grade]       Issue #254: 'adequate'|'good'|'mirror' (optional)
-   * @param {string[]} [payload.fault_instance_ids]   Issue #253: fault IDs registered for this job (default [])
-   * @param {string}   [payload.job_id]               Issue #253: job ID for personal best record (optional)
+   * Issue #255 extension: optional `timing_calibration_score` and `sourcing_quality_score`
+   * payload fields (number|null, default null). When a `jobQualityAggregator` is provided,
+   * both scores are forwarded to aggregator.computeScore() via injectDimensionScores (slots 5
+   * and 6). Null values trigger phase-gate exclusion in the aggregator (consistent with
+   * Phase 1 behaviour). Pre-Phase-2 jobs (null scores) are fully backward-compatible.
+   *
+   * @param {Object}      payload
+   * @param {string}      payload.watch_name
+   * @param {string}      payload.client_name
+   * @param {string}      payload.completion_date
+   * @param {string}      payload.portrait_asset_key
+   * @param {string}      [payload.before_portrait_url]
+   * @param {string}      [payload.pricing_tier]              Issue #145: 'simple_service'|'complex_service'|'full_restoration'
+   * @param {number}      [payload.parts_cost]                Issue #145: total parts cost for this job (≥0)
+   * @param {string}      [payload.cosmetic_grade]            Issue #254: 'adequate'|'good'|'mirror' (optional)
+   * @param {string[]}    [payload.fault_instance_ids]        Issue #253: fault IDs registered for this job (default [])
+   * @param {string}      [payload.job_id]                    Issue #253: job ID for personal best record (optional)
+   * @param {number|null} [payload.timing_calibration_score]  Issue #255: from TimingCalibrationTracker.computeJobScore()
+   * @param {number|null} [payload.sourcing_quality_score]    Issue #255: from SourcingScreen.computeSourcingQualityScore()
    * @returns {Object} The delivery entry (collection gallery record + economy summary + craftsmanship result)
    */
   handleDelivery({
@@ -90,12 +107,14 @@ class DeliveryHandler {
     client_name,
     completion_date,
     portrait_asset_key,
-    before_portrait_url  = null,
-    pricing_tier         = null,   // Issue #145
-    parts_cost           = 0,      // Issue #145
-    cosmetic_grade       = null,   // Issue #254
-    fault_instance_ids   = [],     // Issue #253
-    job_id               = null,   // Issue #253
+    before_portrait_url       = null,
+    pricing_tier              = null,   // Issue #145
+    parts_cost                = 0,      // Issue #145
+    cosmetic_grade            = null,   // Issue #254
+    fault_instance_ids        = [],     // Issue #253
+    job_id                    = null,   // Issue #253
+    timing_calibration_score  = null,   // Issue #255
+    sourcing_quality_score    = null,   // Issue #255
   }) {
     const entry = { watch_name, client_name, completion_date, portrait_asset_key, before_portrait_url };
 
@@ -118,14 +137,28 @@ class DeliveryHandler {
     }
 
     // Issue #253: Holistic Craftsmanship Score Phase 1.
+    // Issue #255: Phase 2 — timing_calibration_score and sourcing_quality_score injected
+    //   via injectDimensionScores (slots 5 and 6). Null values are excluded by phase-gate.
     // Compute composite score AFTER ledger write and BEFORE save flush.
     // Null-safe: if no aggregator was supplied, skip entirely (backward-compat).
     let craftsmanshipResult = null;
     if (this._aggregator) {
+      // Build injection map — only include non-null Phase 2 scores so that null values
+      // propagate through the aggregator's injectDimensionScores null-exclusion path
+      // (injectDimensionScores skips entries where value is null/undefined per AC5 contract).
+      const phaseInjections = {};
+      if (timing_calibration_score !== null && timing_calibration_score !== undefined) {
+        phaseInjections.timing_calibration = timing_calibration_score;
+      }
+      if (sourcing_quality_score !== null && sourcing_quality_score !== undefined) {
+        phaseInjections.sourcing_quality = sourcing_quality_score;
+      }
+
       craftsmanshipResult = this._aggregator.computeScore({
-        pricingTier:      pricing_tier,
-        partsCost:        parts_cost,
-        faultInstanceIds: Array.isArray(fault_instance_ids) ? fault_instance_ids : [],
+        pricingTier:          pricing_tier,
+        partsCost:            parts_cost,
+        faultInstanceIds:     Array.isArray(fault_instance_ids) ? fault_instance_ids : [],
+        injectDimensionScores: phaseInjections,
       });
 
       // Update personal best when the new score exceeds the stored value.
