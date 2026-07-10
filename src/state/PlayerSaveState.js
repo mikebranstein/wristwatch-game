@@ -52,6 +52,16 @@
  *   Reflected in the restoration summary screen (AC4).
  *   Values: strap variant id string (e.g. 'leather_black') | null (none selected yet).
  *
+ * Issue #144 — Watch Intake Appraisal MVP: Guided Visual Inspection Checklist:
+ *   Added `first_job_completed` (false default, backward-compatible).
+ *   Written by IntakeInspectionChecklist.complete() when the first-job checklist is
+ *   successfully finished. Once true, subsequent jobs bypass the checklist gate entirely.
+ *   Default false ensures new players always see the intake checklist on their first job.
+ *   Added `intake_checklist_item_states` (null default, backward-compatible).
+ *   Written by IntakeInspectionChecklist.reviewItem() after each item review.
+ *   Allows mid-checklist game-close-reopen to restore reviewed state (AC9 / save-round-trip).
+ *   Cleared to null after checklist completion to keep the save compact.
+ *
  * Issue #146 — Crystal Replacement: Cosmetic Restoration Phase 2:
  *   Added `crystal_outcome` (null default, backward-compatible).
  *   Written by CosmeticRestorationController.completeInstallCrystal() at replacement completion.
@@ -191,6 +201,20 @@ const DEFAULT_SAVE = {
   // 0–100 inclusive. Mirrors the localStorage-backed AudioVolumeSettings value
   // so pre-existing saves receive the default volume without migration.
   audio_volume:           100,
+
+  // Issue #144: Watch Intake Appraisal MVP — Guided Visual Inspection Checklist
+  // (additive, backward-compatible — pre-existing saves receive these defaults on load)
+  //
+  // first_job_completed: false on all new player profiles — ensures the intake checklist
+  //   gate fires exactly once (for the first job). Once true, subsequent jobs bypass the gate.
+  //   Incorrect default (true) would silently skip the checklist for all new players — MUST be false.
+  //
+  // intake_checklist_item_states: null until checklist begins; set to an id→state map by
+  //   IntakeInspectionChecklist.reviewItem() after each item is reviewed.
+  //   Allows mid-checklist game-close to restore review progress on re-open (AC9).
+  //   Reset to null by IntakeInspectionChecklist.complete() after checklist is done.
+  first_job_completed:              false,
+  intake_checklist_item_states:     null,
 
 };
 
