@@ -42,6 +42,15 @@
  *   Read by CosmeticPhaseController.enterPhase() to restore prior selection on back-navigation (AC5).
  *   Reflected in the restoration summary screen (AC4).
  *   Values: strap variant id string (e.g. 'leather_black') | null (none selected yet).
+ *
+ * Issue #146 — Crystal Replacement: Cosmetic Restoration Phase 2:
+ *   Added `crystal_outcome` (null default, backward-compatible).
+ *   Written by CosmeticRestorationController.completeInstallCrystal() at replacement completion.
+ *   Values: 'replaced' | 'skipped' | null (null = crystal phase not yet reached).
+ *   Added `crystal_condition_before` (null default, backward-compatible).
+ *   Written alongside crystal_outcome; records the condition state before replacement.
+ *   Values: 'scratched' | 'cracked' | 'clean' | null.
+ *   Both fields reflected in the restoration summary screen (AC5).
  */
 
 const DEFAULT_SAVE = {
@@ -99,6 +108,16 @@ const DEFAULT_SAVE = {
   // null = no strap selected yet for the current restoration job (defaults to baseline worn strap).
   // Pre-existing saves lacking this key receive null via Object.assign defaults.
   strap_selection:        null,
+
+  // Issue #146: Crystal Replacement — Cosmetic Restoration Phase 2 (additive, backward-compatible)
+  // crystal_outcome: written by CosmeticRestorationController.completeInstallCrystal().
+  //   'replaced' = player replaced the damaged crystal; 'skipped' = crystal was already clean.
+  //   null = crystal phase not yet reached for this restoration job.
+  // crystal_condition_before: the crystal_condition id recorded at phase entry.
+  //   Values: 'scratched' | 'cracked' | 'clean' | null (null = phase not yet reached).
+  // Pre-existing saves lacking these keys receive null via Object.assign defaults.
+  crystal_outcome:           null,
+  crystal_condition_before:  null,
 
 };
 
