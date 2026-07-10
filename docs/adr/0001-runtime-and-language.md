@@ -85,3 +85,5 @@ The architectural boundary is clear:
 - Foundation Decision Pack entry: FD-001 (Runtime and Language)
 - Discovery Focus section: Technical Constraints — "Target mid-range Windows gaming PCs first; keyboard/mouse as primary input. Real-time simulation must remain responsive despite many small interactive parts."
 - Spike evidence: `docs/spike-chronograph-part-count-2026-07-10.md` — Node.js v24.18.0 benchmark results
+- Language boundary registry and enforcement: `docs/language-boundary.md` — path-ownership map enforced by `npm run check:boundary` (Issue #321)
+
