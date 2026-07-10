@@ -197,3 +197,109 @@ describe('CosmeticRestorationSummary — reset', () => {
     expect(state.isCosmeticallyRestored).toBe(false);
   });
 });
+
+// ── Issue #254: AC4 — cosmeticGrade field in getSummaryState() ────────────
+
+describe('AC4 (Issue #254) — cosmeticGrade derived from phase completion + case polish quality', () => {
+
+  // ── Scenario 3: Adequate — not all phases complete ────────────────────────
+
+  test('AC4 / Scenario 3 — not all phases complete → cosmeticGrade is "adequate"', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    // CASE not complete
+    expect(summary.getSummaryState().cosmeticGrade).toBe('adequate');
+  });
+
+  test('AC4 — no phases complete → cosmeticGrade is "adequate"', () => {
+    const summary = makeSummary();
+    expect(summary.getSummaryState().cosmeticGrade).toBe('adequate');
+  });
+
+  test('AC4 — only one phase complete → cosmeticGrade is "adequate"', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.CASE, 'mirror');  // case only, not all three
+    expect(summary.getSummaryState().cosmeticGrade).toBe('adequate');
+  });
+
+  // ── Scenario 2: Good — all phases complete, no mirror quality ─────────────
+
+  test('AC4 / Scenario 2 — all three phases complete, no polish quality → cosmeticGrade is "good"', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    summary.markPhaseComplete(PHASES.CASE);  // no polishQuality
+    expect(summary.getSummaryState().cosmeticGrade).toBe('good');
+  });
+
+  test('AC4 — all phases complete, polishQuality "good" → cosmeticGrade is "good"', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    summary.markPhaseComplete(PHASES.CASE, 'good');
+    expect(summary.getSummaryState().cosmeticGrade).toBe('good');
+  });
+
+  // ── Scenario 1: Mirror — all phases complete + mirror quality ─────────────
+
+  test('AC4 / Scenario 1 — all three phases complete + polishQuality "mirror" → cosmeticGrade is "mirror"', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    summary.markPhaseComplete(PHASES.CASE, 'mirror');
+    expect(summary.getSummaryState().cosmeticGrade).toBe('mirror');
+  });
+
+  // ── Existing fields unchanged ─────────────────────────────────────────────
+
+  test('AC4 — existing fields (overallStatus, isCosmeticallyRestored, phase states) unchanged', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    summary.markPhaseComplete(PHASES.CASE, 'mirror');
+    const state = summary.getSummaryState();
+
+    // Existing fields still present and correct
+    expect(state.overallStatus).toBe(STATUS_LABELS.COMPLETE);
+    expect(state.isCosmeticallyRestored).toBe(true);
+    expect(state.strap.complete).toBe(true);
+    expect(state.crystal.complete).toBe(true);
+    expect(state.case.complete).toBe(true);
+
+    // New field present
+    expect(state.cosmeticGrade).toBe('mirror');
+  });
+
+  // ── markPhaseComplete backward-compatibility ──────────────────────────────
+
+  test('AC4 — markPhaseComplete(PHASES.CASE) without quality param still works (backward-compat)', () => {
+    const summary = makeSummary();
+    expect(() => summary.markPhaseComplete(PHASES.CASE)).not.toThrow();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    expect(summary.getSummaryState().cosmeticGrade).toBe('good');  // all complete, no mirror
+  });
+
+  test('AC4 — polishQuality on STRAP/CRYSTAL phases is ignored (completion-only tracking)', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP, 'mirror');    // quality ignored on non-CASE
+    summary.markPhaseComplete(PHASES.CRYSTAL, 'mirror');  // quality ignored on non-CASE
+    summary.markPhaseComplete(PHASES.CASE);               // no quality on CASE
+    expect(summary.getSummaryState().cosmeticGrade).toBe('good');  // not mirror — only CASE quality counts
+  });
+
+  // ── reset clears polish quality ───────────────────────────────────────────
+
+  test('AC4 — reset() clears _casePolishQuality; cosmeticGrade returns to "adequate" after reset', () => {
+    const summary = makeSummary();
+    summary.markPhaseComplete(PHASES.STRAP);
+    summary.markPhaseComplete(PHASES.CRYSTAL);
+    summary.markPhaseComplete(PHASES.CASE, 'mirror');
+    expect(summary.getSummaryState().cosmeticGrade).toBe('mirror');
+
+    summary.reset();
+    // After reset: no phases complete, no quality → adequate
+    expect(summary.getSummaryState().cosmeticGrade).toBe('adequate');
+  });
+});

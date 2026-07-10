@@ -3,11 +3,13 @@
  * three cosmetic restoration phases (strap swap, crystal replacement, case polishing).
  *
  * Implements: Issue #152 (Case Polishing — Phase 3)
+ * Extended:   Issue #254 (Cosmetic Grade Modifier — wire restoration quality to pricing)
  *
  * Called by CosmeticRestorationFlow after each phase completes, and rendered on
  * the final restoration summary screen.
  *
  * Acceptance criteria covered:
+ *   AC4  — getSummaryState() includes cosmeticGrade field; existing fields unchanged.
  *   AC5  — all three cosmetic phases are reflected correctly in the final summary;
  *           restoration is marked as cosmetically complete only when all three
  *           phases are confirmed complete.
@@ -50,6 +52,9 @@ class CosmeticRestorationSummary {
       [PHASES.CRYSTAL]: { complete: false, label: 'Worn Crystal',      restoredLabel: 'Clean Crystal'   },
       [PHASES.CASE]:    { complete: false, label: 'Worn/Scratched Case', restoredLabel: 'Polished Case' },
     };
+
+    // Issue #254: case polish quality for cosmeticGrade derivation ('mirror' | 'good' | null)
+    this._casePolishQuality = null;
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
@@ -58,13 +63,22 @@ class CosmeticRestorationSummary {
    * Mark a restoration phase as complete.
    * Idempotent — marking the same phase complete twice has no effect.
    *
-   * @param {string} phase  One of PHASES.STRAP, PHASES.CRYSTAL, or PHASES.CASE.
+   * Issue #254 extension: PHASES.CASE accepts an optional `polishQuality` param
+   * ('mirror' | 'good' | null) to record the case polish quality for cosmeticGrade
+   * derivation. For STRAP and CRYSTAL phases the param is ignored (completion-only tracking).
+   *
+   * @param {string}      phase         One of PHASES.STRAP, PHASES.CRYSTAL, or PHASES.CASE.
+   * @param {string|null} [polishQuality]  Issue #254: 'mirror' | 'good' | null (CASE phase only)
    */
-  markPhaseComplete(phase) {
+  markPhaseComplete(phase, polishQuality = null) {
     if (!Object.prototype.hasOwnProperty.call(this._phaseState, phase)) {
       throw new Error(`Unknown cosmetic restoration phase: '${phase}'. Use PHASES constants.`);
     }
     this._phaseState[phase].complete = true;
+    // Issue #254: record case polish quality for grade derivation (CASE phase only)
+    if (phase === PHASES.CASE && polishQuality) {
+      this._casePolishQuality = polishQuality;
+    }
   }
 
   /**
@@ -83,12 +97,16 @@ class CosmeticRestorationSummary {
    * Get the current summary state object.
    * Used by the render hook and by tests to assert phase states (AC5, AC9).
    *
+   * Issue #254 (AC4): adds `cosmeticGrade` field to the return object.
+   * Existing fields (overallStatus, isCosmeticallyRestored, phase states) are unchanged.
+   *
    * @returns {{
    *   strap:   { complete: boolean, displayLabel: string },
    *   crystal: { complete: boolean, displayLabel: string },
    *   case:    { complete: boolean, displayLabel: string },
-   *   overallStatus: string,
-   *   isCosmeticallyRestored: boolean
+   *   overallStatus:          string,
+   *   isCosmeticallyRestored: boolean,
+   *   cosmeticGrade:          'adequate'|'good'|'mirror'
    * }}
    */
   getSummaryState() {
@@ -110,9 +128,27 @@ class CosmeticRestorationSummary {
         complete:     caseState.complete,
         displayLabel: caseState.complete ? caseState.restoredLabel : caseState.label,
       },
-      overallStatus:         restored ? STATUS_LABELS.COMPLETE : STATUS_LABELS.INCOMPLETE,
+      overallStatus:          restored ? STATUS_LABELS.COMPLETE : STATUS_LABELS.INCOMPLETE,
       isCosmeticallyRestored: restored,
+      cosmeticGrade:          this._deriveCosmeticGrade(),   // Issue #254 (AC4)
     };
+  }
+
+  /**
+   * Derive the cosmetic grade from phase completion and case polish quality.
+   *
+   * Grade derivation algorithm (Issue #254 Design decision):
+   *   - Not all three phases complete → 'adequate'
+   *   - All three phases complete AND _casePolishQuality === 'mirror' → 'mirror'
+   *   - All three phases complete AND quality is not 'mirror' (or not provided) → 'good'
+   *
+   * @returns {'adequate'|'good'|'mirror'}
+   * @private
+   */
+  _deriveCosmeticGrade() {
+    if (!this.isFullyCosmeticallyRestored()) return 'adequate';
+    if (this._casePolishQuality === 'mirror') return 'mirror';
+    return 'good';
   }
 
   /**
@@ -132,6 +168,7 @@ class CosmeticRestorationSummary {
     for (const phase of Object.keys(this._phaseState)) {
       this._phaseState[phase].complete = false;
     }
+    this._casePolishQuality = null;  // Issue #254: clear quality on reset
     this._clearSummary();
   }
 }
