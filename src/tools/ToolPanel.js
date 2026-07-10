@@ -15,9 +15,14 @@
  * AC keyboard: All 8 tools reachable via Tab/arrow (navigateNext/navigatePrev).
  * Scenario 7: Keyboard-only navigation — all 8 tools reachable and tooltips display.
  * Scenario 9: Selected tool persists until explicitly changed; no ghost-selection.
+ *
+ * Issue #301 — In-Context Tool Rationale — Core System & Pilot Set (Phase 1 MVP):
+ *   Added getToolRationaleForOperation(operationId) — additive; delegates to
+ *   ToolRationaleProvider. No changes to getTooltip(), selectTool(), or onToolChange().
  */
 
 const { getAllTools, getToolById, getAllToolIds } = require('./ToolRegistry');
+const { getToolRationale } = require('./ToolRationaleProvider');
 
 const MAX_TOOLS = 8;
 
@@ -146,6 +151,22 @@ class ToolPanel {
         ariaLabel: tool.ariaLabel,
       };
     });
+  }
+
+  /**
+   * Returns the rationale entry for the given operation ID from ToolRationaleProvider.
+   * Additive — no changes to getTooltip() behavior (Issue #301 AC constraint).
+   *
+   * Returns null when:
+   *   - operationId is null / undefined (AC4 guard — no active operation context)
+   *   - The operation is not in the 10-operation pilot set
+   *
+   * @param {string|null} operationId
+   * @returns {{ operationId: string, rationale: string, icon: string }|null}
+   */
+  getToolRationaleForOperation(operationId) {
+    if (!operationId) return null;
+    return getToolRationale(operationId);
   }
 
   /**

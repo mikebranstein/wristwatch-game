@@ -116,6 +116,11 @@ const EVENTS = {
   //       and fires when a damage event (degraded component state) results from the wrong-tool use.
   //       Consumer context: damage recovery flow, not adaptive coaching.
   WRONG_TOOL_DAMAGE: 'wrong_tool_damage', // payload: { operationId, toolId, componentId, restorationId, timestamp }
+  // In-Context Tool Rationale — Core System & Pilot Set (Issue #301)
+  // All additive — zero changes to existing event names or signatures.
+  // One event per rationale card impression (shown or suppressed) for user-test analysis.
+  // AC5: payload must contain operationId, toolId, shown (bool), timestamp — all required fields.
+  TOOL_RATIONALE_CARD_IMPRESSION: 'tool_rationale_card_impression', // payload: { operationId, toolId, shown, timestamp }
 };
 
 class TelemetryEmitter {
@@ -613,6 +618,25 @@ class TelemetryEmitter {
       toolId,
       componentId,
       restorationId,
+      timestamp: Date.now(),
+    });
+  }
+
+  // ---- In-Context Tool Rationale convenience method (Issue #301) ----
+
+  /**
+   * Fires when a rationale card is shown or suppressed during an active operation (AC5).
+   * Payload contains all four required fields: operationId, toolId, shown, timestamp.
+   *
+   * @param {string}  operationId  The active operation ID at impression time
+   * @param {string}  toolId       The tool the player selected
+   * @param {boolean} shown        true = card was displayed; false = card was suppressed
+   */
+  toolRationaleCardImpression(operationId, toolId, shown) {
+    this.emit(EVENTS.TOOL_RATIONALE_CARD_IMPRESSION, {
+      operationId,
+      toolId,
+      shown,
       timestamp: Date.now(),
     });
   }

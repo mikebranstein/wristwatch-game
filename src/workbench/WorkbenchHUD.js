@@ -9,9 +9,13 @@
  *   - Selected tool (SCREWDRIVER | TWEEZERS)
  *   - Remaining faults count
  *
- * Design constraint: this module is pure state — no renderer or DOM imports.
- * The rendering layer reads from WorkbenchHUD via the public API and re-renders
- * on change callbacks.
+ * Issue #301 — In-Context Tool Rationale — Core System & Pilot Set (Phase 1 MVP):
+ *   Added rationale card state fields:
+ *     - showRationaleCard(operationId, toolId, rationaleText, icon): sets rationale card visible.
+ *     - hideRationaleCard(): clears rationale card state.
+ *     - getRationaleCardState(): returns current card state snapshot.
+ *   Rationale card state is included in getSnapshot() for the rendering layer.
+ *   Pure-state constraint maintained: no renderer or DOM imports added.
  */
 
 'use strict';
@@ -49,6 +53,10 @@ class WorkbenchHUD {
     this._activeFaults = [];   // [{ partId, partName, faultType }]
     this._selectedTool = TOOL.SCREWDRIVER;
     this._stepHint     = null; // Optional hint text for current step
+
+    // Issue #301: rationale card state (pure-state, no renderer/DOM imports)
+    // null = card hidden; object = card visible with rationale content.
+    this._rationaleCard = null; // { operationId, toolId, rationaleText, icon } | null
   }
 
   // ── Step management ───────────────────────────────────────────────────────
@@ -136,13 +144,51 @@ class WorkbenchHUD {
     return this._stepHint;
   }
 
+  // ── Rationale card (Issue #301) ───────────────────────────────────────────
+
+  /**
+   * Show the rationale card with the given content.
+   * Called by ToolRationaleCardController on tool selection within an active operation (AC1).
+   *
+   * @param {string} operationId
+   * @param {string} toolId
+   * @param {string} rationaleText   3–5 word horological rationale string
+   * @param {string} [icon]          Icon identifier for the rendering layer
+   */
+  showRationaleCard(operationId, toolId, rationaleText, icon = null) {
+    this._rationaleCard = { operationId, toolId, rationaleText, icon };
+    this._notify();
+  }
+
+  /**
+   * Hide the rationale card.
+   * Called by ToolRationaleCardController when leaving an active operation context
+   * or when the card is suppressed (AC2, AC3, AC4).
+   */
+  hideRationaleCard() {
+    if (this._rationaleCard !== null) {
+      this._rationaleCard = null;
+      this._notify();
+    }
+  }
+
+  /**
+   * Returns the current rationale card state.
+   * null = card is hidden; object = card is visible.
+   *
+   * @returns {{ operationId: string, toolId: string, rationaleText: string, icon: string|null }|null}
+   */
+  getRationaleCardState() {
+    return this._rationaleCard ? { ...this._rationaleCard } : null;
+  }
+
   // ── Snapshot ──────────────────────────────────────────────────────────────
 
   /**
    * Return a plain-object snapshot of the current HUD state.
    * Used by the rendering layer to render the HUD without holding a direct reference.
    *
-   * @returns {{ step, activeFaults, selectedTool, stepHint, remainingFaultCount }}
+   * @returns {{ step, activeFaults, selectedTool, stepHint, remainingFaultCount, rationaleCard }}
    */
   getSnapshot() {
     return {
@@ -151,6 +197,7 @@ class WorkbenchHUD {
       selectedTool:       this._selectedTool,
       stepHint:           this._stepHint,
       remainingFaultCount: this.getRemainingFaultCount(),
+      rationaleCard:      this.getRationaleCardState(),
     };
   }
 
