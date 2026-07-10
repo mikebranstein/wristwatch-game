@@ -24,6 +24,12 @@
  *   Added `ab_backstory_cohort` (null default, backward-compatible).
  *   Written once before any intake-screen code runs (AC1 / AC2).
  *   Values: 'backstory' | 'control' | null (null = not yet assigned).
+ *
+ * Issue #127 — Workshop Collection Gallery MVP:
+ *   Added `completed_watches: []` (empty-array default, backward-compatible).
+ *   Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey }.
+ *   Populated by DeliveryHandler.completeDelivery() at delivery completion boundary.
+ *   Pre-existing saves lacking this key receive [] via Object.assign defaults.
  */
 
 const DEFAULT_SAVE = {
@@ -67,6 +73,12 @@ const DEFAULT_SAVE = {
   // Written synchronously before any intake-screen code runs (AC1 / AC2).
   // Values: 'backstory' | 'control' | null (null = not yet assigned for this player)
   ab_backstory_cohort:    null,
+
+  // Issue #127: Workshop Collection Gallery — completed watch entries (additive, backward-compatible)
+  // Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey }
+  // Populated by DeliveryHandler.completeDelivery() at the delivery-completion boundary.
+  // Pre-existing saves without this key receive [] via Object.assign defaults.
+  completed_watches:      [],
 
 };
 
@@ -113,6 +125,35 @@ class PlayerSaveState {
     this._store.last_checkpoint_stage = stage;
     this._store.autosave_slot = true;
   }
+
+  // ── Issue #127: Collection Gallery ──────────────────────────────────────────
+
+  /**
+   * Append a completed watch delivery entry to the collection.
+   * Called by DeliveryHandler at the delivery-completion boundary (AC1, Test Scenario 8).
+   *
+   * @param {{ watchId: string, watchName: string, clientName: string, completionDate: string, portraitAssetKey: string|null }} entry
+   */
+  recordWatchDelivery(entry) {
+    const existing = Array.isArray(this._store.completed_watches)
+      ? this._store.completed_watches
+      : [];
+    this._store.completed_watches = [...existing, entry];
+  }
+
+  /**
+   * Returns a copy of the completed_watches array (immutable accessor).
+   * Returns [] for pre-feature saves that lack the key (backward-compatible).
+   *
+   * @returns {Array}
+   */
+  getCompletedWatches() {
+    return Array.isArray(this._store.completed_watches)
+      ? [...this._store.completed_watches]
+      : [];
+  }
+
+  // ── Serialisation ────────────────────────────────────────────────────────────
 
   /**
    * Returns a shallow snapshot of the entire save state (for serialisation).

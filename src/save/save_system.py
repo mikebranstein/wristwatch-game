@@ -83,9 +83,13 @@ class SaveSystem:
         arrived_orders = order_queue.resolve_arrivals()
 
         # Write resolved state back so callers get a consistent snapshot.
+        # Issue #127: ensure completed_watches always exists (null-safe default for
+        # pre-feature saves that lack the key).
+        completed_watches = (raw_save_data or {}).get("completed_watches", [])
         updated_save_data = {
             **(raw_save_data or {}),
             "order_queue": order_queue.to_save_data(),
+            "completed_watches": completed_watches if isinstance(completed_watches, list) else [],
         }
 
         return order_queue, arrived_orders, updated_save_data
