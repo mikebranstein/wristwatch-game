@@ -610,7 +610,7 @@ Every research finding must convert to a **decision-ready statement**:
 
 ### Input: Research Work Item
 GitHub issue with:
-- **Label:** `research:`, `pm-work`
+- **Label:** `research`, `pm-work`
 - **Title:** "[research]: [Research Objective] for [Opportunity]"
 - **Body:** Research scoping with:
   - Key research questions (not just persona)
@@ -935,14 +935,14 @@ Ready for PM Phase 2 validation.
 
 **CRITICAL:** Research issue must be explicitly closed and labeled so orchestrator and PM Agent can discover it.
 
-**Close the research: issue:**
+**Close the research issue:**
 
 ```bash
 # Get this research issue number (should be in GitHub Actions environment or passed as parameter)
 # Example: research issue is #1025
 RESEARCH_ISSUE_NUM=${{ github.event.issue.number }}
 
-# Close the research: issue with reason
+# Close the research issue with reason
 gh issue close $RESEARCH_ISSUE_NUM --reason "not_planned"
 
 # Add label: research-complete (marks research as finished)

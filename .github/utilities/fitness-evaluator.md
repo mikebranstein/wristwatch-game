@@ -16,12 +16,23 @@ If this file is missing, return an error and do not emit PASS/WARN/FAIL results.
 
 ### run
 
-Evaluate fitness functions for a given window and emit `fitness-report.json`.
+Evaluate fitness functions for a given window and emit a JSON report.
+
+Required flags:
+- `--window <name>`
+- `--output <path>` (must point to a file inside an isolated temp workspace)
 
 Example:
 ```bash
-./utilities/fitness-evaluator.md run --window "last-3-features"
+./utilities/fitness-evaluator.md run --window "last-3-features" --output "./fitness-report.json"
 ```
+
+## Workspace Safety (Mandatory)
+
+- Generated files must be written only inside an isolated temp workspace.
+- Never emit reports into invocation directory or repository root.
+- Bash temp root: `${TMPDIR:-/tmp}`
+- PowerShell temp root: `$env:TEMP`
 
 ## Fitness Functions
 
@@ -65,3 +76,4 @@ Threshold values must be read from `docs/fitness-thresholds.md`.
 - Deterministic only; no policy decisions.
 - Does not create issues directly.
 - Does not modify source code.
+- Does not write output outside temp workspace.

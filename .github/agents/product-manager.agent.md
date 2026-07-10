@@ -60,7 +60,7 @@ This agent can run **autonomously** on GitHub issues with the `pm-idea` label. U
 **OUTPUT (PM Agent Creates):**
 - ✅ Comments with research findings and decision rationale
 - ✅ Labels on pm-idea (`pm-validating`, `pm-provisional-champion`, `pm-opportunity`, `pm-deferred`, `pm-blocked`)
-- ✅ Research work items (`research: [Persona Name]` issues)
+- ✅ Research work items (`[research]: [Persona Name]` issues)
 - ✅ Strategic-opportunity issues (when CHAMPION)
 - ❌ NEVER: feature-request issues (PO creates those)
 
@@ -332,7 +332,7 @@ Execute when: Orchestrator detects all linked research items on `pm-idea` are no
 
 3. **Evaluate Follow-On Research Needs (Detailed Procedure):**
 
-   **STEP 3.1: Find research: issues linked to this pm-idea**
+  **STEP 3.1: Find research issues linked to this pm-idea**
 
    Query for all research items tagged with this pm-idea (passed by Orchestrator):
    ```bash
@@ -348,15 +348,15 @@ Execute when: Orchestrator detects all linked research items on `pm-idea` are no
    # Fallback: Query by label
    RESEARCH_ISSUES=$(gh issue list \
      --label "pm-idea-$PM_IDEA_NUMBER" \
-     --label "research:" \
+     --label "research" \
      --state closed \
      --json number \
      --jq '.[] | .number')
    ```
 
-   **STEP 3.2: Read closure comments from each research: issue**
+   **STEP 3.2: Read closure comments from each research issue**
 
-   For each research: issue found:
+   For each research issue found:
    ```bash
    for issue_num in $RESEARCH_ISSUES; do
      # Get comments (newest last, so last comment is usually the research summary)
@@ -396,7 +396,7 @@ Execute when: Orchestrator detects all linked research items on `pm-idea` are no
    ```bash
    # Create follow-on research issue (must have both labels so orchestrator can detect it)
    FOLLOWON_ISSUE=$(gh issue create \
-     --label "research:" \
+     --label "research" \
      --label "follow-on-research" \
      --label "pm-idea-$PM_IDEA_NUMBER" \
      --title "[research-follow-on]: Critical Validation for #$PM_IDEA_NUMBER" \
@@ -409,7 +409,7 @@ Execute when: Orchestrator detects all linked research items on `pm-idea` are no
    # Post comment on pm-idea
    gh issue comment $PM_IDEA_NUMBER --body "⏸️ Phase 2 PAUSED: Follow-on research required for CRITICAL validation. Created research issue: $FOLLOWON_ISSUE. Orchestrator will process this then re-run Phase 2."
 
-   # Exit — orchestrator detects new open research: item with follow-on-research label
+  # Exit - orchestrator detects new open research item with follow-on-research label
    # and loops back to Step 3b automatically
    exit 0
    ```
@@ -532,8 +532,8 @@ State stored in GitHub issue (comments + labels + Projects + linked research ite
 - `pm-deferred`: DEFER at Phase 1 OR Phase 2 (closed, terminal)
 - `pm-blocked`: BLOCK at Phase 1 OR Phase 2 (closed, terminal)
 
-**Labels** (research: issues):
-- `research:`: Identifies it as a research work item
+**Labels** (research issues):
+- `research`: Identifies it as a research work item
 - `pm-idea-[NUMBER]`: Links it to its parent pm-idea (required for discovery)
 - `follow-on-research`: Marks it as Round 2 follow-on (not initial)
 - `research-complete`: Research finished successfully (closed)
@@ -546,8 +546,8 @@ State stored in GitHub issue (comments + labels + Projects + linked research ite
 - `pm-deferred`: Phase 2 deferred — issue closed
 - `pm-blocked`: Phase 2 blocked — issue closed
 
-**Research tracking** (research: labeled issues):
-- `research: [Persona Name]`: Work item for research phase 1→2 gate
+**Research tracking** (research-labeled issues):
+- `[research]: [Persona Name]`: Work item for research phase 1→2 gate
 - Links back to pm-idea and strategic-opportunity
 - Closed when Research Wiki pages are updated with interview data
 
@@ -557,8 +557,8 @@ State stored in GitHub issue (comments + labels + Projects + linked research ite
 
 **Projects board**:
 ```
-Ideas (pm-idea) → Phase 1 Gate (pm-validating + research: items created)
-                  → Phase 2 Validation (all research: items closed)
+Ideas (pm-idea) → Phase 1 Gate (pm-validating + research items created)
+                  → Phase 2 Validation (all research items closed)
                   → Ready for PO (pm-opportunity label, research validated)
                   → Deferred (pm-deferred, revisit quarterly)
                   → Blocked (pm-blocked, decision recorded)

@@ -89,6 +89,15 @@ Agents can call two actions:
 - PowerShell 5.1+
 - Wiki enabled on target repo
 
+## Workspace Safety (Mandatory)
+
+- All clone/write/commit operations must run in an isolated temporary workspace.
+- Never perform wiki file operations in invocation directory or repository root.
+- Cross-platform temp roots:
+  - Bash (Linux/macOS): `${TMPDIR:-/tmp}`
+  - PowerShell (Windows): `$env:TEMP`
+- Utility must clean up temp workspace on success and failure.
+
 ## Internal Workflow
 
 When an agent calls write-content:

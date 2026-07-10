@@ -82,9 +82,22 @@ Iterate through issues in creation order (oldest first). Use `issue_read` GitHub
 - `pm-escalated` -- waiting for leadership
 - `pm-deferred` -- deferred, terminal
 
+Before declaring "no actionable work", run a follow-on research orphan sweep:
+
+```bash
+# Open follow-on research issues that should still be tied to a pm-idea
+gh issue list --label research --label follow-on-research --state open --json number,title,labels
+```
+
+For each open follow-on research issue:
+- Verify it includes a `pm-idea-N` trace label.
+- If trace label is missing, add `research-blocked` and post comment: `PM Orchestrator: Missing pm-idea trace label. Manual cleanup required.`
+- If trace label exists but parent `pm-idea` is closed/terminal (`pm-opportunity|pm-deferred|pm-blocked|pm-escalated`), close the follow-on research issue with reason `not planned` and post comment: `PM Orchestrator: Closing orphaned follow-on research (parent pm-idea already terminal).`
+- If parent `pm-idea` is active (`pm-provisional-champion`), leave follow-on research open for research-agent completion.
+
 **If NO actionable issues exist at any stage:**
 ```
-Output: "PM Orchestrator: No actionable work. Skipping cycle."
+Output: "PM Orchestrator: No actionable pm-idea work. Research follow-on issues are owned by research-agent; skipped this cycle."
 Sleep 30 seconds
 Return to main loop
 ```
@@ -110,6 +123,28 @@ gh issue list --label pm-provisional-champion --json number,title,labels \
   | head -5
 ```
 Result: Up to 5 issues ready for Research
+
+#### 3b.1 Research Waiting Visibility (Mandatory)
+
+For each pm-idea from Step 3b, post a short waiting-state comment with exact linked open research issue numbers:
+
+```bash
+# For each pm-idea NUMBER from Step 3b
+OPEN_RESEARCH=$(gh issue list \
+   --label "research" \
+   --label "pm-idea-NUMBER" \
+   --state open \
+   --json number \
+   --jq '.[].number')
+
+if [ -n "$OPEN_RESEARCH" ]; then
+   gh issue comment NUMBER --body "**PM Orchestrator:** Waiting on linked research issues: $OPEN_RESEARCH"
+else
+   gh issue comment NUMBER --body "**PM Orchestrator:** No open linked research issues found. Triggering research-agent run now."
+fi
+```
+
+Keep this comment concise and post once per cycle per pm-idea.
 
 #### 3c. Find All Phase 2 Gate - High Priority (up to 5)
 ```bash
@@ -205,14 +240,16 @@ Only `strategic-opportunity` creation is valid in PM flow.
 
 **Action:**
 1. `gh issue comment NUMBER --body "**PM Orchestrator:** Phase 1 passed. Routing to research for market validation."`
-2. `task(description="Run market research on issue #NUMBER: TITLE", agent_id="research-agent", model_tier="STANDARD")`
-3. Wait for completion. Read the Research Decision comment.
-4. Extract priority from decision (priority-high, priority-medium, priority-low).
-5. If **priority-high** AND research confidence HIGH:
+2. Query and list open linked research items with labels `research` + `pm-idea-NUMBER`.
+3. Post waiting visibility comment with exact issue numbers (or "none found") before running research.
+4. `task(description="Run market research on issue #NUMBER: TITLE", agent_id="research-agent", model_tier="STANDARD")`
+5. Wait for completion. Read the Research Decision comment.
+6. Extract priority from decision (priority-high, priority-medium, priority-low).
+7. If **priority-high** AND research confidence HIGH:
    - `gh issue label NUMBER --add research-complete --add research-priority-high`
-6. If **priority-medium** or **priority-low**:
+8. If **priority-medium** or **priority-low**:
    - `gh issue label NUMBER --add research-complete --add research-priority-medium`
-7. If **BLOCKED** (research couldn't complete):
+9. If **BLOCKED** (research couldn't complete):
    - `gh issue label NUMBER --add research-blocked`
    - Post: `gh issue comment NUMBER --body "**PM Orchestrator:** Research blocked. Manual review needed."`
 
@@ -271,9 +308,10 @@ Only `strategic-opportunity` creation is valid in PM flow.
 
 **Action:**
 1. `gh issue comment NUMBER --body "**PM Orchestrator:** Phase 2 needs more research. Re-running research."`
-2. `task(description="Run additional market research on issue #NUMBER: TITLE", agent_id="research-agent")`
-3. Wait for completion. Read Research Decision.
-4. Update research-complete + research-priority labels as in RESEARCH PHASE step above.
+2. Query open linked follow-on research issues (`research` + `follow-on-research` + `pm-idea-NUMBER`) and post exact issue numbers in a waiting visibility comment.
+3. `task(description="Run additional market research on issue #NUMBER: TITLE", agent_id="research-agent")`
+4. Wait for completion. Read Research Decision.
+5. Update research-complete + research-priority labels as in RESEARCH PHASE step above.
 
 ---
 

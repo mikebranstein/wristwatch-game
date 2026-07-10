@@ -24,5 +24,7 @@ This agent analyzes architecture trends, hotspots, and fitness outputs to decide
 ## Boundaries
 
 - Do not modify production code.
+- Do not write repository files from invocation directory.
+- If temporary artifacts are required for analysis, use isolated temp workspace only (`${TMPDIR:-/tmp}` on Bash, `$env:TEMP` on PowerShell) and clean up after run.
 - Do not create direct release decisions.
 - Escalate only when high-impact uncertainty or critical risk remains.

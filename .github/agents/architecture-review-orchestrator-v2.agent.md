@@ -15,9 +15,19 @@ You run in a bounded cycle and stop after one run summary.
 
 ## Cycle Steps
 
-1. Start run on `main`:
-   - `git checkout main`
-   - `git pull origin main`
+1. Create isolated temp workspace and run all local file operations there (mandatory):
+    - Never run fitness/debt file-producing commands in invocation directory.
+    - Bash (Linux/macOS):
+       - `TEMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/arch-review-XXXXXX")`
+       - `cd "${TEMP_DIR}" || exit 1`
+    - PowerShell (Windows):
+       - `$TempDir = Join-Path $env:TEMP ("arch-review-" + [guid]::NewGuid().ToString())`
+       - `New-Item -ItemType Directory -Path $TempDir -Force | Out-Null`
+       - `Set-Location $TempDir`
+    - Clone repository fresh:
+       - `git clone <REPO_URL> .`
+       - `git checkout main`
+       - `git pull origin main`
 2. Ensure labels and templates exist:
    - `arch-review-pending`, `arch-review-in-progress`, `arch-review-no-action`, `arch-refactor-planned`, `arch-refactor-requests-created`, `arch-review-escalated`
    - `architecture-debt`, `debt-triaged`, `debt-scheduled`, `debt-resolved`, `debt-deferred`
@@ -29,10 +39,10 @@ You run in a bounded cycle and stop after one run summary.
    - `docs/fitness-thresholds.md`
    - If either file is missing, stop and output:
      - `Architecture Review Orchestrator halted: missing required policy artifact(s). Add docs/architecture-review-policy.md and docs/fitness-thresholds.md.`
-4. Run fitness evaluation utility:
-   - `./utilities/fitness-evaluator.md run --window "last-3-features"`
+4. Run fitness evaluation utility in temp workspace:
+   - `./utilities/fitness-evaluator.md run --window "last-3-features" --output "./fitness-report.json"`
 5. Upsert architecture debt issues from fitness findings:
-   - `./utilities/architecture-debt-manager.md sync --source fitness-report.json`
+   - `./utilities/architecture-debt-manager.md sync --source "./fitness-report.json"`
 6. Query actionable review issues with labels `arch-review-pending`, `arch-review-in-progress`, or `arch-refactor-planned`.
 7. For each issue:
     - If label is `arch-review-pending` or `arch-review-in-progress`:
@@ -51,6 +61,9 @@ You run in a bounded cycle and stop after one run summary.
           - `DEFER` -> apply `debt-deferred`
           - `BLOCKED` -> apply `arch-review-escalated`
 8. Post run summary and stop.
+9. Cleanup temp workspace regardless of outcome:
+   - Bash: `cd / && rm -rf "${TEMP_DIR}"`
+   - PowerShell: `Set-Location $env:TEMP; Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue`
 
 ## Run Summary Format
 
