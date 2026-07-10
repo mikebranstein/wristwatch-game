@@ -2,90 +2,24 @@
 RetentionAnalytics — D7/D30 Segmentation by Job Completion Count
 ================================================================
 
-Implements Issue #109: Retention Analytics — D7/D30 Segmentation by Job
-Completion Count.
+Bounded orchestrator for the retention-analysis pipeline (Issue #109).
+Slimmed to orchestrator role as part of Issue #203.
 
-Design summary (from approved design decision):
-  Pure data-analysis task — no game code changes.  Queries existing session/
-  telemetry data to compute D7/D30 player return rates segmented by
-  restoration-completion cohort (0, 1, 2–3, 4+), analyses session-start
-  behaviour as a queue-gap proxy, and delivers a written findings memo with
-  an explicit GO/NO-GO/CONDITIONAL recommendation and a Phase 1 success
-  threshold.
+Extracted modules
+-----------------
+- ``src.analytics.retention_memo``          — memo composition (Issue #201)
+- ``src.analytics.retention_cohort_rates``  — cohort-rate computation (Issue #202)
 
-Input contract
---------------
-sessions : list[dict]
-    Each record represents one play session::
+Retained in this module
+-----------------------
+- Module-level constants and back-compat re-exports
+- Session indexing helpers
+- Cohort assignment logic
+- Recommendation + threshold logic
+- Entry point: ``RetentionAnalytics.analyze()``
 
-        {
-            "player_id": str,          # Anonymised persistent player identifier
-                                       # (cross-session linkage provided by analytics
-                                       #  backend — NOT the per-session sessionId from
-                                       #  TelemetryEmitter).
-            "session_id": str,         # Unique session identifier
-            "started_at": float,       # Unix timestamp (seconds) of session start
-            "had_active_job_at_start": bool,  # True if order_queue had an active job
-                                       # at load_session() time for this session
-        }
-
-events : list[dict]
-    Each record is a telemetry event::
-
-        {
-            "player_id": str,          # Same anonymised persistent player identifier
-            "session_id": str,
-            "event_name": str,         # e.g. "reassembly_completed"
-            "timestamp": float,        # Unix timestamp of the event
-        }
-
-    Only ``reassembly_completed`` events are consumed by this module; all
-    others are ignored.
-
-Output contract
----------------
-Returns a dict with the following keys:
-
-    sufficient_data : bool
-        True when total_distinct_players >= MIN_SESSIONS.
-    total_distinct_players : int
-    cohorts : dict[str, dict]
-        Keys: "0_completions", "1_completion", "2_3_completions",
-              "4_plus_completions".
-        Each value::
-
-            {
-                "n": int,           # number of players in this cohort
-                "d7_rate": float|None,   # fraction [0,1] or None if insufficient
-                "d30_rate": float|None,  # fraction [0,1] or None if insufficient
-                "sufficient": bool, # n >= MIN_COHORT_SIZE
-                "flag": str|None,   # "n<30" when insufficient, else None
-            }
-
-    multi_completer_d30_uplift_pp : float|None
-        D30 rate of the best sufficiently-sized multi-completer cohort (2-3 or
-        4+) minus the D30 rate of the 1-completion cohort, in percentage points.
-        None when the 1-completion cohort or all multi-completer cohorts are
-        insufficiently sized.
-    uplift_is_material : bool|None
-        True when multi_completer_d30_uplift_pp >= MATERIAL_UPLIFT_THRESHOLD.
-        None when uplift cannot be computed.
-    session_start_no_active_job_pct : float|None
-        Percentage of *returning* player sessions (player has a prior session)
-        where ``had_active_job_at_start`` is False.
-        None when there are no returning sessions.
-    queue_gap_signal_strong : bool|None
-        True when session_start_no_active_job_pct > QUEUE_GAP_STRONG_THRESHOLD (40%).
-        False when < QUEUE_GAP_WEAK_THRESHOLD (15%).
-        None when insufficient returning sessions or percentage is between thresholds.
-    recommendation : str
-        One of "DATA CONFIRMS", "DATA INCONCLUSIVE", "DATA DOES NOT SUPPORT",
-        or "INSUFFICIENT_TELEMETRY" when total_distinct_players < MIN_SESSIONS.
-    phase1_success_threshold : dict
-        {"metric": str, "target": str} — recommended success threshold for
-        Phase 1 A/B probe (FR2).
-    memo : str
-        Full written findings memo.
+See ``retention_memo.py`` and ``retention_cohort_rates.py`` for the full
+input/output contract documentation.
 """
 
 from __future__ import annotations
@@ -105,7 +39,6 @@ from src.analytics.retention_cohort_rates import (
     QUEUE_GAP_WEAK_THRESHOLD,
     SECONDS_PER_DAY,
     _compute_cohort_rates,
-    _returned_within,
     _compute_uplift,
     _compute_queue_gap_signal,
 )
@@ -120,12 +53,11 @@ from src.analytics.retention_memo import (
 
 EVENT_REASSEMBLY_COMPLETED = "reassembly_completed"
 
-# Constants imported from retention_cohort_rates (re-exported for backwards
-# compatibility with callers that import them from this module):
-#   COHORT_0, COHORT_1, COHORT_2_3, COHORT_4_PLUS, COHORT_KEYS
-#   MIN_COHORT_SIZE, MATERIAL_UPLIFT_THRESHOLD
-#   QUEUE_GAP_STRONG_THRESHOLD, QUEUE_GAP_WEAK_THRESHOLD
-#   SECONDS_PER_DAY
+# The following constants are re-exported from the extracted modules for
+# backwards compatibility with callers that import them from this module:
+#   COHORT_0, COHORT_1, COHORT_2_3, COHORT_4_PLUS, COHORT_KEYS,
+#   MIN_COHORT_SIZE, MATERIAL_UPLIFT_THRESHOLD, QUEUE_GAP_STRONG_THRESHOLD,
+#   QUEUE_GAP_WEAK_THRESHOLD, SECONDS_PER_DAY, MIN_SESSIONS
 
 
 # ---------------------------------------------------------------------------
