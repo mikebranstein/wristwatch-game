@@ -65,6 +65,12 @@ const FAULT_HINTS = {
     tier2: "The mineral crystal has shattered or crazed, with hairline fractures spreading across the dial enamel beneath. The crystal must be replaced before the dial damage worsens.",
     tier3: "Remove the damaged crystal and replace it with a correctly sized mineral crystal. Repair the hairline fractures in the dial enamel using the dial enamel repair tool. Run a timing regulation check after reassembly to confirm no shock damage to the balance staff.",
   },
+  magnetism_fault: {
+    fault_id: 'magnetism_fault',
+    tier1: "The watch is running fast but everything looks intact. This fault leaves no visible trace on the movement.",
+    tier2: "Magnetism causes the hairspring coils to attract each other, shortening the effective length and raising the beat rate. Hold a compass next to the movement — a deflection confirms magnetisation.",
+    tier3: "Use the demagnetizer to demagnetise the movement. Pass the watch slowly through the demagnetizer field, then withdraw it gradually. Re-time the watch after demagnetisation to confirm the rate has returned to normal.",
+  },
 };
 
 /**

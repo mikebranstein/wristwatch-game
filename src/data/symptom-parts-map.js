@@ -21,6 +21,7 @@ const SYMPTOM_PARTS_MAP = {
   'crystal_crazing_visible': ['crystal', 'dial'],
   'skipping_seconds': ['balance_wheel', 'pallet_fork', 'escape_wheel'],
   'date_not_advancing': ['date_disc', 'date_jumper', 'date_driving_wheel'],
+  'running_fast_no_visible_damage': ['demagnetizer'],
 };
 
 /**
