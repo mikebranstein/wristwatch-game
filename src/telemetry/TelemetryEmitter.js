@@ -93,6 +93,12 @@ const EVENTS = {
   // Reassembly Micro-Confirmation events (Issue #122)
   REASSEMBLY_COMPONENT_SEATED_SUCCESS: 'reassembly_component_seated_success',
   REASSEMBLY_SESSION_ABANDONED: 'reassembly_session_abandoned',
+
+  // In-Repair Part Damage Recovery — Core System (Issue #148)
+  // All additive — zero changes to existing event names or signatures.
+  // AC5: captures part ID, restoration ID, damage event type, and player recovery choice.
+  PART_DAMAGED:                  'part_damaged',                   // payload: { partId, restorationId, eventType }
+  PART_DAMAGE_RECOVERY_CHOSEN:   'part_damage_recovery_chosen',    // payload: { partId, restorationId, playerChoice: 'ordered'|'declined' }
 };
 
 class TelemetryEmitter {
@@ -438,6 +444,32 @@ class TelemetryEmitter {
     this.emit(EVENTS.REASSEMBLY_SESSION_ABANDONED, {
       cohortId, timestamp: Date.now(),
     });
+  }
+
+  // ---- In-Repair Part Damage Recovery convenience methods (Issue #148) ----
+
+  /**
+   * Fires when a part is damaged (over-torque, drop, snap) during restoration.
+   * AC5: Captures part ID, restoration ID, and damage event type.
+   *
+   * @param {string} partId         Unique part identifier
+   * @param {string} restorationId  Unique restoration session identifier
+   * @param {string} eventType      'over_torque' | 'drop' | 'snap'
+   */
+  partDamaged(partId, restorationId, eventType) {
+    this.emit(EVENTS.PART_DAMAGED, { partId, restorationId, eventType });
+  }
+
+  /**
+   * Fires when the player makes a recovery choice from the damage prompt.
+   * AC5: Captures player recovery choice (ordered / declined).
+   *
+   * @param {string} partId
+   * @param {string} restorationId
+   * @param {'ordered'|'declined'} playerChoice
+   */
+  partDamageRecoveryChosen(partId, restorationId, playerChoice) {
+    this.emit(EVENTS.PART_DAMAGE_RECOVERY_CHOSEN, { partId, restorationId, playerChoice });
   }
 
   /**
