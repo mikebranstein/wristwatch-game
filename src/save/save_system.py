@@ -110,6 +110,13 @@ class SaveSystem:
         if updated_save_data.get("cozy_mode_enabled") is None:
             updated_save_data["cozy_mode_enabled"] = False
 
+        # Issue #151: Workshop Economy Expanded — null-safe defaults for new save keys.
+        # Pre-feature saves that lack these keys get None, which each sub-system
+        # interprets as "use defaults" in their from_save_dict() factory methods.
+        for key in ("reputation", "upgrade_tree", "economy_analytics", "sourcing_history"):
+            if key not in updated_save_data:
+                updated_save_data[key] = None
+
         return order_queue, arrived_orders, updated_save_data
 
     def save_session(self, order_queue: OrderQueue, existing_save_data: Optional[dict]) -> dict:
