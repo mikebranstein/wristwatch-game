@@ -11,8 +11,14 @@
  *   1. prepareForJob(jobId, watchSnapshot)   — called at intake / job-start boundary.
  *        Captures the before-state once.  No-op if already captured (AC4 guard).
  *        Persists to saveState if one is provided (existing save/session system).
- *   2. triggerReveal(jobId, afterSnapshot)   — called by the job-completion flow.
+ *        NOTE (Issue #256): to include cosmetic before-state in the snapshot, the caller
+ *        should extend watchSnapshot with a `cosmeticBefore` field:
+ *          { strapCondition, crystalCondition, casePolishGrade }
+ *        WatchStateCapture stores snapshots opaquely, so the field is captured automatically.
+ *   2. triggerReveal(jobId, afterSnapshot, cosmeticSummary?)  — called by the job-completion flow.
  *        Retrieves before-state, builds reveal payload, fires audio, invokes onReveal hook.
+ *        Pass a CosmeticRestorationSummary instance as the optional 3rd argument to wire
+ *        cosmetic badge state into the hero shot (Issue #256).
  *   3. dismiss(jobId)                        — called by the player dismiss / skip action.
  *        Calls onDismiss hook, clears in-memory capture (AC5 — no stuck state).
  *   4. abandonJob(jobId)                     — called when a job is abandoned.
@@ -143,17 +149,28 @@ class CompletionRevealSequence {
    * If no before-state exists (pre-feature job / crash), the reveal still fires
    * with beforeAvailable=false (graceful degradation — Design: backward-compat).
    *
-   * @param {string} jobId         Stable job identifier.
-   * @param {Object} afterSnapshot Watch appearance at job-complete.
+   * Issue #256 — Unified Completion Reveal:
+   * Pass a CosmeticRestorationSummary instance as `cosmeticSummary` to wire
+   * cosmetic badge state into the hero shot.  When omitted (or null), the reveal
+   * behaves identically to the pre-#256 implementation — all existing callers are
+   * backward-compatible (AC5 confirmed).
+   *
+   * @param {string} jobId               Stable job identifier.
+   * @param {Object} afterSnapshot       Watch appearance at job-complete.
+   * @param {Object|null} [cosmeticSummary] Optional CosmeticRestorationSummary instance.
+   *   When provided, getSummaryState() is called (guarded: returns null on any error).
+   *   When omitted/null, no cosmetic badges are shown in the hero shot.
    * @returns {Object}  The RevealPayload that was passed to onReveal.
    * @throws {Error}    if jobId or afterSnapshot is missing.
    */
-  triggerReveal(jobId, afterSnapshot) {
+  triggerReveal(jobId, afterSnapshot, cosmeticSummary = null) {
     if (!jobId)         throw new Error('CompletionRevealSequence.triggerReveal: jobId is required.');
     if (!afterSnapshot) throw new Error('CompletionRevealSequence.triggerReveal: afterSnapshot is required.');
 
-    const beforeState = this._stateCapture.getBeforeState(jobId);
-    const payload     = this._screen.buildRevealPayload(jobId, beforeState, afterSnapshot);
+    const beforeState  = this._stateCapture.getBeforeState(jobId);
+    // Issue #256: safeguarded getSummaryState() — returns null on any error (graceful degradation).
+    const summaryState = cosmeticSummary ? _safeguardedGetSummaryState(cosmeticSummary) : null;
+    const payload      = this._screen.buildRevealPayload(jobId, beforeState, afterSnapshot, summaryState);
 
     // Mark reveal as active before firing hooks (AC5: dismiss gate tracks this).
     this._activeReveals.add(jobId);
@@ -285,6 +302,30 @@ class CompletionRevealSequence {
     if (this._instrumentationHook) {
       this._instrumentationHook(eventName, payload);
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Module-level helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Safely call cosmeticSummary.getSummaryState(), guarding against null/undefined
+ * return values and any exception thrown by the method.
+ *
+ * Returns null on any failure so the hero shot degrades gracefully — no crash,
+ * no cosmetic badges displayed, base reveal still renders correctly (Issue #256 edge case).
+ *
+ * @param {Object} cosmeticSummary  CosmeticRestorationSummary instance.
+ * @returns {Object|null}  The summary state, or null on any failure.
+ * @private
+ */
+function _safeguardedGetSummaryState(cosmeticSummary) {
+  try {
+    const state = cosmeticSummary.getSummaryState();
+    return state || null;
+  } catch (_err) {
+    return null;
   }
 }
 
