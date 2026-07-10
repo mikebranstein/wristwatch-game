@@ -9,6 +9,11 @@
  *   Added `current_stage`, `last_checkpoint_stage`, and `autosave_slot`
  *   fields (backward-compatible additive extension; pre-existing saves that
  *   lack these keys will receive null defaults and load correctly).
+ *
+ * Issue #111 — Guided First-Job Onboarding System:
+ *   Added `ab_first_job_cohort` (null default, backward-compatible).
+ *   Written once at session start before any game-loop code runs (AC5 / Test Scenario 8).
+ *   Values: 'guided' | 'control' | null (null = not yet assigned).
  */
 
 const DEFAULT_SAVE = {
@@ -25,6 +30,11 @@ const DEFAULT_SAVE = {
   current_stage:          null,   // e.g. 'teardown' | 'cleaning' | 'sourcing' | 'reassembly'
   last_checkpoint_stage:  null,   // last stage for which an autosave was written
   autosave_slot:          false,  // true when this save data originated from an autosave
+
+  // Issue #111: Guided First-Job Onboarding — A/B cohort assignment (additive, backward-compatible)
+  // Written synchronously before any game-loop code runs (Test Scenario 8 invariant).
+  // Values: 'guided' | 'control' | null (null = not yet assigned for this player)
+  ab_first_job_cohort:    null,
 
 };
 

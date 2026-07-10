@@ -56,6 +56,15 @@ const EVENTS = {
   CHRONOGRAPH_OVERLAY_SKIPPED: 'chronograph_overlay_skipped',
   PART_GROUP_REVEALED: 'part_group_revealed',
   DISCOVERY_MODE_TOGGLED: 'discovery_mode_toggled',
+
+  // Guided First-Job Onboarding — Issue #111
+  // All additive — zero changes to existing event names or signatures.
+  // Five events cover the A/B instrumentation required for completion-rate and D1 return-rate tracking.
+  ONBOARDING_STARTED: 'onboarding_started',
+  ONBOARDING_STEP_COMPLETED: 'onboarding_step_completed',
+  ONBOARDING_SKIPPED: 'onboarding_skipped',
+  ONBOARDING_COMPLETED: 'onboarding_completed',
+  AB_COHORT_ASSIGNED: 'ab_cohort_assigned',
 };
 
 class TelemetryEmitter {
@@ -227,6 +236,58 @@ class TelemetryEmitter {
    */
   discoveryModeToggled(newValue) {
     this.emit(EVENTS.DISCOVERY_MODE_TOGGLED, { newValue });
+  }
+
+  // ---- Guided First-Job Onboarding convenience methods (Issue #111) ----
+
+  /**
+   * Fires when the GuidedJobOnboardingController starts for a new player (guided cohort).
+   * Emitted once per first-job session, immediately after A/B cohort assignment (AC5).
+   *
+   * @param {string} jobId
+   * @param {string} cohort  'guided' | 'control'
+   */
+  onboardingStarted(jobId, cohort) {
+    this.emit(EVENTS.ONBOARDING_STARTED, { jobId, cohort });
+  }
+
+  /**
+   * Fires each time the player completes a guided step (AC5 step-level granularity).
+   *
+   * @param {string} jobId
+   * @param {number} step   1-based step number
+   */
+  onboardingStepCompleted(jobId, step) {
+    this.emit(EVENTS.ONBOARDING_STEP_COMPLETED, { jobId, step });
+  }
+
+  /**
+   * Fires when the player skips/dismisses the guided track mid-flow (AC3, AC5).
+   *
+   * @param {string} jobId
+   * @param {number} atStep  The step number at which the player chose to skip
+   */
+  onboardingSkipped(jobId, atStep) {
+    this.emit(EVENTS.ONBOARDING_SKIPPED, { jobId, atStep });
+  }
+
+  /**
+   * Fires when the player completes the full guided first job (AC1 success gate metric).
+   *
+   * @param {string} jobId
+   */
+  onboardingCompleted(jobId) {
+    this.emit(EVENTS.ONBOARDING_COMPLETED, { jobId });
+  }
+
+  /**
+   * Fires once at session start when a new player's A/B cohort is assigned (AC5 / Test Scenario 8).
+   *
+   * @param {string} cohort  'guided' | 'control'
+   * @param {string} [jobId]
+   */
+  abCohortAssigned(cohort, jobId = '') {
+    this.emit(EVENTS.AB_COHORT_ASSIGNED, { cohort, jobId });
   }
 
   /**
