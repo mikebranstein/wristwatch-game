@@ -1,4 +1,4 @@
-﻿/**
+/**
  * CleaningRevealSequence — orchestrates the full cleaning reveal sequence.
  *
  * Implements: Issue #53 (Core Reveal System) + Issue #54 (Shareability Layer)
@@ -57,10 +57,11 @@ class CleaningRevealSequence {
     phaseDurations = {},
     autosaveHook = null,
     audioCohortFn = null,
+    audioDesignSystem = null,
   }) {
     this._telemetry     = new TelemetryEmitter(instrumentationHook);
     this._animation     = new RevealAnimation(renderReveal, clearReveal);
-    this._audio         = new RevealAudioController(audioHook);
+    this._audio         = new RevealAudioController(audioHook, undefined, audioDesignSystem);
     this._beforeAfterUI = new BeforeAfterUI();
     this._camera        = new CinematicCameraController({ cameraOverrideHook, cameraRestoreHook });
     this._pacer         = new ClipSequencePacer(phaseDurations);

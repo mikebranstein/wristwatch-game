@@ -66,13 +66,15 @@ class FirstTickAudioController {
     audioHook,
     audioEnabled = true,
     silenceGateMs = DEFAULT_SILENCE_GATE_MS,
+    audioDesignSystem = null,
   }) {
-    if (typeof audioHook !== 'function') {
+    if (typeof audioHook !== 'function' && (!audioDesignSystem || typeof audioDesignSystem.enqueue !== 'function')) {
       throw new Error('FirstTickAudioController requires an audioHook function.');
     }
 
     this._audioHook    = audioHook;
     this._audioEnabled = Boolean(audioEnabled);
+    this._audioDesignSystem = audioDesignSystem;
     this._silenceGateMs = Math.max(
       MIN_SILENCE_GATE_MS,
       Math.min(MAX_SILENCE_GATE_MS, silenceGateMs)
@@ -155,7 +157,10 @@ class FirstTickAudioController {
     }
 
     // Signal the audio backend to silence any playing cues
-    this._audioHook(AUDIO_CUES.STOP_ALL);
+    this._emitCue(AUDIO_CUES.STOP_ALL);
+    this._releaseCue(AUDIO_CUES.TENSION_RAMP);
+    this._releaseCue(AUDIO_CUES.FIRST_TICK);
+    this._releaseCue(AUDIO_CUES.TICKING_LOOP);
 
     this._audioState = AUDIO_STATE.IDLE;
   }
@@ -197,7 +202,22 @@ class FirstTickAudioController {
    */
   _play(cueId) {
     if (this._audioEnabled) {
-      this._audioHook(cueId);
+      this._emitCue(cueId);
+    }
+  }
+
+  _emitCue(cueId) {
+    if (this._audioDesignSystem && typeof this._audioDesignSystem.enqueue === 'function') {
+      this._audioDesignSystem.enqueue(cueId);
+      return;
+    }
+
+    this._audioHook(cueId);
+  }
+
+  _releaseCue(cueId) {
+    if (this._audioDesignSystem && typeof this._audioDesignSystem.releaseCue === 'function') {
+      this._audioDesignSystem.releaseCue(cueId);
     }
   }
 }

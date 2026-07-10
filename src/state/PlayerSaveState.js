@@ -77,6 +77,10 @@
  *     cozy_mode_enabled        {boolean}  Cozy Mode toggle (display-only financial layer).
  *   Updated by LedgerManager at the delivery-completion boundary.
  *   Cozy Mode toggle semantics: applies from next job forward, never retroactively.
+ *
+ * Issue #132 — Full Audio Design Pass, Phase 2:
+ *   Added `audio_volume: 100` (0–100, backward-compatible).
+ *   Used by AudioVolumeSettings as a save-profile fallback when localStorage is absent.
  */
 
 const DEFAULT_SAVE = {
@@ -183,6 +187,10 @@ const DEFAULT_SAVE = {
   ledger_balance:          0,
   workshop_upgrades:       [],
   cozy_mode_enabled:       false,
+  // Issue #132: Audio volume slider (additive, backward-compatible)
+  // 0–100 inclusive. Mirrors the localStorage-backed AudioVolumeSettings value
+  // so pre-existing saves receive the default volume without migration.
+  audio_volume:           100,
 
 };
 

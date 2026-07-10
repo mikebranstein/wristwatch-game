@@ -72,12 +72,14 @@ class FirstTickSequence {
     silenceGateMs,
     totalWindSteps,
     tensionWindowSteps,
+    audioDesignSystem = null,
   }) {
     this._telemetry = new TelemetryEmitter(instrumentationHook);
     this._audioCohortFn = audioCohortFn || null;
     this._audio = new FirstTickAudioController({
       audioHook,
       audioEnabled,
+      audioDesignSystem,
       ...(silenceGateMs !== undefined ? { silenceGateMs } : {}),
     });
 
