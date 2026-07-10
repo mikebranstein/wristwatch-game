@@ -1,74 +1,65 @@
 {
   "summary": {
-    "warning": 4,
-    "total": 7,
+    "total": 6,
+    "warning": 3,
     "critical": 3
   },
-  "generated_at": "2026-07-10T14:06:28Z",
+  "generated_at": "2026-07-10T05:24:00Z",
+  "window": "last-3-features",
   "findings": [
     {
       "check": "Dependency Layering",
+      "module": "src/save/save_system.py",
+      "threshold": "save/ may import from: config only",
+      "metric": "save/ imports orders.order_queue",
       "id": "save-layering-violation",
       "severity": "critical",
-      "module": "src/save/save_system.py",
-      "description": "save_system.py imports from orders module, violating the layering rule (save/ may only import from config/)",
-      "metric": "save/ imports orders",
-      "threshold": "save/ may import from: config only"
+      "description": "save_system.py imports from orders module (OrderQueue), violating the layering rule (save/ may only import from config/). Note: Order import removed by PR #231 (#205/#206), but OrderQueue import remains — full decoupling is incomplete."
     },
     {
       "check": "Module Size",
+      "module": "src/analytics/retention_analytics.py",
+      "threshold": ">500 lines = Critical",
+      "metric": "516 lines",
       "id": "analytics-module-size-critical",
       "severity": "critical",
-      "module": "src/analytics/retention_analytics.py",
-      "description": "retention_analytics.py has 584 lines of code, exceeding the critical size threshold",
-      "metric": "584 lines",
-      "threshold": ">500 lines = Critical"
+      "description": "retention_analytics.py has 516 lines of code, exceeding the critical size threshold"
     },
     {
       "check": "Cyclomatic Complexity",
+      "module": "src/workshop/probe_telemetry.py",
+      "threshold": ">15 = Critical",
+      "metric": "complexity 22 (D)",
       "id": "probe-telemetry-complexity-critical",
       "severity": "critical",
-      "module": "src/workshop/probe_telemetry.py",
-      "description": "ProbeTelemetry.get_probe_data has cyclomatic complexity of 22 (grade D), exceeding the critical threshold",
-      "metric": "complexity 22 (D)",
-      "threshold": ">15 = Critical"
+      "description": "ProbeTelemetry.get_probe_data has cyclomatic complexity of 22 (grade D), exceeding the critical threshold"
     },
     {
       "check": "Module Size",
+      "module": "src/catalog/data/part_compatibility.py",
+      "threshold": ">300 lines = Warning",
+      "metric": "465 lines",
       "id": "part-compatibility-module-size-warning",
       "severity": "warning",
-      "module": "src/catalog/data/part_compatibility.py",
-      "description": "part_compatibility.py has 486 lines of code, exceeding the warning size threshold",
-      "metric": "486 lines",
-      "threshold": ">300 lines = Warning"
-    },
-    {
-      "check": "Module Size",
-      "id": "probe-telemetry-module-size-warning",
-      "severity": "warning",
-      "module": "src/workshop/probe_telemetry.py",
-      "description": "probe_telemetry.py has 338 lines of code, exceeding the warning size threshold",
-      "metric": "338 lines",
-      "threshold": ">300 lines = Warning"
+      "description": "part_compatibility.py has 465 lines of code, exceeding the warning size threshold"
     },
     {
       "check": "Cyclomatic Complexity",
+      "module": "src/analytics/retention_analytics.py",
+      "threshold": ">10 = Warning",
+      "metric": "complexity 12 (C)",
       "id": "retention-analytics-complexity-warning",
       "severity": "warning",
-      "module": "src/analytics/retention_analytics.py",
-      "description": "RetentionAnalytics._compose_memo has cyclomatic complexity of 12 (grade C), exceeding the warning threshold",
-      "metric": "complexity 12 (C)",
-      "threshold": ">10 = Warning"
+      "description": "RetentionAnalytics._compose_memo has cyclomatic complexity of 12 (grade C), exceeding the warning threshold"
     },
     {
       "check": "Cyclomatic Complexity",
+      "module": "src/catalog/catalog_filter.py",
+      "threshold": ">10 = Warning",
+      "metric": "complexity 14 (C)",
       "id": "catalog-filter-complexity-warning",
       "severity": "warning",
-      "module": "src/catalog/catalog_filter.py",
-      "description": "CatalogFilter.get_filtered_results has cyclomatic complexity of 14 (grade C), approaching the critical threshold",
-      "metric": "complexity 14 (C)",
-      "threshold": ">10 = Warning"
+      "description": "CatalogFilter.get_filtered_results has cyclomatic complexity of 14 (grade C), approaching the critical threshold"
     }
-  ],
-  "window": "last-3-features"
+  ]
 }
