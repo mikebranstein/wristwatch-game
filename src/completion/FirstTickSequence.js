@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FirstTickSequence — top-level orchestrator for the first-tick audio
  * presentation (Issue #113, Phase 1).
  *
@@ -67,12 +67,14 @@ class FirstTickSequence {
   constructor({
     audioHook,
     instrumentationHook,
+    audioCohortFn,
     audioEnabled = true,
     silenceGateMs,
     totalWindSteps,
     tensionWindowSteps,
   }) {
     this._telemetry = new TelemetryEmitter(instrumentationHook);
+    this._audioCohortFn = audioCohortFn || null;
     this._audio = new FirstTickAudioController({
       audioHook,
       audioEnabled,
@@ -191,7 +193,10 @@ class FirstTickSequence {
       this._activatedWatches.add(watchId);
 
       // Fire the three-state sequence: silence hold → first tick → ticking loop (AC1–AC3)
-      this._audio.fireFirstTick();
+      const audioCohort = typeof this._audioCohortFn === 'function' ? this._audioCohortFn() : 'audio-on';
+      if (audioCohort === 'audio-on') {
+        this._audio.fireFirstTick();
+      }
 
       this._telemetry.emit(FIRST_TICK_EVENTS.FIRST_TICK_FIRED, {
         watchId,
