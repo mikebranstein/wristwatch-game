@@ -30,6 +30,8 @@ class MultiStepOperationTracker {
   constructor(sequences = {}) {
     this._sequences = {};
     this._progress = {};
+    /** @type {Object.<string, number>} — cumulative retry count per sequence (Issue #297) */
+    this._retryCounts = {};
 
     for (const [seqId, steps] of Object.entries(sequences)) {
       this._registerSequence(seqId, steps);
@@ -73,7 +75,10 @@ class MultiStepOperationTracker {
     }
 
     if (toolId !== stepDef.requiredTool) {
-      // Wrong tool — blocked, cannot skip (Scenario 6)
+      // Wrong tool — blocked, cannot skip (Scenario 6); increment retry counter (Issue #297)
+      if (typeof this._retryCounts[sequenceId] === 'number') {
+        this._retryCounts[sequenceId] += 1;
+      }
       const { getToolById } = require('./ToolRegistry');
       const requiredTool = getToolById(stepDef.requiredTool);
       const requiredName = requiredTool ? requiredTool.name : stepDef.requiredTool;
@@ -135,6 +140,35 @@ class MultiStepOperationTracker {
     if (this._progress[sequenceId]) {
       this._progress[sequenceId] = { currentStep: 0, completed: false };
     }
+    if (typeof this._retryCounts[sequenceId] === 'number') {
+      this._retryCounts[sequenceId] = 0;
+    }
+  }
+
+  // ── Retry Counter (Issue #297 — ProficiencyEngine accuracy-weighted gain) ────
+
+  /**
+   * Returns the cumulative retry/wrong-tool count for the given sequence since
+   * last reset. Used by ProficiencyEngine to compute accuracy-weighted gain.
+   *
+   * @param {string} sequenceId
+   * @returns {number} Retry count, or 0 if sequence unknown.
+   */
+  getRetryCount(sequenceId) {
+    return this._retryCounts[sequenceId] || 0;
+  }
+
+  /**
+   * Resets the retry counter for the given sequence to zero.
+   * Call after recording proficiency for a completed operation to prevent
+   * stale retry data from affecting the next operation's gain calculation.
+   *
+   * @param {string} sequenceId
+   */
+  resetRetryCount(sequenceId) {
+    if (typeof this._retryCounts[sequenceId] === 'number') {
+      this._retryCounts[sequenceId] = 0;
+    }
   }
 
   // ── Private ────────────────────────────────────────────────────────────────
@@ -144,6 +178,7 @@ class MultiStepOperationTracker {
     const sorted = [...steps].sort((a, b) => a.stepIndex - b.stepIndex);
     this._sequences[sequenceId] = sorted;
     this._progress[sequenceId] = { currentStep: 0, completed: false };
+    this._retryCounts[sequenceId] = 0;
   }
 }
 
