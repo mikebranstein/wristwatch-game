@@ -168,14 +168,23 @@ class WorkshopController {
    * Accept a job into the specified slot.
    * AC3: slots operate independently — accepting a job into slot N does not affect slot M.
    *
-   * @param {number} slotIndex
-   * @param {string} jobId
-   * @param {string} watchId
+   * Issue #145 — Economy MVP: pricingTier is recorded on the slot/job record at acceptance
+   * time so it is available at delivery for ledger calculation (Design integration point).
+   * Valid tiers: 'simple_service' | 'complex_service' | 'full_restoration'.
+   *
+   * @param {number}   slotIndex
+   * @param {string}   jobId
+   * @param {string}   watchId
    * @param {string[]} repairSteps
+   * @param {string}   [pricingTier='simple_service']  Economy MVP: selected pricing tier
    */
-  acceptJob(slotIndex, jobId, watchId, repairSteps = []) {
+  acceptJob(slotIndex, jobId, watchId, repairSteps = [], pricingTier = 'simple_service') {
     const slot = this.getSlot(slotIndex);
     slot.acceptJob(jobId, watchId, repairSteps);
+
+    // Issue #145: persist the selected pricing tier on the slot so DeliveryHandler
+    // can read it at delivery time to calculate revenue and update the ledger.
+    slot.pricingTier = pricingTier;
 
     if (slotIndex === 1) {
       // Emit session-start behaviour event when player activates the second slot
