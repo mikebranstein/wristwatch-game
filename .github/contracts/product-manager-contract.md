@@ -38,6 +38,13 @@ Return valid JSON only:
 - If evidence is insufficient, defer or request follow-on research instead of overcommitting.
 - Keep decision rationale traceable to customer or market signal.
 
+## Boundary Violation Rule (Mandatory)
+- If PM flow creates or attempts to create a `feature-request` issue, treat it as a hard boundary violation.
+- Required response:
+  - Stop PM processing for that issue.
+  - Emit `decision = ESCALATE` with rationale `PM-PO boundary violation`.
+  - Do not continue until corrected to `strategic-opportunity` ownership.
+
 ## Gate Rule
 - `PROVISIONAL_CHAMPION` maps to `next_state = Research In Progress`.
 - `CHAMPION` maps to `next_state = Create Strategic Opportunity`.

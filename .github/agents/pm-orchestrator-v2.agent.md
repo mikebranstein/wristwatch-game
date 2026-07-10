@@ -39,6 +39,7 @@ ensure_label() {
 
 ensure_label "pm-idea"
 ensure_label "pm-idea-auto"
+ensure_label "foundation-approved"
 ensure_label "pm-validating"
 ensure_label "pm-provisional-champion"
 ensure_label "pm-finalizing"
@@ -58,6 +59,12 @@ ensure_label "follow-on-research"
 If `.github/ISSUE_TEMPLATE/pm_idea.md`, `.github/ISSUE_TEMPLATE/strategic_opportunity.md`, or `.github/ISSUE_TEMPLATE/research_work_item.md` is missing, create it before creating issues. If write access is restricted, continue with explicit `gh issue create --body` and post a bootstrap note for maintainers.
 
 ### Step 1: Query GitHub & Check for Work
+
+Before processing PM ideas, validate foundational gate:
+- Query for at least one issue labeled `foundation-approved`.
+- If none exist, output:
+   - `PM Orchestrator halted: foundational gate not passed (missing foundation-approved). Run Foundation Orchestrator first.`
+- Skip cycle without processing PM issues.
 
 Use the `list_issues` GitHub MCP tool to list all open issues with the `pm-idea` label.
 
@@ -153,6 +160,19 @@ task(description="Run PM Phase 2 full validation on issue #NUMBER: TITLE", agent
 ### Step 5: Cycle Summary & Sleep
 
 Read the labels on the actionable issue. Apply the routing rules below. After spawning any task, wait for it to complete before continuing.
+
+### PM/PO Boundary Leakage Guard (Mandatory)
+
+PM flow must never create `feature-request` issues.
+
+After each PM agent task (Phase 1 or Phase 2):
+- Inspect the latest PM decision comment and any created issue links.
+- If evidence suggests PM created or attempted to create a `feature-request` issue:
+   - Post: `gh issue comment NUMBER --body "**PM Orchestrator:** Boundary violation detected (PM attempted feature-request creation). Escalating for correction."`
+   - Apply: `gh issue label NUMBER --add pm-escalated`
+   - Do not continue PM processing for this issue in the current cycle.
+
+Only `strategic-opportunity` creation is valid in PM flow.
 
 ---
 

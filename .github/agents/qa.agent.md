@@ -21,12 +21,18 @@ This agent performs **automated quality assessment**: validating rebase state, c
 
 ### Setup (Before any work)
 
-1. Generate unique workspace ID:
+1. Create an isolated temp workspace (OS-specific):
    ```bash
-   WORKSPACE_ID=$(uuidgen)  # or: date +%s
-   TEMP_DIR="/tmp/qa-${WORKSPACE_ID}"
-   mkdir -p "${TEMP_DIR}"
-   cd "${TEMP_DIR}"
+   # Bash (Linux/macOS)
+   TEMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/qa-XXXXXX")
+   cd "${TEMP_DIR}" || exit 1
+   ```
+
+   ```powershell
+   # PowerShell (Windows)
+   $TempDir = Join-Path $env:TEMP ("qa-" + [guid]::NewGuid().ToString())
+   New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+   Set-Location $TempDir
    ```
 
 2. Clone repository fresh:
@@ -34,7 +40,12 @@ This agent performs **automated quality assessment**: validating rebase state, c
    git clone <REPO_URL> .
    ```
 
-3. All subsequent work happens in `${TEMP_DIR}` (not your main workspace)
+3. Verify isolation before doing any other command:
+   - Current working directory MUST be the temp workspace.
+   - Current working directory MUST NOT be the orchestrator invocation directory.
+   - If verification fails, STOP with FAIL and do not continue.
+
+4. All subsequent work happens in temp workspace only (not your main workspace).
 
 ### Cleanup (After completion - MANDATORY)
 
@@ -42,6 +53,11 @@ After steps complete (success or failure):
 ```bash
 cd /
 rm -rf "${TEMP_DIR}"
+```
+
+```powershell
+Set-Location $env:TEMP
+Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue
 ```
 
 **IMPORTANT:** Clean up MUST happen regardless of QA success/failure. This prevents /tmp from filling up and ensures no state leaks between parallel QA runs.

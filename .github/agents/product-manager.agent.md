@@ -157,6 +157,15 @@ Execute when: Orchestrator finds a `pm-idea` issue with no labels yet
    - Ensure templates exist: `.github/ISSUE_TEMPLATE/research_work_item.md` and `.github/ISSUE_TEMPLATE/strategic_opportunity.md`.
    - If template creation is blocked by repository permissions, continue with explicit `gh issue create --body` and post a bootstrap note for maintainers.
 
+4c. **Hard Boundary Safety Check (before every `gh issue create`):**
+   - Allowed issue types in PM flow:
+     - `research` work items
+     - `strategic-opportunity` issues
+   - Forbidden issue type:
+     - `feature-request`
+   - If any create command draft includes title pattern `[feature-request]` or label `feature-request`, STOP and return ESCALATE with reason `PM-PO boundary violation`.
+   - Never auto-correct by creating a feature-request; only PO can create those.
+
 5. **Identify research needs** (Post as comment on `pm-idea`):
    - What personas are affected? (Search wiki)
    - What journey stages? (Search wiki)

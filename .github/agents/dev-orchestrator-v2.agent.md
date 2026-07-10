@@ -38,6 +38,7 @@ ensure_label() {
 }
 
 ensure_label "feature-request"
+ensure_label "refactor-request"
 ensure_label "intake-approved"
 ensure_label "intake-blocked"
 ensure_label "requirements-clarified"
@@ -131,6 +132,11 @@ Result: Up to 5 issues ready for Policy
 
 ### Step 4: Spawn Parallel Tasks Within Each Stage (Phase 2)
 
+**Workspace Isolation Enforcement (Mandatory):**
+- Build and QA tasks must run in an isolated temporary workspace.
+- They must never run in the orchestrator invocation directory or repository root.
+- If a build or QA run reports temp workspace setup failure, treat as blocked and require retry after fix.
+
 **SPAWN PARALLEL TASKS for all issues found per stage (up to 5 concurrent per stage):**
 
 #### 4a. Intake Stage (Parallel - Up to 5)
@@ -157,7 +163,7 @@ task(description="Run design evaluation on issue #NUMBER: TITLE", agent_id="desi
 #### 4c. Build Stage (Parallel - Up to 5)
 ```bash
 # For each issue from Step 3c
-task(description="Run build on issue #NUMBER: TITLE", agent_id="build", model_tier="EXPENSIVE")
+task(description="Run build on issue #NUMBER: TITLE. MUST use isolated temp workspace; never run in invocation directory.", agent_id="build", model_tier="EXPENSIVE")
 # (Allow up to 5 build tasks concurrently)
 ```
 **Wait for all build tasks to complete.** Then for each issue's Build Decision:
@@ -167,7 +173,7 @@ task(description="Run build on issue #NUMBER: TITLE", agent_id="build", model_ti
 #### 4d. QA Stage (Parallel - Up to 5)
 ```bash
 # For each issue from Step 3d
-task(description="Run QA on issue #NUMBER: TITLE", agent_id="qa", model_tier="STANDARD")
+task(description="Run QA on issue #NUMBER: TITLE. MUST use isolated temp workspace; never run in invocation directory.", agent_id="qa", model_tier="STANDARD")
 # (Allow up to 5 QA tasks concurrently)
 ```
 **Wait for all QA tasks to complete.** Then for each issue's QA Decision (read JSON from comment):

@@ -19,11 +19,56 @@ This registry defines:
 
 ---
 
+## Foundation Loop Routing
+
+### Stage: foundation-needed (Initial)
+
+Foundation orchestrator runs when the project has not passed the foundational gate.
+
+**Action on entry:** set `foundation-in-progress` and start foundation research.
+
+---
+
+### Stage: foundation-in-progress
+
+Foundational decisions are being researched and documented.
+
+**Decision from:** foundation-research agent
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| RECOMMEND | Research sufficient for gate review | foundation-review |
+| NEEDS_MORE_RESEARCH | Missing evidence or artifacts | foundation-in-progress |
+| BLOCKED | Critical unresolved contradiction | foundation-blocked |
+
+---
+
+### Stage: foundation-review
+
+Gate review for foundational artifacts and ADR coverage.
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| APPROVE_FOUNDATION | Decision pack complete and acceptable | foundation-approved |
+| REVISE_FOUNDATION | Recoverable gaps found | foundation-in-progress |
+| BLOCK_FOUNDATION | Unacceptable risk or contradiction | foundation-blocked |
+
+---
+
+### Stages: foundation-approved, foundation-blocked (Terminal)
+
+- `foundation-approved` enables Discovery and PM loops.
+- `foundation-blocked` halts startup progression until revised.
+
+---
+
 ## Discovery Loop Routing
 
 ### Stage: signal-scan (Initial)
 
 Discovery orchestrator runs on schedule/event/manual trigger and scans product signals.
+
+**Precondition:** Foundation gate must be passed (`foundation-approved`).
 
 **Decision from:** idea-scout agent (signal synthesis and hypothesis generation)
 
@@ -294,6 +339,103 @@ Feature blocked (dependency, tech, policy, etc.). Issue closed.
 
 ---
 
+## Architecture Review Loop Routing
+
+### Stage: arch-review-pending (Initial)
+
+Architecture review orchestrator runs on schedule/event/manual trigger.
+
+**Action on entry:** set `arch-review-in-progress` and run architecture-review agent.
+
+**Decision from:** architecture-review agent
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| NO_ACTION | No action required | arch-review-no-action |
+| CREATE_REFACTOR_PLAN | Refactor planning required | arch-refactor-planned |
+| ESCALATE | High-impact unresolved uncertainty | arch-review-escalated |
+
+---
+
+### Stage: arch-review-in-progress
+
+Recovery stage if a run was interrupted after review started.
+
+**Decision from:** architecture-review agent
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| NO_ACTION | No action required | arch-review-no-action |
+| CREATE_REFACTOR_PLAN | Refactor planning required | arch-refactor-planned |
+| ESCALATE | High-impact unresolved uncertainty | arch-review-escalated |
+
+---
+
+### Stage: arch-refactor-planned
+
+Refactor planner converts recommendations into bounded requests.
+
+**Decision from:** refactor-planner agent
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| CREATE_REFACTOR_REQUESTS | Requests generated and handed to dev loop | arch-refactor-requests-created |
+| DEFER | Work deferred with rationale | debt-deferred |
+| BLOCKED | Planner blocked by unresolved dependency | arch-review-escalated |
+
+**Action on transition:**
+- CREATE_REFACTOR_REQUESTS -> Create `feature-request` issues labeled `refactor-request` for Dev loop execution.
+
+---
+
+### Stages: arch-review-no-action, arch-refactor-requests-created, arch-review-escalated (Terminal)
+
+Architecture review run complete for this cycle.
+
+---
+
+## Architecture Debt Lifecycle Routing
+
+### Stage: architecture-debt (Initial)
+
+Debt issue created by fitness/debt utilities or architecture review.
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| TRIAGE | Debt assessed and prioritized | debt-triaged |
+| DEFER | Not scheduled this cycle | debt-deferred |
+
+### Stage: debt-triaged
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| SCHEDULE | Added to active remediation plan | debt-scheduled |
+| DEFER | Not scheduled yet | debt-deferred |
+
+### Stage: debt-scheduled
+
+| Decision | Condition | Next Stage |
+|----------|-----------|------------|
+| CREATE_REFACTOR_REQUEST | Refactor request created for execution | arch-refactor-planned |
+| RESOLVE | Evidence confirms debt resolved | debt-resolved |
+| DEFER | Delayed due to constraints | debt-deferred |
+
+### Stages: debt-resolved, debt-deferred (Terminal)
+
+Debt lifecycle complete or paused.
+
+---
+
+## Fitness Function Outcome Mapping
+
+| Fitness Outcome | Condition | Action |
+|---|---|---|
+| fitness-pass | Within threshold | No debt ticket action |
+| fitness-warn | Threshold breached, non-critical | Create or update `architecture-debt` |
+| fitness-fail-critical | Critical threshold breach | Create or update `architecture-debt`, route to `arch-review-escalated` |
+
+---
+
 ## Feedback Loops (Cross-Stage Transitions)
 
 ### Feedback Loop: Design REVISE → Intake
@@ -330,6 +472,8 @@ Feature blocked (dependency, tech, policy, etc.). Issue closed.
 | Stage | Status | Issue Action |
 |-------|--------|--------------|
 | pm-idea-created | ✅ Discovery output | Create `pm-idea` + `pm-idea-auto` |
+| foundation-approved | ✅ Foundation gate passed | Enable Discovery and PM loops |
+| foundation-blocked | ❌ Foundation blocked | Halt startup progression |
 | candidate-deferred | ⏸️ Deferred | Keep for later Discovery runs |
 | dropped | ❌ Dropped | No PM issue created |
 | pm-opportunity | ✅ Success | Close, create strategic-opportunity |
@@ -337,6 +481,11 @@ Feature blocked (dependency, tech, policy, etc.). Issue closed.
 | pm-escalated | ⏸️ Paused | Awaiting manual decision |
 | po-deferred | ⏸️ Deferred | Close (may reopen later) |
 | po-rejected | ❌ Rejected | Close |
+| arch-review-no-action | ✅ No action | Close review cycle |
+| arch-refactor-requests-created | ✅ Planned | Route refactor requests to Dev loop |
+| arch-review-escalated | ⏸️ Paused | Await architectural escalation decision |
+| debt-resolved | ✅ Resolved | Close debt issue |
+| debt-deferred | ⏸️ Deferred | Revisit in later review cycle |
 | released | ✅ Success | Close with label `released` |
 | feature-blocked | ❌ Blocked | Close with label `feature-blocked` |
 
