@@ -83,12 +83,12 @@ const EVENTS = {
   SECOND_BENCH_FEEDBACK_PROMPTED: 'second_bench_feedback_prompted',
   SECOND_BENCH_FEEDBACK_RESPONSE: 'second_bench_feedback_response',
 
-  // Client Backstory Card System — Issue #126
-  // All additive — zero changes to existing event names or signatures.
+  // Client Backstory Card System — Issue #126 / Issue #130
+  // All additive — zero changes to existing event names.
   // Three events cover the A/B measurement signals required for D7 retention and job-completion tracking.
   JOB_ACCEPTED:         'job_accepted',          // payload: { job_id, job_type, has_backstory }
   JOB_DECLINED:         'job_declined',           // payload: { job_id, job_type, has_backstory }
-  BACKSTORY_CARD_SHOWN: 'backstory_card_shown',  // payload: { job_id, job_type, template_id }
+  BACKSTORY_CARD_SHOWN: 'backstory_card_shown',
 
   // Reassembly Micro-Confirmation events (Issue #122)
   REASSEMBLY_COMPONENT_SEATED_SUCCESS: 'reassembly_component_seated_success',
@@ -415,15 +415,37 @@ class TelemetryEmitter {
   }
 
   /**
-   * Fires when a backstory card is rendered in the intake screen (backstory cohort only).
-   * Provides template-level granularity for card-performance analysis.
+   * Fires when a backstory card is shown to the player (AC5).
+   * Control cohort: pass null for card_variant_id, client_persona_id, arc_position.
    *
-   * @param {string} jobId
-   * @param {string} jobType
-   * @param {string} templateId  The specific template shown (e.g. 'dive_001')
+   * Backward-compatible legacy form:
+   *   backstoryCardShown(jobId, jobType, templateId)
+   * emits the Issue #126 payload and also adds the Issue #130 additive fields.
+   *
+   * @param {string} sessionIdOrJobId
+   * @param {string|null} cardVariantIdOrJobType
+   * @param {string|null} clientPersonaIdOrTemplateId
+   * @param {number|null} [arcPosition]
    */
-  backstoryCardShown(jobId, jobType, templateId) {
-    this.emit(EVENTS.BACKSTORY_CARD_SHOWN, { job_id: jobId, job_type: jobType, template_id: templateId });
+  backstoryCardShown(sessionIdOrJobId, cardVariantIdOrJobType, clientPersonaIdOrTemplateId, arcPosition) {
+    if (arguments.length >= 4) {
+      this.emit(EVENTS.BACKSTORY_CARD_SHOWN, {
+        sessionId: sessionIdOrJobId,
+        card_variant_id: cardVariantIdOrJobType,
+        client_persona_id: clientPersonaIdOrTemplateId,
+        arc_position: arcPosition,
+      });
+      return;
+    }
+
+    this.emit(EVENTS.BACKSTORY_CARD_SHOWN, {
+      job_id: sessionIdOrJobId,
+      job_type: cardVariantIdOrJobType,
+      template_id: clientPersonaIdOrTemplateId,
+      card_variant_id: clientPersonaIdOrTemplateId,
+      client_persona_id: null,
+      arc_position: null,
+    });
   }
 
   // ---- Reassembly Micro-Confirmation convenience methods (Issue #122) ----
