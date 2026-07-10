@@ -1,4 +1,4 @@
-﻿/**
+/**
  * PlayerSaveState — manages persistent player data.
  *
  * Stores player progress flags using an in-memory store (swap this for
@@ -60,6 +60,14 @@
  *   Written alongside crystal_outcome; records the condition state before replacement.
  *   Values: 'scratched' | 'cracked' | 'clean' | null.
  *   Both fields reflected in the restoration summary screen (AC5).
+ *
+ * Issue #148 — In-Repair Part Damage Recovery — Core System:
+ *   Added `damage_recovery_state` (null default, backward-compatible).
+ *   Serialised snapshot of DamageRecoveryController state: damaged part IDs,
+ *   outstanding replacement orders, and current restoration damage state.
+ *   Written by DamageRecoveryController._persistDamageState() on every state
+ *   change; round-trips cleanly through the #93 checkpoint system (Test Scenario 7).
+
  */
 
 const DEFAULT_SAVE = {
@@ -136,6 +144,12 @@ const DEFAULT_SAVE = {
   // Pre-existing saves lacking these keys receive null via Object.assign defaults.
   crystal_outcome:           null,
   crystal_condition_before:  null,
+  // Issue #148: In-Repair Part Damage Recovery — Core System (additive, backward-compatible)
+  // Serialised snapshot written by DamageRecoveryController on every damage/order state change.
+  // null = no damage events have occurred in the current restoration session.
+  // On save load, DamageRecoveryController.fromSnapshot() restores the order timers.
+  // Compatible with #93 checkpoint system — added as an additive field, no schema migration needed.
+  damage_recovery_state:  null,
 
 };
 
