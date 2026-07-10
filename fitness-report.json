@@ -1,20 +1,11 @@
 {
   "summary": {
     "warning": 4,
-    "total": 7,
-    "critical": 3
+    "total": 6,
+    "critical": 2
   },
-  "generated_at": "2026-07-10T14:06:28Z",
+  "generated_at": "2026-07-11T11:12:28Z",
   "findings": [
-    {
-      "check": "Dependency Layering",
-      "id": "save-layering-violation",
-      "severity": "critical",
-      "module": "src/save/save_system.py",
-      "description": "save_system.py imports from orders module, violating the layering rule (save/ may only import from config/)",
-      "metric": "save/ imports orders",
-      "threshold": "save/ may import from: config only"
-    },
     {
       "check": "Module Size",
       "id": "analytics-module-size-critical",
