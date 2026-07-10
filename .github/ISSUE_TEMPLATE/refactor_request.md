@@ -2,8 +2,9 @@
 name: Refactor Request
 about: Bounded refactor task created from an architecture review
 title: "[REFACTOR] "
-labels: feature-request,refactor-request
+labels: feature-request, refactor-request
 assignees: ''
+
 ---
 
 ## Summary
