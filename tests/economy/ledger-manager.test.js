@@ -253,3 +253,151 @@ describe('LedgerManager.getLedgerViewModel()', () => {
     expect(vm.cosyMode).toBe(false);
   });
 });
+
+// ── Issue #254: Cosmetic Grade Modifier ───────────────────────────────────────
+
+describe('LedgerManager.recordJobCompletion() — Issue #254 Cosmetic Grade Modifier (AC1, AC2, AC3)', () => {
+
+  // ── Scenario 1: Mirror grade, full_restoration ────────────────────────────
+
+  test('Scenario 1 (Issue #254) — Mirror grade, full_restoration: revenue $260', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('full_restoration', 0, 'mirror');
+
+    expect(result.revenue).toBe(260);      // 200 × 1.30
+    expect(result.partsCost).toBe(0);
+    expect(result.netIncome).toBe(260);
+    expect(result.newBalance).toBe(260);
+    expect(ledger.incomeTotal).toBe(260);
+    expect(ledger.balance).toBe(260);
+  });
+
+  // ── Scenario 2: Good grade, full_restoration ──────────────────────────────
+
+  test('Scenario 2 (Issue #254) — Good grade, full_restoration: revenue $240', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('full_restoration', 0, 'good');
+
+    expect(result.revenue).toBe(240);      // 200 × 1.20
+    expect(result.netIncome).toBe(240);
+    expect(result.newBalance).toBe(240);
+  });
+
+  // ── Scenario 3: Adequate grade, full_restoration ──────────────────────────
+
+  test('Scenario 3 (Issue #254) — Adequate grade, full_restoration: revenue $220', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('full_restoration', 0, 'adequate');
+
+    expect(result.revenue).toBe(220);      // 200 × 1.10
+    expect(result.netIncome).toBe(220);
+    expect(result.newBalance).toBe(220);
+  });
+
+  // ── Scenario 4: No cosmetic grade — no multiplier ────────────────────────
+
+  test('Scenario 4 (Issue #254) — No cosmeticGrade: base $200, no error', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('full_restoration', 0);  // no grade
+
+    expect(result.revenue).toBe(200);
+    expect(result.netIncome).toBe(200);
+  });
+
+  // ── Scenario 5: AC2 — grade multiplier does NOT apply to other tiers ─────
+
+  test('Scenario 5 (Issue #254) — AC2: simple_service + mirror grade → no multiplier, $50', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('simple_service', 0, 'mirror');
+
+    expect(result.revenue).toBe(50);   // no multiplier — tier is not full_restoration
+  });
+
+  test('Scenario 5 (Issue #254) — AC2: complex_service + mirror grade → no multiplier, $120', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('complex_service', 0, 'mirror');
+
+    expect(result.revenue).toBe(120);  // no multiplier
+  });
+
+  // ── Scenario 6: AC3 — Cozy Mode + Mirror grade ───────────────────────────
+
+  test('Scenario 6 (Issue #254) — AC3: Cozy Mode ON + mirror grade → displayed revenue $260, no cost deduction', () => {
+    const save   = makeSaveState({ cozy_mode_enabled: true });
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('full_restoration', 30, 'mirror');
+
+    expect(result.revenue).toBe(260);      // 200 × 1.30 (grade-adjusted)
+    expect(result.partsCost).toBe(30);
+    expect(result.netIncome).toBe(260);    // Cozy Mode: no deduction
+    expect(result.newBalance).toBe(260);
+    expect(ledger.incomeTotal).toBe(260);  // grade-adjusted gross income (AC3)
+    expect(ledger.partsCostTotal).toBe(30);  // parts cost tracked for display
+  });
+
+  // ── Scenario 9: Multiple jobs — correct accumulation ─────────────────────
+
+  test('Scenario 9 (Issue #254) — Multiple jobs with mixed grades: totals correct', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+
+    ledger.recordJobCompletion('full_restoration', 10, 'mirror');    // 260 revenue, net 250
+    ledger.recordJobCompletion('full_restoration', 20, 'good');      // 240 revenue, net 220
+    ledger.recordJobCompletion('full_restoration', 30, 'adequate');  // 220 revenue, net 190
+    ledger.recordJobCompletion('simple_service',   5,  'mirror');    // 50 revenue, net 45 (no multiplier)
+
+    expect(ledger.incomeTotal).toBe(260 + 240 + 220 + 50);          // 770
+    expect(ledger.partsCostTotal).toBe(10 + 20 + 30 + 5);           // 65
+    expect(ledger.balance).toBe(250 + 220 + 190 + 45);              // 705
+  });
+
+  // ── Scenario 10: Invalid/null/undefined cosmeticGrade ────────────────────
+
+  test('Scenario 10 (Issue #254) — null cosmeticGrade: falls back to $200, no exception', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    expect(() => ledger.recordJobCompletion('full_restoration', 0, null)).not.toThrow();
+    expect(ledger.balance).toBe(200);
+  });
+
+  test('Scenario 10 (Issue #254) — undefined cosmeticGrade: falls back to $200, no exception', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    expect(() => ledger.recordJobCompletion('full_restoration', 0, undefined)).not.toThrow();
+    expect(ledger.balance).toBe(200);
+  });
+
+  test('Scenario 10 (Issue #254) — unrecognised grade string: falls back to $200, no exception', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    expect(() => ledger.recordJobCompletion('full_restoration', 0, 'legendary')).not.toThrow();
+    expect(ledger.balance).toBe(200);
+  });
+
+  // ── AC1 backward-compatibility: existing callers without cosmeticGrade ───
+
+  test('Scenario 7 (Issue #254) — AC1 backward-compat: existing callers without cosmeticGrade param → $200, no error', () => {
+    const save   = makeSaveState();
+    const ledger = new LedgerManager(save);
+    const result = ledger.recordJobCompletion('full_restoration', 50);  // no third param
+
+    expect(result.revenue).toBe(200);
+    expect(result.netIncome).toBe(150);   // 200 - 50
+    expect(result.newBalance).toBe(150);
+  });
+
+  // ── Grade multiplier values are correct (GRADE_MULTIPLIERS export) ────────
+
+  test('GRADE_MULTIPLIERS export: adequate=1.10, good=1.20, mirror=1.30', () => {
+    const { GRADE_MULTIPLIERS } = require('../../src/economy/LedgerManager');
+    expect(GRADE_MULTIPLIERS.adequate).toBe(1.10);
+    expect(GRADE_MULTIPLIERS.good).toBe(1.20);
+    expect(GRADE_MULTIPLIERS.mirror).toBe(1.30);
+  });
+});
