@@ -67,7 +67,16 @@
  *   outstanding replacement orders, and current restoration damage state.
  *   Written by DamageRecoveryController._persistDamageState() on every state
  *   change; round-trips cleanly through the #93 checkpoint system (Test Scenario 7).
-
+ *
+ * Issue #145 — Workshop Economy MVP:
+ *   Added economy ledger fields (all additive, backward-compatible, 0/false/[] defaults):
+ *     ledger_income_total      {number}   Total gross income from all completed jobs.
+ *     ledger_parts_cost_total  {number}   Total parts costs across all jobs.
+ *     ledger_balance           {number}   Net balance (income − parts costs; Cozy Mode: no deductions).
+ *     workshop_upgrades        {string[]} IDs of purchased tool/workspace upgrades.
+ *     cozy_mode_enabled        {boolean}  Cozy Mode toggle (display-only financial layer).
+ *   Updated by LedgerManager at the delivery-completion boundary.
+ *   Cozy Mode toggle semantics: applies from next job forward, never retroactively.
  */
 
 const DEFAULT_SAVE = {
@@ -155,6 +164,25 @@ const DEFAULT_SAVE = {
   // On save load, DamageRecoveryController.fromSnapshot() restores the order timers.
   // Compatible with #93 checkpoint system — added as an additive field, no schema migration needed.
   damage_recovery_state:  null,
+
+  // Issue #145: Workshop Economy MVP — ledger, upgrades, cozy mode (additive, backward-compatible)
+  // All fields default to safe zero/false/empty values; pre-existing saves lacking these keys
+  // will receive their defaults via Object.assign and load correctly.
+  //
+  // ledger_income_total:     Running total of gross income from all completed jobs (0 default).
+  // ledger_parts_cost_total: Running total of parts costs across all jobs (0 default).
+  // ledger_balance:          Net balance = income − parts costs. In Cozy Mode: parts costs not
+  //                          deducted; balance = sum of all revenues (0 default).
+  // workshop_upgrades:       Array of purchased upgrade IDs — ['precision_tweezers', etc.] ([] default).
+  //                          Populated by UpgradeShop.purchase() at purchase time.
+  // cozy_mode_enabled:       Cozy Mode toggle. When true, financial layer is display-only:
+  //                          parts cost tracked but not deducted from balance (false default).
+  //                          Toggle semantics: applies from NEXT job forward, not retroactively.
+  ledger_income_total:     0,
+  ledger_parts_cost_total: 0,
+  ledger_balance:          0,
+  workshop_upgrades:       [],
+  cozy_mode_enabled:       false,
 
 };
 

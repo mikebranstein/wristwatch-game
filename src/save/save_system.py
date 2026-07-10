@@ -96,6 +96,20 @@ class SaveSystem:
         if updated_save_data.get("completed_watches") is None:
             updated_save_data["completed_watches"] = []
 
+        # Issue #145: Workshop Economy MVP — null-safe defaults for all new ledger fields.
+        # Pre-feature saves lacking these keys receive safe zero/false/empty defaults,
+        # mirroring the completed_watches guard pattern established in Issue #127.
+        if updated_save_data.get("ledger_income_total") is None:
+            updated_save_data["ledger_income_total"] = 0
+        if updated_save_data.get("ledger_parts_cost_total") is None:
+            updated_save_data["ledger_parts_cost_total"] = 0
+        if updated_save_data.get("ledger_balance") is None:
+            updated_save_data["ledger_balance"] = 0
+        if not isinstance(updated_save_data.get("workshop_upgrades"), list):
+            updated_save_data["workshop_upgrades"] = []
+        if updated_save_data.get("cozy_mode_enabled") is None:
+            updated_save_data["cozy_mode_enabled"] = False
+
         return order_queue, arrived_orders, updated_save_data
 
     def save_session(self, order_queue: OrderQueue, existing_save_data: Optional[dict]) -> dict:
