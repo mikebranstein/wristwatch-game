@@ -59,8 +59,20 @@ You run in a bounded cycle and stop after one run summary.
    - G5 Atomic update: no conflicting active architecture-review states on same issue.
    - G6 Terminal-close check: close only on terminal routing outcomes.
    - On failure: post `Transition validation failed: <gate> <reason>`, add `transition-validation-failed`, skip transition.
-8. Query actionable review issues with labels `arch-review-pending`, `arch-review-in-progress`, or `arch-refactor-planned`.
-9. For each issue:
+8. Query actionable architecture debt issues with labels `architecture-debt`, `debt-triaged`, or `debt-scheduled`.
+9. For each debt issue:
+    - If label is `architecture-debt`:
+       - Read `## Severity` from issue body.
+       - If Severity is `Medium`, `High`, or `Critical`: apply `debt-triaged` (TRIAGE).
+       - If Severity is `Low` or missing: apply `debt-deferred` (DEFER) and post rationale comment.
+    - If label is `debt-triaged`:
+       - Read `## Severity` and `## Proposed Follow-up`.
+       - If Severity is `High` or `Critical`, or follow-up indicates refactor execution needed: apply `debt-scheduled` (SCHEDULE).
+       - Otherwise apply `debt-deferred` (DEFER) with comment.
+    - If label is `debt-scheduled`:
+       - Route to refactor planning by applying `arch-refactor-planned` (CREATE_REFACTOR_REQUEST handoff).
+10. Query actionable review issues with labels `arch-review-pending`, `arch-review-in-progress`, or `arch-refactor-planned`.
+11. For each issue:
     - If label is `arch-review-pending` or `arch-review-in-progress`:
        - Apply `arch-review-in-progress`
       - `task(description="Run architecture review on issue #NUMBER. MUST validate design against docs/foundation-decision-pack.md, docs/adr/, and wiki-manager search context before decision.", agent_id="architecture-review", model_tier="STANDARD")`
@@ -76,8 +88,8 @@ You run in a bounded cycle and stop after one run summary.
           - `CREATE_REFACTOR_REQUESTS` -> for each created request issue, label as `feature-request` and `refactor-request`; apply `arch-refactor-requests-created`
           - `DEFER` -> apply `debt-deferred`
           - `BLOCKED` -> apply `arch-review-escalated`
-10. Post run summary and stop.
-11. Cleanup temp workspace regardless of outcome:
+12. Post run summary and stop.
+13. Cleanup temp workspace regardless of outcome:
    - Bash: `cd / && rm -rf "${TEMP_DIR}"`
    - PowerShell: `Set-Location $env:TEMP; Remove-Item -LiteralPath $TempDir -Recurse -Force -ErrorAction SilentlyContinue`
 
@@ -91,6 +103,9 @@ Refactor plans: [N]
 Refactor requests created: [N]
 Escalated: [N]
 Debt issues upserted: [N]
+Debt triaged: [N]
+Debt scheduled: [N]
+Debt deferred: [N]
 Duration: [seconds]
 ```
 
