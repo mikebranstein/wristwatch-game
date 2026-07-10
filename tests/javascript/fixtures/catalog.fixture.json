@@ -1,0 +1,95 @@
+{
+  "movements": ["AS-1950", "ETA-2824", "Miyota-8215"],
+  "parts": [
+    {
+      "id": "ms-eta2824-std",
+      "name": "ETA 2824 Mainspring (Standard)",
+      "part_type": "mainspring",
+      "movement_family": "ETA-2824",
+      "condition": "New",
+      "price": 12.5,
+      "function_description": "Stores and releases mechanical energy to power the movement. The coiled spring unwinds slowly, delivering a consistent force through the gear train to drive timekeeping."
+    },
+    {
+      "id": "ms-as1950-std",
+      "name": "AS 1950 Mainspring (Standard)",
+      "part_type": "mainspring",
+      "movement_family": "AS-1950",
+      "condition": "New",
+      "price": 11.0,
+      "function_description": "Stores and releases mechanical energy to power the AS 1950 movement. Sized specifically for the AS 1950 barrel dimensions; do not substitute with ETA-spec springs."
+    },
+    {
+      "id": "ms-miyota-std",
+      "name": "Miyota 8215 Mainspring (Standard)",
+      "part_type": "mainspring",
+      "movement_family": "Miyota-8215",
+      "condition": "New",
+      "price": 9.5,
+      "function_description": "Provides the primary energy source for the Miyota 8215 automatic movement. The automatic rotor winds this spring during wear, making manual winding optional under normal use."
+    },
+    {
+      "id": "bw-eta2824-std",
+      "name": "ETA 2824 Balance Wheel Assembly",
+      "part_type": "balance-wheel",
+      "movement_family": "ETA-2824",
+      "condition": "New",
+      "price": 45.0,
+      "function_description": "The oscillating timekeeping element of the movement — the balance wheel swings back and forth at a precise frequency (typically 28,800 vibrations per hour) to divide time into equal segments."
+    },
+    {
+      "id": "ew-eta2824-std",
+      "name": "ETA 2824 Escape Wheel",
+      "part_type": "escape-wheel",
+      "movement_family": "ETA-2824",
+      "condition": "New",
+      "price": 28.0,
+      "function_description": "The final wheel in the gear train before the escapement. Its specially shaped teeth are caught and released by the pallet fork, converting continuous rotational energy into the regulated tick-tock of the movement."
+    },
+    {
+      "id": "pf-eta2824-std",
+      "name": "ETA 2824 Pallet Fork",
+      "part_type": "pallet-fork",
+      "movement_family": "ETA-2824",
+      "condition": "New",
+      "price": 32.0,
+      "function_description": "The lever that alternately locks and releases the escape wheel teeth. Its two pallet stones (jewels set at precise angles) catch each tooth to divide energy into equal impulses delivered to the balance wheel."
+    },
+    {
+      "id": "stem-eta2824-std",
+      "name": "ETA 2824 Winding Stem",
+      "part_type": "stem",
+      "movement_family": "ETA-2824",
+      "condition": "New",
+      "price": 9.0,
+      "function_description": "Connects the crown (the knob on the watch case) to the setting and winding mechanism inside the movement. A bent or broken stem prevents winding and hand-setting; replace before reassembly."
+    },
+    {
+      "id": "cw-universal",
+      "name": "Crown Wheel (Universal Small)",
+      "part_type": "crown-wheel",
+      "movement_family": null,
+      "condition": "New",
+      "price": 5.0,
+      "function_description": "Engages the winding stem to transmit manual winding force into the barrel. The crown wheel's teeth interlock with the ratchet wheel to wind the mainspring one click at a time."
+    },
+    {
+      "id": "cs-universal",
+      "name": "Click Spring (Universal)",
+      "part_type": "click-spring",
+      "movement_family": null,
+      "condition": "New",
+      "price": 3.5,
+      "function_description": "A small tensioned spring that holds the ratchet wheel in position between winding clicks. Without a functioning click spring, the mainspring can unwind uncontrolled when tension is applied."
+    },
+    {
+      "id": "gasket-universal",
+      "name": "Crown Gasket (Universal)",
+      "part_type": "gasket",
+      "movement_family": null,
+      "condition": "New",
+      "price": 4.5,
+      "function_description": "Rubber O-ring gasket that seals the crown tube against moisture ingress. Required replacement whenever a Water Ingress damage state is repaired — the failed gasket is the primary point of entry."
+    }
+  ]
+}

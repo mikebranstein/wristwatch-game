@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/mikebranstein/wristwatch-game/schema/catalog.schema.json",
+  "title": "Wristwatch Game Parts Catalog",
+  "description": "JSON Schema Draft-07 for the Python-to-JS interop catalog artifact. Python (PARTS_CATALOG) is the sole producer; JavaScript is the sole consumer. See ADR-0001 and ADR-0003. Schema evolution policy: additive changes only — adding optional fields is non-breaking; adding new required fields or removing/renaming existing fields is a breaking change and REQUIRES a new ADR before the schema may be updated.",
+  "type": "object",
+  "required": ["movements", "parts"],
+  "additionalProperties": true,
+  "properties": {
+    "movements": {
+      "type": "array",
+      "description": "List of movement family identifiers present in this catalog. Derived from the set of non-null movement_family values in the parts array.",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "parts": {
+      "type": "array",
+      "description": "Ordered array of catalog part objects serialized from the Python PARTS_CATALOG.",
+      "items": {
+        "$ref": "#/definitions/Part"
+      }
+    }
+  },
+  "definitions": {
+    "Part": {
+      "type": "object",
+      "description": "A single catalog part as serialized by the Python data layer.",
+      "required": [
+        "id",
+        "name",
+        "part_type",
+        "movement_family",
+        "condition",
+        "price",
+        "function_description"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique part identifier (kebab-case slug).",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable part name displayed to the player.",
+          "minLength": 1
+        },
+        "part_type": {
+          "type": "string",
+          "description": "Part type classification (maps to PartType enum in part_compatibility.py).",
+          "enum": [
+            "mainspring",
+            "balance-wheel",
+            "escape-wheel",
+            "pallet-fork",
+            "cannon-pinion",
+            "crown-wheel",
+            "click-spring",
+            "jewel",
+            "stem",
+            "dial",
+            "crystal",
+            "gasket",
+            "corrosion-cleaning-tool",
+            "dial-enamel-repair-tool"
+          ]
+        },
+        "movement_family": {
+          "description": "Movement family this part targets. null = universal (compatible with all families).",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "condition": {
+          "type": "string",
+          "description": "Part condition (maps to PartCondition enum in part_compatibility.py).",
+          "enum": ["New", "Used-Good", "Used-Fair"]
+        },
+        "price": {
+          "type": "number",
+          "description": "Part price in game currency units.",
+          "minimum": 0
+        },
+        "function_description": {
+          "type": "string",
+          "description": "Player-facing description of the part's mechanical function.",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

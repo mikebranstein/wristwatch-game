@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --coverage",
     "check:boundary": "node scripts/check-boundary.js",
+    "validate:catalog": "node scripts/validate-catalog.js",
     "test:all": "node scripts/run-all-tests.js",
     "test:all:coverage": "node scripts/run-all-tests.js --coverage"
   },

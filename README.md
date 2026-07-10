@@ -121,3 +121,13 @@ npm run check:boundary
 ```
 
 A `0` exit code confirms no cross-boundary file placements exist.
+
+## Interop Contract
+
+The Python-to-JS serialization boundary is formalized in `schema/catalog.schema.json` (JSON Schema Draft-07).
+
+- **Python validation:** `pytest tests/python/test_catalog_schema.py` — validates `PARTS_CATALOG` serialization against the schema.
+- **JS validation:** included in `npm test` via `tests/javascript/catalog-schema.test.js` — validates catalog JSON loading against the same schema.
+- **Direct catalog validation:** `npm run validate:catalog -- path\to\catalog.json` — validates a catalog artifact against the shared schema.
+
+See `docs/adr/0001-runtime-and-language.md` for the schema evolution policy.
