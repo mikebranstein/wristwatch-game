@@ -1,17 +1,21 @@
 const { CvdPaletteMode, CVD_MODE } = require('./CvdPaletteMode');
 const { UiScaleController, UI_SCALE_DEFAULT } = require('./UiScaleController');
 const { SnapToleranceAssist, SNAP_LEVEL } = require('./SnapToleranceAssist');
+const { DEFAULT_AUDIO_VOLUME, clampVolume } = require('../audio/AudioVolumeSettings');
 
 class AccessibilitySettings {
   constructor({
     paletteRenderer = null,
     scaleRenderer = null,
     toleranceApplier = null,
+    audioVolumeApplier = null,
     savedSettings = null,
   } = {}) {
     this._cvdPaletteMode = new CvdPaletteMode({ paletteRenderer });
     this._uiScaleController = new UiScaleController({ scaleRenderer });
     this._snapToleranceAssist = new SnapToleranceAssist({ toleranceApplier });
+    this._audioVolumeApplier = typeof audioVolumeApplier === 'function' ? audioVolumeApplier : null;
+    this._audioVolume = DEFAULT_AUDIO_VOLUME;
 
     if (savedSettings) {
       this._applySavedSettings(savedSettings);
@@ -22,6 +26,7 @@ class AccessibilitySettings {
     const hasCvdMode = Object.prototype.hasOwnProperty.call(savedSettings, 'cvd_mode');
     const hasUiScale = Object.prototype.hasOwnProperty.call(savedSettings, 'ui_scale');
     const hasSnapLevel = Object.prototype.hasOwnProperty.call(savedSettings, 'snap_tolerance_level');
+    const hasAudioVolume = Object.prototype.hasOwnProperty.call(savedSettings, 'audio_volume');
 
     if (hasCvdMode && savedSettings.cvd_mode !== CVD_MODE.NONE) {
       this.setCvdMode(savedSettings.cvd_mode);
@@ -31,6 +36,9 @@ class AccessibilitySettings {
     }
     if (hasSnapLevel) {
       this.setSnapLevel(savedSettings.snap_tolerance_level);
+    }
+    if (hasAudioVolume) {
+      this.setAudioVolume(savedSettings.audio_volume);
     }
   }
 
@@ -58,11 +66,24 @@ class AccessibilitySettings {
     return this._snapToleranceAssist.getLevel();
   }
 
+  setAudioVolume(volumePct) {
+    const nextVolume = clampVolume(volumePct);
+    this._audioVolume = nextVolume;
+    if (this._audioVolumeApplier) {
+      this._audioVolumeApplier(nextVolume);
+    }
+  }
+
+  getAudioVolume() {
+    return this._audioVolume;
+  }
+
   toSaveData() {
     return {
       cvd_mode: this.getCvdMode(),
       ui_scale: this.getUiScale(),
       snap_tolerance_level: this.getSnapLevel(),
+      audio_volume: this.getAudioVolume(),
     };
   }
 
@@ -70,6 +91,7 @@ class AccessibilitySettings {
     this._cvdPaletteMode.reset();
     this._uiScaleController.reset();
     this._snapToleranceAssist.reset();
+    this.setAudioVolume(DEFAULT_AUDIO_VOLUME);
   }
 
   static fromSaveData(saveData = {}, renderers = {}) {
@@ -81,6 +103,9 @@ class AccessibilitySettings {
         snap_tolerance_level: Object.prototype.hasOwnProperty.call(saveData, 'snap_tolerance_level')
           ? saveData.snap_tolerance_level
           : SNAP_LEVEL.STANDARD,
+        audio_volume: Object.prototype.hasOwnProperty.call(saveData, 'audio_volume')
+          ? saveData.audio_volume
+          : DEFAULT_AUDIO_VOLUME,
       },
     });
   }

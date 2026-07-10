@@ -15,11 +15,13 @@
  *   cvdMode           : null | 'deuteranopia' | 'protanopia' | 'tritanopia'
  *   uiScalePct        : number  80–150
  *   snapToleranceLevel: 'standard' | 'assisted' | 'high_assist'
+ *   audioVolumePct    : number  0–100
  *
  * Events emitted on the optional `onChange` callback:
  *   { type: 'cvd_mode', value }
  *   { type: 'ui_scale', value }
  *   { type: 'snap_tolerance', value }
+ *   { type: 'audio_volume', value }
  *   { type: 'reset' }
  *
  * Usage
@@ -36,6 +38,12 @@
 
 const { CvdPaletteManager, VALID_MODES } = require('./CvdPaletteManager');
 const { UiScaleManager, UI_SCALE_MIN, UI_SCALE_MAX, UI_SCALE_DEFAULT } = require('./UiScaleManager');
+const {
+  DEFAULT_AUDIO_VOLUME,
+  MIN_AUDIO_VOLUME,
+  MAX_AUDIO_VOLUME,
+  clampVolume,
+} = require('../audio/AudioVolumeSettings');
 
 const SNAP_TOLERANCE_LEVELS = ['standard', 'assisted', 'high_assist'];
 
@@ -56,6 +64,7 @@ class AccessibilitySettingsScreen {
     this._cvdMode = null;
     this._uiScalePct = UI_SCALE_DEFAULT;
     this._snapToleranceLevel = 'standard';
+    this._audioVolumePct = DEFAULT_AUDIO_VOLUME;
     this._onChange = typeof onChange === 'function' ? onChange : null;
   }
 
@@ -70,12 +79,16 @@ class AccessibilitySettingsScreen {
   /** @returns {string} Active snap tolerance level. */
   get snapToleranceLevel() { return this._snapToleranceLevel; }
 
+  /** @returns {number} Active game-audio volume percentage (0–100). */
+  get audioVolumePct() { return this._audioVolumePct; }
+
   /** @returns {Object} Copy of all current settings. */
   getSettings() {
     return {
       cvdMode: this._cvdMode,
       uiScalePct: this._uiScalePct,
       snapToleranceLevel: this._snapToleranceLevel,
+      audioVolumePct: this._audioVolumePct,
     };
   }
 
@@ -127,12 +140,29 @@ class AccessibilitySettingsScreen {
   }
 
   /**
+   * Set the global audio volume percentage (Issue #132).
+   *
+   * @param {number} volumePct — value in [0, 100].
+   */
+  setAudioVolumePct(volumePct) {
+    const volume = clampVolume(volumePct);
+    if (volume < MIN_AUDIO_VOLUME || volume > MAX_AUDIO_VOLUME) {
+      throw new RangeError(
+        `AccessibilitySettingsScreen: audioVolumePct must be in [${MIN_AUDIO_VOLUME}, ${MAX_AUDIO_VOLUME}]. Got: ${volumePct}`
+      );
+    }
+    this._audioVolumePct = volume;
+    this._emit({ type: 'audio_volume', value: volume });
+  }
+
+  /**
    * Reset all settings to factory defaults (AC5 baseline).
    */
   resetToDefaults() {
     this._cvdMode = null;
     this._uiScalePct = UI_SCALE_DEFAULT;
     this._snapToleranceLevel = 'standard';
+    this._audioVolumePct = DEFAULT_AUDIO_VOLUME;
     this._emit({ type: 'reset', value: null });
   }
 
@@ -180,13 +210,14 @@ class AccessibilitySettingsScreen {
   /**
    * Serialise settings to a JSON-safe dict for the player save profile.
    *
-   * @returns {{ cvd_mode: string|null, ui_scale: number, snap_tolerance_level: string }}
+   * @returns {{ cvd_mode: string|null, ui_scale: number, snap_tolerance_level: string, audio_volume: number }}
    */
   toSaveData() {
     return {
       cvd_mode: this._cvdMode,
       ui_scale: this._uiScalePct,
       snap_tolerance_level: this._snapToleranceLevel,
+      audio_volume: this._audioVolumePct,
     };
   }
 
@@ -203,11 +234,15 @@ class AccessibilitySettingsScreen {
     const cvdMode = section.cvd_mode !== undefined ? section.cvd_mode : null;
     const uiScale = section.ui_scale !== undefined ? Number(section.ui_scale) : UI_SCALE_DEFAULT;
     const snapLevel = section.snap_tolerance_level || 'standard';
+    const audioVolume = section.audio_volume !== undefined ? Number(section.audio_volume) : DEFAULT_AUDIO_VOLUME;
 
     // Validate and apply each field (fall back to default if corrupt)
     this._cvdMode = VALID_MODES.includes(cvdMode) ? cvdMode : null;
     this._uiScalePct = UiScaleManager.isValidScale(uiScale) ? uiScale : UI_SCALE_DEFAULT;
     this._snapToleranceLevel = SNAP_TOLERANCE_LEVELS.includes(snapLevel) ? snapLevel : 'standard';
+    this._audioVolumePct = Number.isFinite(audioVolume)
+      ? clampVolume(audioVolume)
+      : DEFAULT_AUDIO_VOLUME;
   }
 
   // ── Private ──────────────────────────────────────────────────────────────

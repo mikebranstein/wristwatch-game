@@ -22,12 +22,13 @@ class RevealAudioController {
    * @param {number}   [syncToleranceMs]  Override the ±100ms sync tolerance (useful
    *   in tests that assert on tight timing).
    */
-  constructor(audioHook, syncToleranceMs = MAX_SYNC_TOLERANCE_MS) {
-    if (typeof audioHook !== 'function') {
+  constructor(audioHook, syncToleranceMs = MAX_SYNC_TOLERANCE_MS, audioDesignSystem = null) {
+    if (typeof audioHook !== 'function' && (!audioDesignSystem || typeof audioDesignSystem.enqueue !== 'function')) {
       throw new Error('RevealAudioController requires an audioHook function.');
     }
 
     this._audioHook = audioHook;
+    this._audioDesignSystem = audioDesignSystem;
     this._syncToleranceMs = syncToleranceMs;
 
     // Guard: prevent a second cue from firing while one is already playing (AC5)
@@ -71,12 +72,12 @@ class RevealAudioController {
       // is responsible for calling us on time; we do not silently drop the cue.
       // The sync violation is recorded for QA assertion.
       this._isPlaying = true;
-      this._audioHook(cueId);
+      this._emitCue(cueId);
       return { fired: true, syncDeltaMs, withinTolerance: false };
     }
 
     this._isPlaying = true;
-    this._audioHook(cueId);
+    this._emitCue(cueId);
 
     return { fired: true, syncDeltaMs, withinTolerance: true };
   }
@@ -90,7 +91,7 @@ class RevealAudioController {
     if (this._isPlaying) return;
     this._isPlaying = true;
     this._lastAudioFireMs = Date.now();
-    this._audioHook('reveal_cue');
+    this._emitCue('reveal_cue');
   }
 
   /**
@@ -99,6 +100,7 @@ class RevealAudioController {
    */
   onCueComplete() {
     this._isPlaying = false;
+    this._releaseCue('reveal_cue');
   }
 
   /**
@@ -110,6 +112,7 @@ class RevealAudioController {
     this._lastVisualBeatMs = null;
     this._lastAudioFireMs = null;
     this._lastSyncDeltaMs = null;
+    this._releaseCue('reveal_cue');
   }
 
   /** @returns {boolean} True while an audio cue is actively playing. */
@@ -127,6 +130,21 @@ class RevealAudioController {
       lastAudioFireMs: this._lastAudioFireMs,
       lastSyncDeltaMs: this._lastSyncDeltaMs,
     };
+  }
+
+  _emitCue(cueId) {
+    if (this._audioDesignSystem && typeof this._audioDesignSystem.enqueue === 'function') {
+      this._audioDesignSystem.enqueue(cueId);
+      return;
+    }
+
+    this._audioHook(cueId);
+  }
+
+  _releaseCue(cueId) {
+    if (this._audioDesignSystem && typeof this._audioDesignSystem.releaseCue === 'function') {
+      this._audioDesignSystem.releaseCue(cueId);
+    }
   }
 }
 

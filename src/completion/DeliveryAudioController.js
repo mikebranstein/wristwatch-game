@@ -1,17 +1,59 @@
+'use strict';
+
 const DELIVERY_CUE = 'delivery_confirmation';
+
 class DeliveryAudioController {
-  constructor({ audioHook, audioEnabled = true } = {}) {
-    this._audioHook = typeof audioHook === 'function' ? audioHook : null;
-    this._audioEnabled = audioEnabled;
-    this._firedIds = new Set();
+  constructor(audioHook, audioEnabled = true, audioDesignSystem = null) {
+    if (typeof audioHook !== 'function' && (!audioDesignSystem || typeof audioDesignSystem.enqueue !== 'function')) {
+      throw new Error('DeliveryAudioController requires an audioHook function.');
+    }
+
+    this._audioHook = audioHook;
+    this._audioEnabled = Boolean(audioEnabled);
+    this._audioDesignSystem = audioDesignSystem;
+    this._firedDeliveries = new Set();
   }
-  playDeliveryCue(deliveryId) {
-    if (!this._audioEnabled || !this._audioHook) return;
-    if (this._firedIds.has(deliveryId)) return;
-    this._firedIds.add(deliveryId);
-    this._audioHook(DELIVERY_CUE);
+
+  fireDeliveryCue(deliveryId) {
+    if (this._firedDeliveries.has(deliveryId)) {
+      return { fired: false };
+    }
+
+    this._firedDeliveries.add(deliveryId);
+    if (this._audioEnabled) {
+      this._emitCue(DELIVERY_CUE);
+    }
+
+    return { fired: true };
   }
-  hasFired(deliveryId) { return this._firedIds.has(deliveryId); }
-  reset() { this._firedIds.clear(); }
+
+  reset() {
+    this._firedDeliveries.clear();
+    this._releaseCue(DELIVERY_CUE);
+  }
+
+  hasFired(deliveryId) {
+    return this._firedDeliveries.has(deliveryId);
+  }
+
+  isAudioEnabled() {
+    return this._audioEnabled;
+  }
+
+  _emitCue(cueId) {
+    if (this._audioDesignSystem && typeof this._audioDesignSystem.enqueue === 'function') {
+      this._audioDesignSystem.enqueue(cueId);
+      return;
+    }
+
+    this._audioHook(cueId);
+  }
+
+  _releaseCue(cueId) {
+    if (this._audioDesignSystem && typeof this._audioDesignSystem.releaseCue === 'function') {
+      this._audioDesignSystem.releaseCue(cueId);
+    }
+  }
 }
+
 module.exports = { DeliveryAudioController, DELIVERY_CUE };
