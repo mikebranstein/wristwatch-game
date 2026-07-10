@@ -92,6 +92,10 @@ class SaveSystem:
             "completed_watches": completed_watches if isinstance(completed_watches, list) else [],
         }
 
+        # Issue #127: Workshop Collection Gallery — additive backward-compat field
+        if updated_save_data.get("completed_watches") is None:
+            updated_save_data["completed_watches"] = []
+
         return order_queue, arrived_orders, updated_save_data
 
     def save_session(self, order_queue: OrderQueue, existing_save_data: Optional[dict]) -> dict:

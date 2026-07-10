@@ -30,6 +30,11 @@
  *   Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey }.
  *   Populated by DeliveryHandler.completeDelivery() at delivery completion boundary.
  *   Pre-existing saves lacking this key receive [] via Object.assign defaults.
+ *
+ * Issue #129 — Workshop Gallery Enhanced Showcase:
+ *   Extended `completed_watches` entries with `before_portrait_url` (null default,
+ *   backward-compatible). Captured at WatchIntake time; null for watches delivered
+ *   before this feature shipped (AC5 / Test Scenario 3 handle the null case gracefully).
  */
 
 const DEFAULT_SAVE = {
@@ -75,9 +80,10 @@ const DEFAULT_SAVE = {
   ab_backstory_cohort:    null,
   ab_audio_cohort:       null,
 
-  // Issue #127: Workshop Collection Gallery — completed watch entries (additive, backward-compatible)
-  // Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey }
+  // Issue #127 / #129: Workshop Collection Gallery — completed watch entries (additive, backward-compatible)
+  // Each entry: { watchId, watchName, clientName, completionDate, portraitAssetKey, before_portrait_url }
   // Populated by DeliveryHandler.completeDelivery() at the delivery-completion boundary.
+  // before_portrait_url added by #129 (null for watches delivered before that feature shipped).
   // Pre-existing saves without this key receive [] via Object.assign defaults.
   completed_watches:      [],
 
@@ -86,6 +92,9 @@ const DEFAULT_SAVE = {
 class PlayerSaveState {
   constructor(initialState = {}) {
     this._store = Object.assign({}, DEFAULT_SAVE, initialState);
+    if (Array.isArray(this._store.completed_watches)) {
+      this._store.completed_watches = [...this._store.completed_watches];
+    }
   }
 
   /**
@@ -104,6 +113,18 @@ class PlayerSaveState {
    */
   set(key, value) {
     this._store[key] = value;
+  }
+
+  /**
+   * Append a completed watch entry to the completed_watches array.
+   * Issue #127/#129 — called by DeliveryHandler at watch delivery time.
+   * @param {{ watch_name, client_name, completion_date, portrait_asset_key, before_portrait_url }} entry
+   */
+  appendCompletedWatch(entry) {
+    if (!Array.isArray(this._store.completed_watches)) {
+      this._store.completed_watches = [];
+    }
+    this._store.completed_watches.push(entry);
   }
 
   /**

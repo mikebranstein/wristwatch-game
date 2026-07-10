@@ -102,6 +102,8 @@ const DEFAULT_INTAKE_CONFIG = {
 };
 
 class WatchIntake {
+  static DEFAULT_BEFORE_PORTRAIT_URL = null;
+
   /**
    * @param {IntakeConfig} [config]  — designer-configurable intake settings
    * @param {() => number} [rng]    — injectable RNG (default: Math.random); returns [0, 1)
@@ -167,6 +169,20 @@ class WatchIntake {
   getRequiredPartIds(damageStateId) {
     if (!damageStateId) return [];
     return (DAMAGE_STATE_VISUAL_CUES[damageStateId] || {}).requiredPartIds || [];
+  }
+
+  /**
+   * Capture the watch's pre-restoration portrait at intake time for later gallery comparison.
+   *
+   * @param {string} watchId
+   * @param {string|null|undefined} portraitUrl
+   * @returns {{ watchId: string, before_portrait_url: string|null }}
+   */
+  captureBeforePortraitUrl(watchId, portraitUrl) {
+    return {
+      watchId,
+      before_portrait_url: portraitUrl || WatchIntake.DEFAULT_BEFORE_PORTRAIT_URL,
+    };
   }
 
   // ---------------------------------------------------------------------------
