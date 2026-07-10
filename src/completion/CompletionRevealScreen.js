@@ -44,6 +44,11 @@ const DEFAULT_DISMISSABLE_AFTER_MS = 5000;
  * @property {boolean}  beforeAvailable      false when no before-state exists (crash/pre-feature)
  * @property {Object|null} beforeState       Watch snapshot at job-start (AC4)
  * @property {Object}   afterState           Watch snapshot at job-complete
+ * @property {Object|null} cosmeticSummary   Cosmetic phase summary from CosmeticRestorationSummary.getSummaryState()
+ *                                           null when not provided — no badges rendered (AC2, backward-compat)
+ *                                           Shape: { strap, crystal, case, overallStatus, isCosmeticallyRestored }
+ *                                           UI render layer reads .strap.complete, .crystal.complete, .case.complete
+ *                                           and uses .displayLabel values for badge text (Issue #256)
  * @property {number}   dismissableAfterMs   Reveal is dismissable after this many ms (AC5)
  * @property {number}   builtAtMs            Timestamp when payload was built
  */
@@ -71,13 +76,22 @@ class CompletionRevealScreen {
   /**
    * Build the full-screen reveal payload for the completed job.
    *
-   * @param {string}      jobId       Stable job identifier.
-   * @param {Object|null} beforeState Before-state snapshot (null → pre-feature / crash).
-   * @param {Object}      afterState  After-state snapshot at job-complete.
+   * Issue #256 — Unified Completion Reveal: Wire Cosmetic State into Hero Shot
+   * Adds optional `cosmeticSummary` parameter (4th arg). When provided, the
+   * summary state is included in the payload so the UI render layer can surface
+   * cosmetic badge overlays. When omitted (or null), `cosmeticSummary: null` is
+   * returned — payload is fully backward-compatible; no badges displayed (AC2/AC5).
+   *
+   * @param {string}      jobId            Stable job identifier.
+   * @param {Object|null} beforeState      Before-state snapshot (null → pre-feature / crash).
+   * @param {Object}      afterState       After-state snapshot at job-complete.
+   * @param {Object|null} [cosmeticSummary] Optional: result of CosmeticRestorationSummary.getSummaryState().
+   *   Shape: { strap, crystal, case, overallStatus, isCosmeticallyRestored }.
+   *   Pass null or omit to render hero shot with no cosmetic badges (AC2 — backward-compatible path).
    * @returns {RevealPayload}
    * @throws {Error} if jobId or afterState is missing.
    */
-  buildRevealPayload(jobId, beforeState, afterState) {
+  buildRevealPayload(jobId, beforeState, afterState, cosmeticSummary = null) {
     if (!jobId)      throw new Error('CompletionRevealScreen.buildRevealPayload: jobId is required.');
     if (!afterState) throw new Error('CompletionRevealScreen.buildRevealPayload: afterState is required.');
 
@@ -89,6 +103,15 @@ class CompletionRevealScreen {
       beforeAvailable:     beforeState != null,
       beforeState:         beforeState ? Object.assign({}, beforeState) : null,
       afterState:          Object.assign({}, afterState),
+      // Issue #256: cosmeticSummary drives badge rendering in the UI render layer.
+      // null = no badges (backward-compat). Non-null = render badges per phase.complete.
+      // UI render layer reads: payload.cosmeticSummary?.strap?.complete → 'New Strap' badge
+      //                        payload.cosmeticSummary?.crystal?.complete → 'Clean Crystal' badge
+      //                        payload.cosmeticSummary?.case?.complete → 'Polished Case' badge
+      // Use displayLabel from getSummaryState() — do not hardcode badge strings in render layer.
+      // Deep-copy the cosmetic summary to prevent reference leaks into the payload (phase
+      // objects are nested, so a shallow Object.assign is insufficient).
+      cosmeticSummary:     cosmeticSummary ? _deepCopyCosmeticSummary(cosmeticSummary) : null,
       dismissableAfterMs:  this._dismissableAfterMs,
       builtAtMs:           Date.now(),
     };
@@ -131,6 +154,29 @@ class CompletionRevealScreen {
 
   /** @returns {number}  Active dismissable-after threshold in ms. */
   getDismissableAfterMs() { return this._dismissableAfterMs; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Module-level helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Deep-copy the cosmetic summary state object so mutations to the payload copy
+ * do not propagate back to the original getSummaryState() result.
+ *
+ * The summary shape is { strap, crystal, case, overallStatus, isCosmeticallyRestored }
+ * where strap/crystal/case are nested objects — a shallow Object.assign is insufficient.
+ *
+ * @param {Object} summary  Result of CosmeticRestorationSummary.getSummaryState().
+ * @returns {Object}  A fully independent deep copy.
+ * @private
+ */
+function _deepCopyCosmeticSummary(summary) {
+  const copy = Object.assign({}, summary);
+  if (summary.strap)   copy.strap   = Object.assign({}, summary.strap);
+  if (summary.crystal) copy.crystal = Object.assign({}, summary.crystal);
+  if (summary.case)    copy.case    = Object.assign({}, summary.case);
+  return copy;
 }
 
 module.exports = {
