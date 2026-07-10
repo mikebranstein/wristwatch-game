@@ -33,6 +33,19 @@ const PRICING_TIERS = {
   full_restoration: 200,
 };
 
+/**
+ * Cosmetic grade multipliers for the full_restoration tier (Issue #254).
+ * Applied ONLY to 'full_restoration'; null/undefined/unknown grades use 1.0 (no multiplier).
+ * AC2: simple_service and complex_service are NOT affected by cosmeticGrade.
+ * Scenario 10: null/undefined/unrecognised grade → falls back to $200 base, no exception.
+ * @type {{ [grade: string]: number }}
+ */
+const GRADE_MULTIPLIERS = {
+  adequate: 1.10,
+  good:     1.20,
+  mirror:   1.30,
+};
+
 class LedgerManager {
   /**
    * @param {Object} saveState  PlayerSaveState-compatible object with get/set API.
@@ -79,13 +92,28 @@ class LedgerManager {
    * ledger_balance in the save state. When Cozy Mode is enabled, parts costs
    * are tracked for display but NOT deducted from the balance (AC4).
    *
-   * @param {string} pricingTier  One of 'simple_service' | 'complex_service' | 'full_restoration'
-   * @param {number} partsCost    Total cost of parts consumed during this job (≥0)
+   * Issue #254 extension: optional `cosmeticGrade` applies a multiplier to
+   * full_restoration revenue only ('adequate' ×1.10 / 'good' ×1.20 / 'mirror' ×1.30).
+   * null/undefined/unrecognised grade → base $200, no exception (Scenario 10).
+   * Grade multiplier does NOT apply to simple_service or complex_service (AC2).
+   * In Cozy Mode, the grade-adjusted revenue is recorded/displayed and the
+   * existing deduction-suppression logic is unchanged (AC3).
+   *
+   * @param {string}      pricingTier    One of 'simple_service' | 'complex_service' | 'full_restoration'
+   * @param {number}      [partsCost=0]  Total cost of parts consumed during this job (≥0)
+   * @param {string|null} [cosmeticGrade=null]  Issue #254: 'adequate'|'good'|'mirror'|null
    * @returns {{ revenue: number, partsCost: number, netIncome: number, newBalance: number }}
    */
-  recordJobCompletion(pricingTier, partsCost = 0) {
-    const revenue = LedgerManager.revenueForTier(pricingTier);
-    const cozy    = this.cosyModeEnabled;
+  recordJobCompletion(pricingTier, partsCost = 0, cosmeticGrade = null) {
+    let revenue = LedgerManager.revenueForTier(pricingTier);
+
+    // Issue #254: grade multiplier applies ONLY to full_restoration tier (AC2).
+    // Null/undefined/unrecognised grade → no multiplier (Scenario 4, 10 — no throw).
+    if (pricingTier === 'full_restoration' && cosmeticGrade && GRADE_MULTIPLIERS[cosmeticGrade]) {
+      revenue = Math.round(revenue * GRADE_MULTIPLIERS[cosmeticGrade]);
+    }
+
+    const cozy = this.cosyModeEnabled;
 
     const newIncomeTotal    = this.incomeTotal + revenue;
     const newPartsCostTotal = this.partsCostTotal + partsCost;
@@ -166,4 +194,4 @@ class LedgerManager {
   }
 }
 
-module.exports = { LedgerManager, PRICING_TIERS };
+module.exports = { LedgerManager, PRICING_TIERS, GRADE_MULTIPLIERS };
