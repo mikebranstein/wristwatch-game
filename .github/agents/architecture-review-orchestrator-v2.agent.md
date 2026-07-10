@@ -31,10 +31,40 @@ You run in a bounded cycle and stop after one run summary.
 2. Ensure labels and templates exist:
    - `arch-review-pending`, `arch-review-in-progress`, `arch-review-no-action`, `arch-refactor-planned`, `arch-refactor-requests-created`, `arch-review-escalated`
    - `architecture-debt`, `debt-triaged`, `debt-scheduled`, `debt-resolved`, `debt-deferred`
+   - `debt-must-address` (override label: force active debt progression)
    - `feature-request`, `refactor-request`
    - `transition-validation-failed`
    - `.github/ISSUE_TEMPLATE/architecture_debt.md`
    - `.github/ISSUE_TEMPLATE/refactor_request.md`
+    - Create any missing labels before processing:
+       ```bash
+       EXISTING_LABELS=$(gh label list --limit 500 --json name --jq '.[].name')
+
+       ensure_label() {
+          local label_name="$1"
+          local color="$2"
+          local description="$3"
+          if ! echo "$EXISTING_LABELS" | grep -Fxq "$label_name"; then
+             gh label create "$label_name" --color "$color" --description "$description"
+          fi
+       }
+
+       ensure_label "arch-review-pending" "1D76DB" "AIOS architecture review label"
+       ensure_label "arch-review-in-progress" "1D76DB" "AIOS architecture review label"
+       ensure_label "arch-review-no-action" "0E8A16" "AIOS architecture review label"
+       ensure_label "arch-refactor-planned" "FBCA04" "AIOS architecture review label"
+       ensure_label "arch-refactor-requests-created" "0E8A16" "AIOS architecture review label"
+       ensure_label "arch-review-escalated" "B60205" "AIOS architecture review label"
+       ensure_label "architecture-debt" "D876E3" "AIOS architecture debt label"
+       ensure_label "debt-triaged" "FBCA04" "AIOS architecture debt label"
+       ensure_label "debt-scheduled" "1D76DB" "AIOS architecture debt label"
+       ensure_label "debt-resolved" "0E8A16" "AIOS architecture debt label"
+       ensure_label "debt-deferred" "FBCA04" "AIOS architecture debt label"
+       ensure_label "debt-must-address" "D73A4A" "Override: force active debt progression"
+       ensure_label "feature-request" "1D76DB" "AIOS orchestration label"
+       ensure_label "refactor-request" "1D76DB" "AIOS orchestration label"
+       ensure_label "transition-validation-failed" "B60205" "AIOS orchestration label"
+       ```
 3. Validate required policy artifacts:
    - `docs/architecture-review-policy.md`
    - `docs/fitness-thresholds.md`
@@ -59,16 +89,24 @@ You run in a bounded cycle and stop after one run summary.
    - G5 Atomic update: no conflicting active architecture-review states on same issue.
    - G6 Terminal-close check: close only on terminal routing outcomes.
    - On failure: post `Transition validation failed: <gate> <reason>`, add `transition-validation-failed`, skip transition.
-8. Query actionable architecture debt issues with labels `architecture-debt`, `debt-triaged`, or `debt-scheduled`.
+8. Query actionable architecture debt issues with labels `architecture-debt`, `debt-triaged`, `debt-scheduled`, or `debt-deferred` (only when `debt-must-address` is also present).
 9. For each debt issue:
+    - If label is `debt-deferred` and `debt-must-address` is present:
+       - Apply `debt-triaged` (override TRIAGE) and post comment: `Architecture Review Orchestrator: debt-must-address override applied; re-entering active debt flow.`
     - If label is `architecture-debt`:
+       - If `debt-must-address` is present: apply `debt-triaged` (override TRIAGE).
+       - Otherwise continue severity-based routing below.
        - Read `## Severity` from issue body.
        - If Severity is `Medium`, `High`, or `Critical`: apply `debt-triaged` (TRIAGE).
-       - If Severity is `Low` or missing: apply `debt-deferred` (DEFER) and post rationale comment.
+          - If Severity is `Low` or missing: apply `debt-deferred` (DEFER) and post rationale comment with manual override instructions:
+             - `Architecture Review Orchestrator: Debt deferred this cycle (reason: low/missing severity). Manual override: add label debt-must-address to force re-entry into active flow (debt-triaged -> debt-scheduled) on next run.`
     - If label is `debt-triaged`:
        - Read `## Severity` and `## Proposed Follow-up`.
+       - If `debt-must-address` is present: apply `debt-scheduled` (override SCHEDULE).
+       - Otherwise continue severity/follow-up routing below.
        - If Severity is `High` or `Critical`, or follow-up indicates refactor execution needed: apply `debt-scheduled` (SCHEDULE).
-       - Otherwise apply `debt-deferred` (DEFER) with comment.
+          - Otherwise apply `debt-deferred` (DEFER) with manual override instructions:
+             - `Architecture Review Orchestrator: Debt deferred this cycle (reason: not scheduled yet). Manual override: add label debt-must-address to force re-entry into active flow (debt-triaged -> debt-scheduled) on next run.`
     - If label is `debt-scheduled`:
        - Route to refactor planning by applying `arch-refactor-planned` (CREATE_REFACTOR_REQUEST handoff).
 10. Query actionable review issues with labels `arch-review-pending`, `arch-review-in-progress`, or `arch-refactor-planned`.
@@ -86,7 +124,8 @@ You run in a bounded cycle and stop after one run summary.
       - `task(description="Create refactor requests from architecture review #NUMBER. MUST align plan with foundation decisions, ADR constraints, and wiki context before emitting requests.", agent_id="refactor-planner", model_tier="STANDARD")`
        - Read refactor-planner decision:
           - `CREATE_REFACTOR_REQUESTS` -> for each created request issue, label as `feature-request` and `refactor-request`; apply `arch-refactor-requests-created`
-          - `DEFER` -> apply `debt-deferred`
+               - `DEFER` -> apply `debt-deferred` and post manual override instructions:
+                  - `Architecture Review Orchestrator: Debt deferred from refactor planning. Manual override: add label debt-must-address to force active debt progression on next run.`
           - `BLOCKED` -> apply `arch-review-escalated`
 12. Post run summary and stop.
 13. Cleanup temp workspace regardless of outcome:

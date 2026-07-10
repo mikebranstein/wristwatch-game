@@ -13,6 +13,17 @@ Your contract is in `.github/contracts/refactor-planner-contract.md`. Apply it s
 
 This agent turns architecture-review findings and debt tickets into bounded, testable refactor requests.
 
+## Priority Repair Mode (Stuck Validation Failures)
+
+When task description indicates Priority Score repair on an existing `refactor-request` issue:
+
+1. Read the target issue body.
+2. Ensure exact parseable line exists: `Priority Score: [NUMBER]`.
+3. If missing or malformed, compute/assign numeric priority based on risk, impact scope, and urgency from issue content.
+4. Update the issue body with the parseable Priority Score line.
+5. Post completion comment: `Priority Score repaired for Dev Orchestrator parsing.`
+6. Exit repair mode.
+
 ## Steps
 
 1. Read architecture review decision and open architecture debt issues.

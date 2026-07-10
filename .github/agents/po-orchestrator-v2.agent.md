@@ -57,7 +57,7 @@ Before applying PO transition labels or closing issues:
 - G1 Source-state check: issue has `strategic-opportunity` and is not terminal.
 - G2 Decision check: only `CREATE_FEATURE_REQUESTS|DEFER|REJECT` accepted.
 - G3 Route check: transition exists in `orchestration/routing-registry.md`.
-- G4 Preconditions check: PO decision output is present and parseable.
+- G4 Preconditions check: PO decision output is present and parseable, and every created `feature-request` includes parseable line `Priority Score: [NUMBER]`.
 - G5 Atomic update: apply only one terminal PO outcome path.
 - G6 Terminal-close check: close only after valid terminal transition.
 
@@ -130,6 +130,12 @@ Read the labels on the actionable issue. Apply the routing rules below. After sp
 2. `task(description="Convert strategic opportunity to feature requests on issue #NUMBER: TITLE", agent_id="product-owner", model_tier="STANDARD")`
 3. Wait for completion. Read the Product Owner Decision comment.
 4. If decision is **CREATE_FEATURE_REQUESTS**:
+   - Validate each created feature-request issue body includes parseable `Priority Score: [NUMBER]`.
+   - If any created feature-request is missing/malformed priority:
+     - `gh issue comment NUMBER --body "Transition validation failed: G4 created feature-request missing or malformed Priority Score. Keeping strategic-opportunity open for correction."`
+     - `gh issue label NUMBER --add transition-validation-failed`
+     - Skip close transition this cycle.
+   - If all created feature-requests pass priority validation:
    - `gh issue label NUMBER --add feature-requests-created`
    - `gh issue close NUMBER --reason completed`
    - Post: `gh issue comment NUMBER --body "**PO Orchestrator:** Feature requests created and handed to development."`

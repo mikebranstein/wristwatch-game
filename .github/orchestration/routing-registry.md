@@ -442,6 +442,8 @@ Architecture review run complete for this cycle.
 
 Debt issue created by fitness/debt utilities or architecture review.
 
+**Override rule:** If issue has label `debt-must-address`, do not route to `debt-deferred`; force active progression (`debt-triaged` -> `debt-scheduled`).
+
 | Decision | Condition | Next Stage |
 |----------|-----------|------------|
 | TRIAGE | Debt assessed and prioritized | debt-triaged |
@@ -465,6 +467,8 @@ Debt issue created by fitness/debt utilities or architecture review.
 ### Stages: debt-resolved, debt-deferred (Terminal)
 
 Debt lifecycle complete or paused.
+
+Note: `debt-deferred` is terminal unless `debt-must-address` is applied, which re-opens active debt progression.
 
 ---
 

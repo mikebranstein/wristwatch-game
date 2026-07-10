@@ -82,6 +82,30 @@ Use the `list_issues` GitHub MCP tool to list all open issues with the `feature-
 
 Log the model you are currently using at the start of each cycle.
 
+### Step 1.1: Repair Sweep for Stuck Validation Failures (Mandatory)
+
+Before normal stage processing, check for feature requests stuck with `transition-validation-failed` due to missing/malformed Priority Score:
+
+```bash
+gh issue list --label feature-request --label transition-validation-failed --state open --json number,title,body,labels
+```
+
+For each matching issue:
+- If issue body is missing/malformed `Priority Score: [NUMBER]`:
+  - Apply label: `requirements-needs-human`
+  - If issue has `refactor-request` label:
+    - Post: `Dev Orchestrator: Stuck validation failure detected. Re-routing to refactor planner for Priority Score repair.`
+    - `task(description="Repair missing/malformed Priority Score on refactor-request issue #NUMBER: TITLE", agent_id="refactor-planner", model_tier="STANDARD")`
+  - Otherwise:
+    - Post: `Dev Orchestrator: Stuck validation failure detected. Re-routing to product-owner for Priority Score repair.`
+    - `task(description="Repair missing/malformed Priority Score on feature-request issue #NUMBER: TITLE", agent_id="product-owner", model_tier="STANDARD")`
+  - Wait for task completion, then re-read issue body.
+  - If parseable `Priority Score: [NUMBER]` now exists:
+    - Remove labels: `transition-validation-failed`, `requirements-needs-human`
+    - Post: `Dev Orchestrator: Priority Score repaired. Issue returned to normal pipeline.`
+  - If still missing/malformed:
+    - Keep labels and post: `Dev Orchestrator: Priority Score repair incomplete; issue remains blocked for manual correction.`
+
 ### Step 2: Early Return if No Work (Phase 1)
 
 Iterate through issues in priority order (highest `Priority Score` first, oldest-first tie break). Use `issue_read` GitHub MCP tool to read each issue's labels.
@@ -108,9 +132,13 @@ Before selecting any issue for stage execution, validate parseable priority:
 - If missing or malformed:
   - Post comment: `Transition validation failed: G4 missing or malformed Priority Score. Expected line: Priority Score: [NUMBER]`
   - Apply label: `transition-validation-failed`
+  - Apply label: `requirements-needs-human`
   - If issue has `refactor-request` label:
-    - Apply label: `requirements-needs-human`
-    - Post comment: `Dev Orchestrator: Routed for priority repair. Add a parseable Priority Score line to proceed.`
+    - Post comment: `Dev Orchestrator: Routed to refactor planner for priority repair. Add parseable Priority Score line and rerun.`
+    - `task(description="Repair missing/malformed Priority Score on refactor-request issue #NUMBER: TITLE", agent_id="refactor-planner", model_tier="STANDARD")`
+  - If issue does not have `refactor-request` label:
+    - Post comment: `Dev Orchestrator: Routed to product-owner for priority repair. Add parseable Priority Score line and rerun.`
+    - `task(description="Repair missing/malformed Priority Score on feature-request issue #NUMBER: TITLE", agent_id="product-owner", model_tier="STANDARD")`
   - Skip the issue for this cycle (do not run Intake/Design/Build/QA/Policy tasks)
 
 Use PO-provided priority score to order work; do not fall back to creation order except tie-break.
@@ -520,6 +548,7 @@ gh issue label NUMBER --add orchestrator-timeout
 | `policy-auto-approved` | Approved for release |
 | `released` | PR merged, feature shipped |
 | `feature-blocked` | Hard blocker -- human required |
+| `requirements-needs-human` | Missing/malformed required issue data (including Priority Score) routed for repair |
 
 ---
 

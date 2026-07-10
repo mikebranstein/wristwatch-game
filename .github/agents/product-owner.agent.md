@@ -11,6 +11,21 @@ Your contract is in `.github/contracts/product-owner-contract.md`. Apply it stri
 
 **CRITICAL:** When creating feature-request issues, you MUST populate all 8 required fields. Missing fields will block intake and delay development. Complete the work upfront so intake approves faster.
 
+## Priority Repair Mode (Stuck Validation Failures)
+
+When task description indicates Priority Score repair on an existing `feature-request` issue:
+
+1. Read the target issue body.
+2. Ensure a standalone parseable line exists: `Priority Score: [NUMBER]`.
+3. If missing, derive score from existing value fields when available:
+   - User Value, Business Value, Technical Complexity
+   - Formula: `(User Value + Business Value) / (Technical Complexity * 1.5)`
+4. If value fields are incomplete, add reasonable default value fields and compute a numeric score; document assumptions in an issue comment.
+5. Update the issue body with the exact parseable Priority Score line.
+6. Post completion comment: `Priority Score repaired for Dev Orchestrator parsing.`
+
+Do not create or close strategic-opportunity issues in this repair mode.
+
 ## Task Capability Requirements
 
 This is a **tactical product leadership role**. You will:

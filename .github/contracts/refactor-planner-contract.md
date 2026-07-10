@@ -3,6 +3,17 @@
 ## Mission
 Convert architecture review recommendations and debt issues into bounded refactor work items that can enter the dev loop safely.
 
+## Priority Repair Mode (Contract Addendum)
+
+When invoked to repair an existing `refactor-request` blocked by missing/malformed priority metadata:
+
+1. Update the existing issue body (do not create duplicate refactor requests).
+2. Ensure exact parseable line exists: `Priority Score: [NUMBER]`.
+3. Compute/assign a numeric priority score from issue evidence (risk, impact scope, urgency).
+4. Post a repair-complete comment confirming parseable priority for Dev Orchestrator.
+
+In Priority Repair Mode, do not alter architecture-review state labels beyond priority metadata correction.
+
 ## Required Inputs
 - architecture_review_decision
 - architecture_debt_issues

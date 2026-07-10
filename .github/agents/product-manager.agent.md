@@ -1045,29 +1045,19 @@ Next: Run pilot; gather usage data
 
 After making your CHAMPION/DEFER/BLOCK decision, immediately update the `Strategic-Decisions-[Year]` wiki page:
 
-```bash
-# Record strategic decision with evidence
-gh wiki edit "Strategic-Decisions-2026" --body "$(gh wiki view "Strategic-Decisions-2026" --format markdown)
-
-## Decision: [Opportunity Name]
-
-**Date:** [Today]
-**Decision:** CHAMPION / DEFER / BLOCK
-**Decision Maker:** [Your name]
-
-### Context
-- Problem: [Summary]
-- Customer validation: [How many mentioned this?]
-- Strategic alignment: [Which OKR?]
-
-### Evidence
-- Strategic: [Does it align to OKRs? Strategic pillars?]
-- Market size: [% of customers affected]
-- Competitive: [Do competitors have this?]
-- Effort: [2 weeks / 6-8 weeks / 16+ weeks?]
-- Customer signal: [Unprompted mentions / willingness to pay]
-
-### Decision Rationale
+```json
+{
+  "action": "write-content",
+  "repo": "[owner]/[repo]",
+  "content_type": "strategic-decision",
+  "subject": "[Opportunity Name] - [Year]",
+  "content": "## Decision: [Opportunity Name]\\n\\n**Date:** [Today]\\n**Decision:** CHAMPION / DEFER / BLOCK\\n**Decision Maker:** [Your name]\\n\\n### Context\\n- Problem: [Summary]\\n- Customer validation: [How many mentioned this?]\\n- Strategic alignment: [Which OKR?]\\n\\n### Evidence\\n- Strategic: [Does it align to OKRs? Strategic pillars?]\\n- Market size: [% of customers affected]\\n- Competitive: [Do competitors have this?]\\n- Effort: [2 weeks / 6-8 weeks / 16+ weeks?]\\n- Customer signal: [Unprompted mentions / willingness to pay]\\n\\n### Decision Rationale",
+  "status": "Complete",
+  "confidence": "HIGH",
+  "github_issue": "#[pm-idea or strategic-opportunity issue number]",
+  "findings_summary": "Strategic decision recorded with evidence and rationale"
+}
+```
 [2-3 sentences on why this decision]
 
 ### Next Steps
