@@ -76,6 +76,13 @@ const EVENTS = {
   SECOND_BENCH_SLOT_ACTIVATED:    'second_bench_slot_activated',
   SECOND_BENCH_FEEDBACK_PROMPTED: 'second_bench_feedback_prompted',
   SECOND_BENCH_FEEDBACK_RESPONSE: 'second_bench_feedback_response',
+
+  // Client Backstory Card System — Issue #126
+  // All additive — zero changes to existing event names or signatures.
+  // Three events cover the A/B measurement signals required for D7 retention and job-completion tracking.
+  JOB_ACCEPTED:         'job_accepted',          // payload: { job_id, job_type, has_backstory }
+  JOB_DECLINED:         'job_declined',           // payload: { job_id, job_type, has_backstory }
+  BACKSTORY_CARD_SHOWN: 'backstory_card_shown',  // payload: { job_id, job_type, template_id }
 };
 
 class TelemetryEmitter {
@@ -369,6 +376,44 @@ class TelemetryEmitter {
    */
   secondBenchFeedbackResponse(playerId, sentiment, responseText = '') {
     this.emit(EVENTS.SECOND_BENCH_FEEDBACK_RESPONSE, { playerId, sentiment, responseText });
+  }
+
+  // ---- Client Backstory Card System convenience methods (Issue #126) ----
+
+  /**
+   * Fires when the player accepts a job.
+   * The `has_backstory` flag enables A/B measurement of D7 retention and job-completion rate.
+   *
+   * @param {string}  jobId
+   * @param {string}  jobType       e.g. 'dive_watch'
+   * @param {boolean} hasBackstory  true when the job is in the 'backstory' A/B cohort
+   */
+  jobAccepted(jobId, jobType, hasBackstory) {
+    this.emit(EVENTS.JOB_ACCEPTED, { job_id: jobId, job_type: jobType, has_backstory: hasBackstory });
+  }
+
+  /**
+   * Fires when the player declines a job.
+   * The `has_backstory` flag enables A/B measurement of decline-rate differences between cohorts.
+   *
+   * @param {string}  jobId
+   * @param {string}  jobType
+   * @param {boolean} hasBackstory
+   */
+  jobDeclined(jobId, jobType, hasBackstory) {
+    this.emit(EVENTS.JOB_DECLINED, { job_id: jobId, job_type: jobType, has_backstory: hasBackstory });
+  }
+
+  /**
+   * Fires when a backstory card is rendered in the intake screen (backstory cohort only).
+   * Provides template-level granularity for card-performance analysis.
+   *
+   * @param {string} jobId
+   * @param {string} jobType
+   * @param {string} templateId  The specific template shown (e.g. 'dive_001')
+   */
+  backstoryCardShown(jobId, jobType, templateId) {
+    this.emit(EVENTS.BACKSTORY_CARD_SHOWN, { job_id: jobId, job_type: jobType, template_id: templateId });
   }
 
   /**
