@@ -18,6 +18,10 @@ Test Scenarios covered:
   S10 — After 4 weeks, session frequency and session-start-behaviour data exists for
         both cohorts and is accessible for probe review.
 
+Issue #204 — Helper unit tests:
+  _collect_session_counts, _collect_start_behavior_stats,
+  _collect_slot2_activations, _collect_feedback_responses
+
 Run with:
     python -m pytest tests/ -v
 """
@@ -333,3 +337,179 @@ class TestS8FeedbackPrompt:
         names = [e["name"] for e in events]
         assert EVENT_FEEDBACK_PROMPTED in names
         assert EVENT_FEEDBACK_RESPONSE in names
+
+
+# ---------------------------------------------------------------------------
+# Issue #204: Unit tests for extracted private helper methods
+# ---------------------------------------------------------------------------
+
+class TestCollectSessionCounts:
+    """
+    Unit tests for ProbeTelemetry._collect_session_counts().
+    AC: returns (probe_n, control_n) from SESSION_FREQUENCY_PROBE records.
+    """
+
+    def test_returns_zero_counts_when_no_records(self):
+        pt, _, _ = make_telemetry()
+        probe_n, control_n = pt._collect_session_counts()
+        assert probe_n == 0
+        assert control_n == 0
+
+    def test_counts_probe_sessions_only(self):
+        pt, _, _ = make_telemetry()
+        pt.record_session_start("p1", COHORT_PROBE, slot1_is_sourcing=False, slot2_available=True)
+        pt.record_session_start("p2", COHORT_PROBE, slot1_is_sourcing=False, slot2_available=True)
+        probe_n, control_n = pt._collect_session_counts()
+        assert probe_n == 2
+        assert control_n == 0
+
+    def test_counts_control_sessions_only(self):
+        pt, _, _ = make_telemetry()
+        pt.record_session_start("c1", COHORT_CONTROL, slot1_is_sourcing=False, slot2_available=False)
+        probe_n, control_n = pt._collect_session_counts()
+        assert probe_n == 0
+        assert control_n == 1
+
+    def test_counts_both_cohorts_independently(self):
+        pt, _, _ = make_telemetry()
+        for i in range(5):
+            pt.record_session_start(f"p{i}", COHORT_PROBE, slot1_is_sourcing=False, slot2_available=True)
+        for i in range(3):
+            pt.record_session_start(f"c{i}", COHORT_CONTROL, slot1_is_sourcing=False, slot2_available=False)
+        probe_n, control_n = pt._collect_session_counts()
+        assert probe_n == 5
+        assert control_n == 3
+
+    def test_cohort_mismatch_not_counted(self):
+        """Records with unknown/missing cohort values are not counted."""
+        pt, _, _ = make_telemetry()
+        # Directly inject a record with unknown cohort
+        pt._records.append({"name": EVENT_SESSION_FREQUENCY_PROBE, "payload": {"cohort": "unknown"}, "timestamp": 0})
+        probe_n, control_n = pt._collect_session_counts()
+        assert probe_n == 0
+        assert control_n == 0
+
+
+class TestCollectStartBehaviorStats:
+    """
+    Unit tests for ProbeTelemetry._collect_start_behavior_stats().
+    AC: returns (probe_starts_with_sourcing, probe_immediate_slot2).
+    """
+
+    def test_returns_zeros_when_no_records(self):
+        pt, _, _ = make_telemetry()
+        sourcing, immediate = pt._collect_start_behavior_stats()
+        assert sourcing == 0
+        assert immediate == 0
+
+    def test_counts_probe_sourcing_starts(self):
+        pt, _, _ = make_telemetry()
+        pt.record_session_start("p1", COHORT_PROBE, slot1_is_sourcing=True, slot2_available=True)
+        pt.record_session_start("p2", COHORT_PROBE, slot1_is_sourcing=True, slot2_available=True)
+        pt.record_session_start("p3", COHORT_PROBE, slot1_is_sourcing=False, slot2_available=True)
+        sourcing, _ = pt._collect_start_behavior_stats()
+        assert sourcing == 2
+
+    def test_counts_probe_immediate_slot2(self):
+        pt, _, _ = make_telemetry()
+        # slot1 sourcing + slot2 available → immediate slot2
+        pt.record_session_start("p1", COHORT_PROBE, slot1_is_sourcing=True, slot2_available=True)
+        # slot1 sourcing but slot2 NOT available → not immediate
+        pt.record_session_start("p2", COHORT_PROBE, slot1_is_sourcing=True, slot2_available=False)
+        _, immediate = pt._collect_start_behavior_stats()
+        assert immediate == 1
+
+    def test_control_cohort_not_counted(self):
+        pt, _, _ = make_telemetry()
+        pt.record_session_start("c1", COHORT_CONTROL, slot1_is_sourcing=True, slot2_available=True)
+        sourcing, immediate = pt._collect_start_behavior_stats()
+        assert sourcing == 0
+        assert immediate == 0
+
+    def test_empty_records_returns_zeros(self):
+        pt, _, _ = make_telemetry()
+        sourcing, immediate = pt._collect_start_behavior_stats()
+        assert sourcing == 0
+        assert immediate == 0
+
+    def test_cohort_mismatch_not_counted(self):
+        """Records with unknown cohort values are not counted in probe stats."""
+        pt, _, _ = make_telemetry()
+        pt._records.append({
+            "name": EVENT_SESSION_START_BEHAVIOR,
+            "payload": {"cohort": "unknown", "slot1_is_sourcing": True, "slot2_available": True},
+            "timestamp": 0,
+        })
+        sourcing, immediate = pt._collect_start_behavior_stats()
+        assert sourcing == 0
+        assert immediate == 0
+
+
+class TestCollectSlot2Activations:
+    """
+    Unit tests for ProbeTelemetry._collect_slot2_activations().
+    AC: returns count of SLOT2_ACTIVATED events.
+    """
+
+    def test_returns_zero_when_no_activations(self):
+        pt, _, _ = make_telemetry()
+        assert pt._collect_slot2_activations() == 0
+
+    def test_counts_single_activation(self):
+        pt, _, _ = make_telemetry()
+        pt.record_slot2_activated("p1", COHORT_PROBE)
+        assert pt._collect_slot2_activations() == 1
+
+    def test_counts_multiple_activations(self):
+        pt, _, _ = make_telemetry()
+        for i in range(4):
+            pt.record_slot2_activated(f"p{i}", COHORT_PROBE)
+        assert pt._collect_slot2_activations() == 4
+
+    def test_other_events_not_counted(self):
+        pt, _, _ = make_telemetry()
+        pt.record_cohort_assigned("p1", COHORT_PROBE)
+        pt.record_session_start("p1", COHORT_PROBE, slot1_is_sourcing=False, slot2_available=True)
+        assert pt._collect_slot2_activations() == 0
+
+
+class TestCollectFeedbackResponses:
+    """
+    Unit tests for ProbeTelemetry._collect_feedback_responses().
+    AC: returns list of feedback response payloads.
+    """
+
+    def test_returns_empty_list_when_no_responses(self):
+        pt, _, _ = make_telemetry()
+        assert pt._collect_feedback_responses() == []
+
+    def test_returns_single_response_payload(self):
+        pt, _, _ = make_telemetry()
+        pt.record_feedback_response("p1", "positive", "Great!")
+        responses = pt._collect_feedback_responses()
+        assert len(responses) == 1
+        assert responses[0]["sentiment"] == "positive"
+        assert responses[0]["response_text"] == "Great!"
+        assert responses[0]["player_id"] == "p1"
+
+    def test_returns_multiple_response_payloads(self):
+        pt, _, _ = make_telemetry()
+        pt.record_feedback_response("p1", "positive", "Love it")
+        pt.record_feedback_response("p2", "neutral", "It's ok")
+        pt.record_feedback_response("p3", "negative", "Not for me")
+        responses = pt._collect_feedback_responses()
+        assert len(responses) == 3
+        sentiments = [r["sentiment"] for r in responses]
+        assert "positive" in sentiments
+        assert "neutral" in sentiments
+        assert "negative" in sentiments
+
+    def test_other_events_excluded_from_responses(self):
+        pt, _, _ = make_telemetry()
+        pt.record_feedback_prompted("p1")   # FEEDBACK_PROMPTED — not a response
+        pt.record_cohort_assigned("p1", COHORT_PROBE)
+        assert pt._collect_feedback_responses() == []
+
+    def test_empty_records_returns_empty_list(self):
+        pt, _, _ = make_telemetry()
+        assert pt._collect_feedback_responses() == []
