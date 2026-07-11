@@ -14,7 +14,7 @@ S10  — Session persistence: upgrade tree state persists across sessions
 
 import pytest
 
-from src.upgrade_tree.upgrade_tree import (
+from upgrade_tree.upgrade_tree import (
     UpgradeTree,
     UPGRADE_CATALOGUE,
     MAX_UPGRADES,

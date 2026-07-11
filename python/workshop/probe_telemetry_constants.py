@@ -5,7 +5,7 @@ probe_telemetry_constants — module-level constants for the Second Bench Probe.
 Extracted from probe_telemetry.py (Issue #324) to keep probe_telemetry.py
 within the 300-line Warning threshold (Issue #196).
 
-All constants are re-exported from src.workshop.probe_telemetry for full
+All constants are re-exported from workshop.probe_telemetry for full
 backward compatibility — existing consumers of probe_telemetry do not need
 to change their imports.
 """

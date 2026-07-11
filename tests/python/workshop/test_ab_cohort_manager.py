@@ -17,7 +17,7 @@ Run with:
 
 import pytest
 
-from src.workshop.ab_cohort_manager import (
+from workshop.ab_cohort_manager import (
     ABCohortManager,
     COHORT_PROBE,
     COHORT_CONTROL,

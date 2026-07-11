@@ -14,11 +14,11 @@ Scenarios covered:
 """
 
 import pytest
-from src.catalog.compatibility_badge import (
+from catalog.compatibility_badge import (
     evaluate_badge,
     BADGE_COMPATIBLE, BADGE_UNCERTAIN, BADGE_INCOMPATIBLE, BADGE_NONE,
 )
-from src.catalog.data.part_compatibility import MovementFamily, CompatibilityStatus
+from catalog.data.part_compatibility import MovementFamily, CompatibilityStatus
 
 
 class TestAC2CompatibilityBadgeEvaluation:

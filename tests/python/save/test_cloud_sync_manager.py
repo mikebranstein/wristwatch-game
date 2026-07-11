@@ -9,7 +9,7 @@ Run with:
 
 import pytest
 from unittest.mock import MagicMock
-from src.save.cloud_sync_manager import (
+from save.cloud_sync_manager import (
     CloudSyncManager, SYNC_STATUS, SaveMetadata, ConflictInfo, CloudSyncResult
 )
 

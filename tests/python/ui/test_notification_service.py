@@ -10,14 +10,14 @@ Run with:
 """
 
 import pytest
-from src.ui.notification_service import (
+from ui.notification_service import (
     NotificationService,
     AUTOSAVE_CONFIRMED,
     MANUAL_SAVE_CONFIRMED,
     SAVE_FAILED,
 )
-from src.orders.order_queue import OrderQueue
-from src.orders.order_status import OrderStatus
+from orders.order_queue import OrderQueue
+from orders.order_status import OrderStatus
 
 
 def make_arrived_order(**overrides):

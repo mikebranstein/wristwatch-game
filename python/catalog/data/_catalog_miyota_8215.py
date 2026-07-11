@@ -6,7 +6,7 @@ COMPAT — dict[tuple[str, str], CompatibilityStatus]: compatibility entries
          keyed by (MovementFamily.MIYOTA_8215, part_id).
 
 Consumed exclusively by part_compatibility.py (the public aggregator).
-External consumers must import from src.catalog.data.part_compatibility.
+External consumers must import from catalog.data.part_compatibility.
 """
 
 from ._types import CompatibilityStatus, PartCondition, PartType, MovementFamily, Part

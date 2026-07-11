@@ -30,7 +30,7 @@ import pytest
 # Helpers
 # ---------------------------------------------------------------------------
 
-SRC_ROOT = pathlib.Path(__file__).parent.parent.parent.parent / "src" / "analytics"
+SRC_ROOT = pathlib.Path(__file__).parent.parent.parent.parent / "python" / "analytics"
 
 
 def _count_source_lines(module_file: pathlib.Path) -> int:
@@ -49,31 +49,31 @@ class TestAC1NewModuleExists:
     def test_module_file_exists(self):
         module_path = SRC_ROOT / "retention_cohort_rates.py"
         assert module_path.exists(), (
-            "src/analytics/retention_cohort_rates.py must exist after Issue #202 extraction"
+            "python/analytics/retention_cohort_rates.py must exist after Issue #202 extraction"
         )
 
     def test_module_is_importable(self):
-        from src.analytics import retention_cohort_rates  # noqa: F401
+        from analytics import retention_cohort_rates  # noqa: F401
 
     def test_compute_cohort_rates_exported(self):
-        from src.analytics.retention_cohort_rates import _compute_cohort_rates
+        from analytics.retention_cohort_rates import _compute_cohort_rates
         assert callable(_compute_cohort_rates)
 
     def test_returned_within_exported(self):
-        from src.analytics.retention_cohort_rates import _returned_within
+        from analytics.retention_cohort_rates import _returned_within
         assert callable(_returned_within)
 
     def test_compute_uplift_exported(self):
-        from src.analytics.retention_cohort_rates import _compute_uplift
+        from analytics.retention_cohort_rates import _compute_uplift
         assert callable(_compute_uplift)
 
     def test_compute_queue_gap_signal_exported(self):
-        from src.analytics.retention_cohort_rates import _compute_queue_gap_signal
+        from analytics.retention_cohort_rates import _compute_queue_gap_signal
         assert callable(_compute_queue_gap_signal)
 
     def test_functions_are_module_level_not_methods(self):
         """Functions in the new module must NOT be bound to a class."""
-        from src.analytics import retention_cohort_rates as rcr
+        from analytics import retention_cohort_rates as rcr
         for name in (
             "_compute_cohort_rates",
             "_returned_within",
@@ -86,7 +86,7 @@ class TestAC1NewModuleExists:
 
     def test_constants_exported(self):
         """All shared constants must be importable from the new module."""
-        from src.analytics.retention_cohort_rates import (
+        from analytics.retention_cohort_rates import (
             COHORT_0,
             COHORT_1,
             COHORT_2_3,
@@ -112,7 +112,7 @@ class TestAC2FunctionsRemovedFromClass:
     """AC2: RetentionAnalytics class must not define the four extracted methods."""
 
     def _get_class(self):
-        from src.analytics.retention_analytics import RetentionAnalytics
+        from analytics.retention_analytics import RetentionAnalytics
         return RetentionAnalytics
 
     def test_compute_cohort_rates_not_defined_on_class(self):
@@ -142,7 +142,7 @@ class TestAC2FunctionsRemovedFromClass:
 
     def test_constants_still_importable_from_retention_analytics(self):
         """Backward-compat: constants must still be importable from retention_analytics."""
-        from src.analytics.retention_analytics import (
+        from analytics.retention_analytics import (
             COHORT_0,
             COHORT_1,
             COHORT_2_3,
@@ -190,8 +190,8 @@ class TestAC3NoCircularImports:
 
     def test_import_does_not_raise(self):
         """Both modules must import cleanly without ImportError or circular-import NameError."""
-        import src.analytics.retention_cohort_rates  # noqa: F401
-        import src.analytics.retention_analytics  # noqa: F401
+        import analytics.retention_cohort_rates  # noqa: F401
+        import analytics.retention_analytics  # noqa: F401
 
 
 # ---------------------------------------------------------------------------

@@ -16,7 +16,7 @@ import pytest
 # Fixtures / helpers
 # ---------------------------------------------------------------------------
 
-DATA_DIR = Path(__file__).parent.parent.parent.parent / "src" / "catalog" / "data"
+DATA_DIR = Path(__file__).parent.parent.parent.parent / "python" / "catalog" / "data"
 
 EXPECTED_SUBMODULES = [
     "_catalog_eta_2824.py",
@@ -35,21 +35,21 @@ def _count_lines(path: Path) -> int:
 
 
 # ---------------------------------------------------------------------------
-# AC1 — All 4 sub-modules exist under src/catalog/data/
+# AC1 — All 4 sub-modules exist under python/catalog/data/
 # ---------------------------------------------------------------------------
 
 class TestAC1SubmodulesExist:
     @pytest.mark.parametrize("filename", EXPECTED_SUBMODULES)
     def test_submodule_file_exists(self, filename):
-        """AC1 — each required sub-module file exists under src/catalog/data/."""
+        """AC1 — each required sub-module file exists under python/catalog/data/."""
         assert (DATA_DIR / filename).is_file(), (
-            f"{filename} not found under src/catalog/data/"
+            f"{filename} not found under python/catalog/data/"
         )
 
     def test_types_module_exists(self):
         """AC1 (dependency) — _types.py exists (prerequisite for sub-module imports)."""
         assert (DATA_DIR / "_types.py").is_file(), (
-            "_types.py not found under src/catalog/data/"
+            "_types.py not found under python/catalog/data/"
         )
 
 
@@ -85,12 +85,12 @@ class TestAC3AggregatorLineCount:
 
 
 # ---------------------------------------------------------------------------
-# AC4 — No file under src/catalog/data/ exceeds 300 lines
+# AC4 — No file under python/catalog/data/ exceeds 300 lines
 # ---------------------------------------------------------------------------
 
 class TestAC4NoFileExceedsWarningThreshold:
     def test_no_data_file_exceeds_300_lines(self):
-        """AC4 — all .py files under src/catalog/data/ must stay under 300 lines."""
+        """AC4 — all .py files under python/catalog/data/ must stay under 300 lines."""
         violations = []
         for py_file in DATA_DIR.glob("*.py"):
             count = _count_lines(py_file)
@@ -109,7 +109,7 @@ class TestAC4NoFileExceedsWarningThreshold:
 class TestAC5PartsCatalogContents:
     def test_parts_catalog_contains_all_expected_ids(self):
         """AC5 — PARTS_CATALOG contains every expected part_id."""
-        from src.catalog.data.part_compatibility import PARTS_CATALOG
+        from catalog.data.part_compatibility import PARTS_CATALOG
 
         expected_ids = {
             # ETA-2824
@@ -140,7 +140,7 @@ class TestAC5PartsCatalogContents:
 
     def test_parts_catalog_eta_parts_appear_before_as_parts(self):
         """AC5 — ETA-2824 parts appear before AS-1950 parts in PARTS_CATALOG."""
-        from src.catalog.data.part_compatibility import PARTS_CATALOG, MovementFamily
+        from catalog.data.part_compatibility import PARTS_CATALOG, MovementFamily
 
         ids = [p.id for p in PARTS_CATALOG]
         eta_indices = [i for i, p in enumerate(PARTS_CATALOG)
@@ -153,7 +153,7 @@ class TestAC5PartsCatalogContents:
 
     def test_parts_catalog_as_parts_appear_before_miyota_parts(self):
         """AC5 — AS-1950 parts appear before Miyota-8215 parts in PARTS_CATALOG."""
-        from src.catalog.data.part_compatibility import PARTS_CATALOG, MovementFamily
+        from catalog.data.part_compatibility import PARTS_CATALOG, MovementFamily
 
         as_indices = [i for i, p in enumerate(PARTS_CATALOG)
                       if p.movement_family == MovementFamily.AS_1950]
@@ -165,7 +165,7 @@ class TestAC5PartsCatalogContents:
 
     def test_parts_catalog_universal_parts_appear_last(self):
         """AC5 — Universal (movement_family=None) parts appear after all family parts."""
-        from src.catalog.data.part_compatibility import PARTS_CATALOG, MovementFamily
+        from catalog.data.part_compatibility import PARTS_CATALOG, MovementFamily
 
         family_indices = [i for i, p in enumerate(PARTS_CATALOG)
                           if p.movement_family is not None]
@@ -177,7 +177,7 @@ class TestAC5PartsCatalogContents:
 
     def test_parts_catalog_no_duplicate_ids(self):
         """AC5 — PARTS_CATALOG contains no duplicate part IDs."""
-        from src.catalog.data.part_compatibility import PARTS_CATALOG
+        from catalog.data.part_compatibility import PARTS_CATALOG
 
         ids = [p.id for p in PARTS_CATALOG]
         assert len(ids) == len(set(ids)), "Duplicate part IDs found in PARTS_CATALOG"
@@ -192,14 +192,14 @@ class TestAC6CompatibilityTableIntegrity:
 
     def test_compatibility_table_entry_count(self):
         """AC6 — COMPATIBILITY_TABLE must contain exactly 33 entries."""
-        from src.catalog.data.part_compatibility import COMPATIBILITY_TABLE
+        from catalog.data.part_compatibility import COMPATIBILITY_TABLE
         assert len(COMPATIBILITY_TABLE) == self.EXPECTED_COMPAT_COUNT, (
             f"COMPATIBILITY_TABLE has {len(COMPATIBILITY_TABLE)} entries; expected {self.EXPECTED_COMPAT_COUNT}"
         )
 
     def test_compatibility_table_has_all_eta_entries(self):
         """AC6 — all 12 ETA-2824 compat entries are present."""
-        from src.catalog.data.part_compatibility import COMPATIBILITY_TABLE, MovementFamily
+        from catalog.data.part_compatibility import COMPATIBILITY_TABLE, MovementFamily
 
         eta_entries = {k: v for k, v in COMPATIBILITY_TABLE.items()
                        if k[0] == MovementFamily.ETA_2824}
@@ -209,7 +209,7 @@ class TestAC6CompatibilityTableIntegrity:
 
     def test_compatibility_table_has_all_as_entries(self):
         """AC6 — all 10 AS-1950 compat entries are present."""
-        from src.catalog.data.part_compatibility import COMPATIBILITY_TABLE, MovementFamily
+        from catalog.data.part_compatibility import COMPATIBILITY_TABLE, MovementFamily
 
         as_entries = {k: v for k, v in COMPATIBILITY_TABLE.items()
                       if k[0] == MovementFamily.AS_1950}
@@ -219,7 +219,7 @@ class TestAC6CompatibilityTableIntegrity:
 
     def test_compatibility_table_has_all_miyota_entries(self):
         """AC6 — all 11 Miyota-8215 compat entries are present."""
-        from src.catalog.data.part_compatibility import COMPATIBILITY_TABLE, MovementFamily
+        from catalog.data.part_compatibility import COMPATIBILITY_TABLE, MovementFamily
 
         miyota_entries = {k: v for k, v in COMPATIBILITY_TABLE.items()
                           if k[0] == MovementFamily.MIYOTA_8215}
@@ -229,7 +229,7 @@ class TestAC6CompatibilityTableIntegrity:
 
     def test_known_compatible_entries_preserved(self):
         """AC6 — spot-check: known COMPATIBLE entries are correct."""
-        from src.catalog.data.part_compatibility import (
+        from catalog.data.part_compatibility import (
             COMPATIBILITY_TABLE, MovementFamily, CompatibilityStatus
         )
         assert COMPATIBILITY_TABLE[(MovementFamily.ETA_2824, "ms-eta2824-std")] == CompatibilityStatus.COMPATIBLE
@@ -238,7 +238,7 @@ class TestAC6CompatibilityTableIntegrity:
 
     def test_known_incompatible_entries_preserved(self):
         """AC6 — spot-check: known INCOMPATIBLE entries are correct."""
-        from src.catalog.data.part_compatibility import (
+        from catalog.data.part_compatibility import (
             COMPATIBILITY_TABLE, MovementFamily, CompatibilityStatus
         )
         assert COMPATIBILITY_TABLE[(MovementFamily.ETA_2824, "ms-as1950-std")] == CompatibilityStatus.INCOMPATIBLE
@@ -252,35 +252,35 @@ class TestAC6CompatibilityTableIntegrity:
 
 class TestAC7PublicImportPath:
     def test_parts_catalog_importable_from_public_path(self):
-        """AC7 — PARTS_CATALOG importable from src.catalog.data.part_compatibility."""
-        from src.catalog.data.part_compatibility import PARTS_CATALOG
+        """AC7 — PARTS_CATALOG importable from catalog.data.part_compatibility."""
+        from catalog.data.part_compatibility import PARTS_CATALOG
         assert isinstance(PARTS_CATALOG, list)
         assert len(PARTS_CATALOG) > 0
 
     def test_compatibility_table_importable_from_public_path(self):
-        """AC7 — COMPATIBILITY_TABLE importable from src.catalog.data.part_compatibility."""
-        from src.catalog.data.part_compatibility import COMPATIBILITY_TABLE
+        """AC7 — COMPATIBILITY_TABLE importable from catalog.data.part_compatibility."""
+        from catalog.data.part_compatibility import COMPATIBILITY_TABLE
         assert isinstance(COMPATIBILITY_TABLE, dict)
 
     def test_movement_family_importable_from_public_path(self):
-        """AC7 — MovementFamily importable from src.catalog.data.part_compatibility."""
-        from src.catalog.data.part_compatibility import MovementFamily
+        """AC7 — MovementFamily importable from catalog.data.part_compatibility."""
+        from catalog.data.part_compatibility import MovementFamily
         assert MovementFamily.ETA_2824 == "ETA-2824"
 
     def test_compatibility_status_importable_from_public_path(self):
-        """AC7 — CompatibilityStatus importable from src.catalog.data.part_compatibility."""
-        from src.catalog.data.part_compatibility import CompatibilityStatus
+        """AC7 — CompatibilityStatus importable from catalog.data.part_compatibility."""
+        from catalog.data.part_compatibility import CompatibilityStatus
         assert CompatibilityStatus.COMPATIBLE == "compatible"
 
     def test_part_importable_from_public_path(self):
-        """AC7 — Part importable from src.catalog.data.part_compatibility."""
-        from src.catalog.data.part_compatibility import Part
+        """AC7 — Part importable from catalog.data.part_compatibility."""
+        from catalog.data.part_compatibility import Part
         assert Part is not None
 
     def test_no_circular_import(self):
         """AC7 — smoke import: no circular import when loading part_compatibility."""
         # Force a fresh import to catch circular import errors
-        mod_name = "src.catalog.data.part_compatibility"
+        mod_name = "catalog.data.part_compatibility"
         if mod_name in sys.modules:
             # Already loaded — verify it loaded cleanly
             mod = sys.modules[mod_name]

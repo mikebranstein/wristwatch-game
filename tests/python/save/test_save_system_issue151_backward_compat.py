@@ -12,10 +12,10 @@ exclusively on the Issue #151 backward-compatibility requirements.
 
 import pytest
 
-from src.save.save_system import SaveSystem
-from src.reputation.reputation_system import ReputationSystem
-from src.upgrade_tree.upgrade_tree import UpgradeTree
-from src.economy_analytics.economy_analytics import EconomyAnalytics
+from save.save_system import SaveSystem
+from reputation.reputation_system import ReputationSystem
+from upgrade_tree.upgrade_tree import UpgradeTree
+from economy_analytics.economy_analytics import EconomyAnalytics
 
 
 class TestSaveSystemIssue151BackwardCompat:

@@ -8,8 +8,8 @@ Run with:
 """
 
 import pytest
-from src.ui.order_dashboard import OrderDashboard
-from src.orders.order_queue import OrderQueue
+from ui.order_dashboard import OrderDashboard
+from orders.order_queue import OrderQueue
 
 
 def make_part(**overrides):

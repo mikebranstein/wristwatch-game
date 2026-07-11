@@ -25,7 +25,7 @@ Test Scenarios:
 import math
 import pytest
 
-from src.analytics.retention_analytics import (
+from analytics.retention_analytics import (
     RetentionAnalytics,
     COHORT_0,
     COHORT_1,

@@ -19,14 +19,14 @@ Run with:
 
 import pytest
 
-from src.workshop.bench_slot import (
+from workshop.bench_slot import (
     SLOT_STATE_EMPTY,
     SLOT_STATE_INTAKE,
     SLOT_STATE_SOURCING,
     SLOT_STATE_REPAIR,
     SLOT_STATE_DELIVERY,
 )
-from src.workshop.bench_slot_manager import BenchSlotManager, MAX_SLOTS
+from workshop.bench_slot_manager import BenchSlotManager, MAX_SLOTS
 
 
 # ---------------------------------------------------------------------------

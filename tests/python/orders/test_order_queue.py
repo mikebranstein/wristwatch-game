@@ -8,8 +8,8 @@ Run with:
 """
 
 import pytest
-from src.orders.order_queue import OrderQueue, InsufficientFundsError
-from src.orders.order_status import OrderStatus
+from orders.order_queue import OrderQueue, InsufficientFundsError
+from orders.order_status import OrderStatus
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────

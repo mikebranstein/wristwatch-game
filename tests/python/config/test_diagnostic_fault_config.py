@@ -1,5 +1,5 @@
 """
-Tests for src/config/diagnostic_fault_config.py — Issue #292.
+Tests for python/config/diagnostic_fault_config.py — Issue #292.
 
 Covers:
   - DiagnosticFaultConfig dataclass instantiation with a valid intake_rate
@@ -12,11 +12,11 @@ Covers:
 import dataclasses
 import pytest
 
-from src.config.diagnostic_fault_config import (
+from config.diagnostic_fault_config import (
     DiagnosticFaultConfig,
     MAGNETISM_FAULT_CONFIG,
 )
-from src.config.damage_state_config import DAMAGE_STATE_CONFIG
+from config.damage_state_config import DAMAGE_STATE_CONFIG
 
 
 # ---------------------------------------------------------------------------

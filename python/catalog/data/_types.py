@@ -5,7 +5,7 @@ Extracted from part_compatibility.py so that per-family sub-modules can
 import types without creating circular dependencies.
 
 Public names re-exported via part_compatibility.py — external consumers
-should continue to import from src.catalog.data.part_compatibility, not
+should continue to import from catalog.data.part_compatibility, not
 directly from this module.
 """
 

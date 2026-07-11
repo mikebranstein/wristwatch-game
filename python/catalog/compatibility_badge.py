@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from src.catalog.data.part_compatibility import CompatibilityStatus, COMPATIBILITY_TABLE, MovementFamily
+from catalog.data.part_compatibility import CompatibilityStatus, COMPATIBILITY_TABLE, MovementFamily
 
 
 @dataclass(frozen=True)

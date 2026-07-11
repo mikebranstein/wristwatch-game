@@ -13,8 +13,8 @@ S8   — Premium clients hidden until threshold; clear indication what threshold
 
 import pytest
 
-from src.reputation.reputation_system import ReputationSystem, PREMIUM_CLIENT_THRESHOLD
-from src.clients.client_roster import (
+from reputation.reputation_system import ReputationSystem, PREMIUM_CLIENT_THRESHOLD
+from clients.client_roster import (
     ClientRoster,
     DEFAULT_CLIENTS,
     STANDARD_PRICING_MULTIPLIER,

@@ -12,7 +12,7 @@ Run with:
 import pytest
 import time
 
-from src.workshop.bench_slot import (
+from workshop.bench_slot import (
     BenchSlot,
     SLOT_STATE_EMPTY,
     SLOT_STATE_INTAKE,

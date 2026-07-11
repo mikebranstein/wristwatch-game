@@ -13,10 +13,10 @@ AC5 — Cozy Mode enforcement uses a single centralized check for all four sub-s
 
 import pytest
 
-from src.config.cozy_mode_guard import CozymodeGuard, COZY_MODE_KEY
-from src.reputation.reputation_system import ReputationSystem
-from src.clients.client_roster import ClientRoster
-from src.upgrade_tree.upgrade_tree import UpgradeTree
+from config.cozy_mode_guard import CozymodeGuard, COZY_MODE_KEY
+from reputation.reputation_system import ReputationSystem
+from clients.client_roster import ClientRoster
+from upgrade_tree.upgrade_tree import UpgradeTree
 
 
 class TestCozymodeGuard:

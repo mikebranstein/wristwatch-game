@@ -1,7 +1,7 @@
 {
   "name": "wristwatch-game",
   "version": "0.1.0",
-  "description": "Wristwatch Revival Simulator — a watch-repair puzzle game",
+  "description": "Wristwatch Revival Simulator \u2014 a watch-repair puzzle game",
   "main": "src/index.js",
   "scripts": {
     "test": "jest --coverage",

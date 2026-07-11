@@ -28,7 +28,7 @@ build_save_failed_notification(error_msg)  [Issue #82 — AC3]
 from __future__ import annotations
 from typing import Optional
 
-from src.orders.order import Order
+from orders.order import Order
 
 # ---------------------------------------------------------------------------
 # Notification type constants (Issue #82 — AC2, AC3)

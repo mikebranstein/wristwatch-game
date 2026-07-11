@@ -40,14 +40,14 @@ from __future__ import annotations
 import time
 from typing import Any, Callable, Dict, List, Optional
 
-from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
-from src.workshop.probe_data_summary import (
+from workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
+from workshop.probe_data_summary import (
     collect_session_counts,
     collect_start_behavior_stats,
     collect_slot2_activations,
     collect_feedback_responses,
 )
-from src.workshop.probe_telemetry_constants import *  # noqa: F401,F403  (intentional re-export)
+from workshop.probe_telemetry_constants import *  # noqa: F401,F403  (intentional re-export)
 
 
 class ProbeTelemetry:

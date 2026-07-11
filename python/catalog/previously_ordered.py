@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from src.catalog.data.order_history import OrderHistory
+from catalog.data.order_history import OrderHistory
 
 
 @dataclass(frozen=True)

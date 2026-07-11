@@ -10,8 +10,8 @@ import uuid
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
-from src.orders.order_status import OrderStatus
-from src.config.supplier_tiers import SupplierTierConfig
+from orders.order_status import OrderStatus
+from config.supplier_tiers import SupplierTierConfig
 
 
 @dataclass

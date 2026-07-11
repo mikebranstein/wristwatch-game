@@ -26,7 +26,7 @@ import unittest.mock
 
 import pytest
 
-from src.save.save_system import CHECKPOINT_STAGES, SaveSystem
+from save.save_system import CHECKPOINT_STAGES, SaveSystem
 
 
 class TestSaveSystemCraftsmanship:
@@ -97,7 +97,7 @@ class TestSaveSystemCraftsmanship:
 
     def test_load_session_personal_best_survives_round_trip(self):
         """craftsmanship_personal_best persists through load → save → load cycle."""
-        from src.orders.order_queue import OrderQueue
+        from orders.order_queue import OrderQueue
 
         pb = {"score": 91, "tier": "Grandmaster", "jobId": "job-002"}
         q1_data, _, s1 = self.save_system.load_session({"craftsmanship_personal_best": pb})

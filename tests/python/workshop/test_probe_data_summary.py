@@ -19,7 +19,7 @@ Run with:
 
 import pytest
 
-from src.workshop.probe_data_summary import (
+from workshop.probe_data_summary import (
     collect_session_counts,
     collect_start_behavior_stats,
     collect_slot2_activations,
@@ -29,7 +29,7 @@ from src.workshop.probe_data_summary import (
     EVENT_SLOT2_ACTIVATED,
     EVENT_FEEDBACK_RESPONSE,
 )
-from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
+from workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
 
 
 # ---------------------------------------------------------------------------

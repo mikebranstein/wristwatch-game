@@ -11,7 +11,7 @@ Scenario 6 — Player views a part in search results → function description
 
 import re
 import pytest
-from src.catalog.data.part_compatibility import PARTS_CATALOG, PartType
+from catalog.data.part_compatibility import PARTS_CATALOG, PartType
 
 
 class TestAC3PlainLanguageDescriptions:

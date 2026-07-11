@@ -12,8 +12,8 @@ AC5: Search results are filterable by part type, movement family, and condition
 """
 
 import pytest
-from src.catalog.catalog_filter import CatalogFilter, ActiveJobContext
-from src.catalog.data.part_compatibility import (
+from catalog.catalog_filter import CatalogFilter, ActiveJobContext
+from catalog.data.part_compatibility import (
     PartType, MovementFamily, PartCondition, PARTS_CATALOG
 )
 
