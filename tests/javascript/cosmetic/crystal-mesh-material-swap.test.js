@@ -12,7 +12,7 @@
 
 'use strict';
 
-const { CrystalMeshMaterialSwap } = require('../../../src/cosmetic/CrystalMeshMaterialSwap');
+const { CrystalMeshMaterialSwap } = require('../../../javascript/cosmetic/CrystalMeshMaterialSwap');
 
 function makeSwap(overrides = {}) {
   const swapped = [];

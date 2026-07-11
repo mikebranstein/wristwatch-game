@@ -16,7 +16,7 @@ const {
   Phase2ToolInjector,
   PHASE2_TOOLS,
   PHASE2_TOOL_IDS,
-} = require('../../../src/tools/Phase2ToolInjector');
+} = require('../../../javascript/tools/Phase2ToolInjector');
 
 const PHASE1_DAMAGE_STATES = ['water_ingress', 'oxidation', 'crystal_crazing'];
 

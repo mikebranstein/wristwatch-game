@@ -18,7 +18,7 @@
 
 'use strict';
 
-const { WorkshopHubNav } = require('../../../src/ui/WorkshopHubNav');
+const { WorkshopHubNav } = require('../../../javascript/ui/WorkshopHubNav');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

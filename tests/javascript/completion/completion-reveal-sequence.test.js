@@ -19,8 +19,8 @@
 
 'use strict';
 
-const { CompletionRevealSequence, REVEAL_EVENTS, COMPLETION_AUDIO_CUES } = require('../../../src/completion/CompletionRevealSequence');
-const { COMPLETION_AUDIO_STATE } = require('../../../src/completion/CompletionRevealAudioController');
+const { CompletionRevealSequence, REVEAL_EVENTS, COMPLETION_AUDIO_CUES } = require('../../../javascript/completion/CompletionRevealSequence');
+const { COMPLETION_AUDIO_STATE } = require('../../../javascript/completion/CompletionRevealAudioController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

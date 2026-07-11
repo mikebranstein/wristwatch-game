@@ -21,7 +21,7 @@ const {
   FunctionalTestPanel,
   FUNCTIONAL_TEST_IDS,
   FUNCTIONAL_TEST_DEFINITIONS,
-} = require('../../../src/intake/FunctionalTestPanel');
+} = require('../../../javascript/intake/FunctionalTestPanel');
 
 // ─── Deterministic RNG helpers ────────────────────────────────────────────────
 

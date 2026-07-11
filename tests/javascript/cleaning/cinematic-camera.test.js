@@ -12,7 +12,7 @@ const {
   CINEMATIC_MOVE_MAX_MS,
   DEFAULT_MOVE_DURATION_MS,
   RECOVERY_DURATION_MS,
-} = require('../../../src/cleaning/CinematicCameraController');
+} = require('../../../javascript/cleaning/CinematicCameraController');
 
 function makeController(overrides = {}) {
   return new CinematicCameraController({

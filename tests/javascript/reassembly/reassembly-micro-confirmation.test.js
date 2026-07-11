@@ -19,10 +19,10 @@ const {
   COHORTS,
   AUDIO_CUE,
   DEFAULT_HIGHLIGHT_DURATION_MS,
-} = require('../../../src/reassembly/ReassemblyMicroConfirmationController');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
-const { ReassemblyScreen }         = require('../../../src/reassembly/ReassemblyScreen');
-const { STATES }                   = require('../../../src/reassembly/AssemblyFeedbackStateMachine');
+} = require('../../../javascript/reassembly/ReassemblyMicroConfirmationController');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
+const { ReassemblyScreen }         = require('../../../javascript/reassembly/ReassemblyScreen');
+const { STATES }                   = require('../../../javascript/reassembly/AssemblyFeedbackStateMachine');
 
 function makeTelemetry() {
   const log = [];

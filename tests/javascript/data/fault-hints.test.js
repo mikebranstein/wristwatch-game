@@ -6,7 +6,7 @@
  * null-return branch).
  */
 
-const { getHintsForFault, FAULT_HINTS, getAllFaultIds } = require('../../../src/data/fault-hints');
+const { getHintsForFault, FAULT_HINTS, getAllFaultIds } = require('../../../javascript/data/fault-hints');
 
 // ─── AC9 — Scenario 17: unknown faultId returns null (line 60) ────────────────
 

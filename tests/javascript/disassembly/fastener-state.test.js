@@ -12,7 +12,7 @@
 
 'use strict';
 
-const { FastenerState, DisassemblyFlow, VALID_FASTENER_STATES } = require('../../../src/disassembly/FastenerState');
+const { FastenerState, DisassemblyFlow, VALID_FASTENER_STATES } = require('../../../javascript/disassembly/FastenerState');
 
 // ─── FastenerState enum ───────────────────────────────────────────────────────
 

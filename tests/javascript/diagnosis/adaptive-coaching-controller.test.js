@@ -32,7 +32,7 @@ const {
   AdaptiveCoachingController,
   MISTAKE_TYPES,
   DEFAULT_THRESHOLD,
-} = require('../../../src/diagnosis/AdaptiveCoachingController');
+} = require('../../../javascript/diagnosis/AdaptiveCoachingController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

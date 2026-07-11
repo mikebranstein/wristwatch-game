@@ -10,9 +10,9 @@
  * Test Scenarios: 3 (sequential reveal), 4 (toggle off), 6 (persistence), 7 (spike config)
  */
 
-const { PartScaffoldingController, MIN_GROUPS } = require('../../../src/tutorials/PartScaffoldingController');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { PartScaffoldingController, MIN_GROUPS } = require('../../../javascript/tutorials/PartScaffoldingController');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

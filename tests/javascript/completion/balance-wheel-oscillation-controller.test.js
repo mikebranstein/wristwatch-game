@@ -28,7 +28,7 @@
 const {
   BalanceWheelOscillationController,
   MAX_FRAME_DELTA_MS,
-} = require('../../../src/completion/BalanceWheelOscillationController');
+} = require('../../../javascript/completion/BalanceWheelOscillationController');
 
 // ─── Test scheduler ───────────────────────────────────────────────────────────
 
@@ -447,8 +447,8 @@ describe('BalanceWheelOscillationController — Phase 2 extensibility hook (AC4)
 // ─── Integration: FirstTickCinematicController (AC2, AC5) ────────────────────
 
 describe('BalanceWheelOscillationController — integration with FirstTickCinematicController (AC2, AC5)', () => {
-  const { FirstTickCinematicController } = require('../../../src/completion/FirstTickCinematicController');
-  const { AUDIO_CUES, MIN_SILENCE_GATE_MS } = require('../../../src/completion/FirstTickAudioController');
+  const { FirstTickCinematicController } = require('../../../javascript/completion/FirstTickCinematicController');
+  const { AUDIO_CUES, MIN_SILENCE_GATE_MS } = require('../../../javascript/completion/FirstTickAudioController');
 
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
@@ -560,7 +560,7 @@ describe('BalanceWheelOscillationController — integration with FirstTickCinema
 // ─── MovementData integration ─────────────────────────────────────────────────
 
 describe('BalanceWheelOscillationController — MovementData bph lookup', () => {
-  const { MovementData, defaultMovementData } = require('../../../src/data/MovementData');
+  const { MovementData, defaultMovementData } = require('../../../javascript/data/MovementData');
 
   test('defaultMovementData.getBph returns known bph for registered caliber', () => {
     expect(defaultMovementData.getBph('eta-2824-2')).toBe(28800);

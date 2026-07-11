@@ -23,9 +23,9 @@
 
 'use strict';
 
-const { WorkshopController, MAX_SLOTS, DEFAULT_UNLOCK_THRESHOLD } = require('../../../src/workshop/WorkshopController');
-const { CohortAssignment, CohortArm } = require('../../../src/workshop/CohortAssignment');
-const { SlotState } = require('../../../src/workshop/BenchSlot');
+const { WorkshopController, MAX_SLOTS, DEFAULT_UNLOCK_THRESHOLD } = require('../../../javascript/workshop/WorkshopController');
+const { CohortAssignment, CohortArm } = require('../../../javascript/workshop/CohortAssignment');
+const { SlotState } = require('../../../javascript/workshop/BenchSlot');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

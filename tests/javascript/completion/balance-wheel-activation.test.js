@@ -15,7 +15,7 @@
  *                                     tested via WindMechanic instead.
  */
 
-const { BalanceWheelActivation } = require('../../../src/completion/BalanceWheelActivation');
+const { BalanceWheelActivation } = require('../../../javascript/completion/BalanceWheelActivation');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

@@ -33,30 +33,30 @@ const {
   getAllToolIds,
   getToolsForOperation,
   canToolPerformOperation,
-} = require('../../../src/tools/ToolRegistry');
+} = require('../../../javascript/tools/ToolRegistry');
 
-const { ToolPanel, MAX_TOOLS } = require('../../../src/tools/ToolPanel');
+const { ToolPanel, MAX_TOOLS } = require('../../../javascript/tools/ToolPanel');
 
 const {
   OperationGatingSystem,
   DEFAULT_COMPONENT_MANIFEST,
-} = require('../../../src/tools/OperationGatingSystem');
+} = require('../../../javascript/tools/OperationGatingSystem');
 
 const {
   ContextualHighlightController,
   DEFAULT_COMPONENT_OPERATION_MAP,
-} = require('../../../src/tools/ContextualHighlightController');
+} = require('../../../javascript/tools/ContextualHighlightController');
 
 const {
   ToolSwitchingTutorial,
   TOOL_SWITCHING_TUTORIAL_STEPS,
   SAVE_KEY,
-} = require('../../../src/tools/ToolSwitchingTutorial');
+} = require('../../../javascript/tools/ToolSwitchingTutorial');
 
-const { MultiStepOperationTracker } = require('../../../src/tools/MultiStepOperationTracker');
+const { MultiStepOperationTracker } = require('../../../javascript/tools/MultiStepOperationTracker');
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Test Helpers ──────────────────────────────────────────────────────────────
 

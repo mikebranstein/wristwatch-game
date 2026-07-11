@@ -19,7 +19,7 @@ const {
   ORDER_STATE,
   computeReplacementCost,
   computeReplacementDelaySecs,
-} = require('../../../src/damage/PartReplacementOrder');
+} = require('../../../javascript/damage/PartReplacementOrder');
 
 function makeOrder({
   partId = 'part-001',

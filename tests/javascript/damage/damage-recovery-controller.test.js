@@ -18,9 +18,9 @@
 
 jest.useFakeTimers();
 
-const { DamageRecoveryController, RESTORATION_DAMAGE_STATE } = require('../../../src/damage/DamageRecoveryController');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { DamageRecoveryController, RESTORATION_DAMAGE_STATE } = require('../../../javascript/damage/DamageRecoveryController');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 function makeController({
   restorationId     = 'rest-001',

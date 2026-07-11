@@ -16,7 +16,7 @@ const {
   BalanceWheelHighlight,
   HIGHLIGHT_STATE,
   HIGHLIGHT_COMMANDS,
-} = require('../../../src/completion/BalanceWheelHighlight');
+} = require('../../../javascript/completion/BalanceWheelHighlight');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

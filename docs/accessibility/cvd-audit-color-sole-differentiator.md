@@ -19,15 +19,15 @@ This audit cross-referenced all source-defined UI state color values against thr
 | **Tritanopia** | Blue-blind (~0.003% of population) | Blue ↔ Yellow |
 
 **Source files audited:**
-- `src/reassembly/AssemblyFeedbackStateMachine.js` — `STATE_VISUALS` constants (hex colors defined in source)
-- `src/intake/WatchIntake.js` — `DAMAGE_STATE_VISUAL_CUES` (artwork color descriptions)
-- `src/config/damage_state_config.py` — `PHASE1_DAMAGE_STATES` (state identifiers)
-- `src/ui/order_dashboard.py` — `OrderDashboard` view model fields
-- `src/ui/notification_service.py` — notification type rendering
-- `src/catalog/compatibility_badge.py` — `BadgeResult` symbol/label/color structure
-- `src/diagnosis/ConfidenceIndicator.js` — LIKELY/POSSIBLE/UNLIKELY confidence states
-- `src/diagnosis/SymptomOverlay.js` — highlight rendering delegation
-- `src/orders/order_status.py` — order lifecycle states
+- `javascript/reassembly/AssemblyFeedbackStateMachine.js` — `STATE_VISUALS` constants (hex colors defined in source)
+- `javascript/intake/WatchIntake.js` — `DAMAGE_STATE_VISUAL_CUES` (artwork color descriptions)
+- `python/config/damage_state_config.py` — `PHASE1_DAMAGE_STATES` (state identifiers)
+- `python/ui/order_dashboard.py` — `OrderDashboard` view model fields
+- `python/ui/notification_service.py` — notification type rendering
+- `python/catalog/compatibility_badge.py` — `BadgeResult` symbol/label/color structure
+- `javascript/diagnosis/ConfidenceIndicator.js` — LIKELY/POSSIBLE/UNLIKELY confidence states
+- `javascript/diagnosis/SymptomOverlay.js` — highlight rendering delegation
+- `python/orders/order_status.py` — order lifecycle states
 
 **CVD simulation applied to all source-defined hex values** using deuteranopia, protanopia, and tritanopia transform matrices (Machado et al. 2009 model, as implemented in Coblis and Color Oracle). Artwork-level color descriptions (not defined as hex in source) are noted with simulated approximations based on standard pigment/paint CVD responses.
 
@@ -54,7 +54,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Reassembly snap-zone feedback: WRONG_ORI (wrong orientation) vs LOCKED_IN (correct — ready to snap) |
-| **Asset / Source Path** | `src/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS[STATES.WRONG_ORI]` and `STATE_VISUALS[STATES.LOCKED_IN]` |
+| **Asset / Source Path** | `javascript/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS[STATES.WRONG_ORI]` and `STATE_VISUALS[STATES.LOCKED_IN]` |
 | **Color Values** | WRONG_ORI: `#ef5350` (Material Red 400) — RGB(239, 83, 80) · LOCKED_IN: `#66bb6a` (Material Green 400) — RGB(102, 187, 106) |
 | **Secondary Differentiators** | Animation: `shake` (WRONG_ORI) vs `lock-flash` (LOCKED_IN) · Glow intensity: 0.7 vs 1.0 · Audio: `sfx_wrong_orientation_buzz` vs `sfx_locked_in_chime` |
 | **Color Is Sole Visual Differentiator?** | **Partial** — animation and glow differ, but audio can be muted; animation types (`shake` vs `lock-flash`) are distinct but both involve movement/flicker and may be confused |
@@ -72,7 +72,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Reassembly snap-zone feedback: all three active states (PROXIMITY, WRONG_ORI, LOCKED_IN) as a set |
-| **Asset / Source Path** | `src/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS` (all three entries) |
+| **Asset / Source Path** | `javascript/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS` (all three entries) |
 | **Color Values** | PROXIMITY: `#4fc3f7` (Light Blue 300) · WRONG_ORI: `#ef5350` (Red 400) · LOCKED_IN: `#66bb6a` (Green 400) |
 | **Secondary Differentiators** | Animation: `pulse-soft` / `shake` / `lock-flash` · Audio: `sfx_proximity_hum` / `sfx_wrong_orientation_buzz` / `sfx_locked_in_chime` · Glow: 0.4 / 0.7 / 1.0 |
 | **Color Is Sole Visual Differentiator?** | **Partial** — three distinct animations and three distinct audio cues exist; audio may be off; animation differences are present but `pulse-soft` vs `lock-flash` may appear similar in peripheral vision |
@@ -90,7 +90,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Watch intake / inspection screen: external visual cue color differentiation between `water_ingress` and `oxidation` damage states (Phase 1 damage states: `water_ingress`, `oxidation`, `crystal_crazing`) |
-| **Asset / Source Path** | `src/intake/WatchIntake.js` → `DAMAGE_STATE_VISUAL_CUES.water_ingress.externalCues[2]` and `DAMAGE_STATE_VISUAL_CUES.oxidation.externalCues[0]` · `src/config/damage_state_config.py` → `PHASE1_DAMAGE_STATES` |
+| **Asset / Source Path** | `javascript/intake/WatchIntake.js` → `DAMAGE_STATE_VISUAL_CUES.water_ingress.externalCues[2]` and `DAMAGE_STATE_VISUAL_CUES.oxidation.externalCues[0]` · `python/config/damage_state_config.py` → `PHASE1_DAMAGE_STATES` |
 | **Color Values** | `water_ingress`: "Blue-green staining" — artwork implied approx. RGB(0, 150, 130) (verdigris teal-green) · `oxidation`: "Deep brown-black patination" — artwork implied approx. RGB(60, 35, 20) (dark brown) · `crystal_crazing`: "Shattered or deeply crazed mineral crystal" — structural damage, NOT color-dependent (clean finding) |
 | **Secondary Differentiators** | Text labels (damage state label shown in intake UI) · `thumbnailDescription` strings · `diagnosticSignature` text · Structural/textural differences in artwork (fog vs tarnish vs crack) |
 | **Color Is Sole Visual Differentiator?** | **Partial** for water_ingress and oxidation — text labels and descriptions exist; however, the **primary at-a-glance visual identification on the intake thumbnail** uses color tinting of the watch exterior artwork. **crystal_crazing is NOT color-dependent** (structural crack visible under all CVD modes) |
@@ -108,7 +108,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Parts catalog compatibility badge: COMPATIBLE / UNCERTAIN / INCOMPATIBLE states |
-| **Asset / Source Path** | `src/catalog/compatibility_badge.py` → `BADGE_COMPATIBLE`, `BADGE_UNCERTAIN`, `BADGE_INCOMPATIBLE` |
+| **Asset / Source Path** | `python/catalog/compatibility_badge.py` → `BADGE_COMPATIBLE`, `BADGE_UNCERTAIN`, `BADGE_INCOMPATIBLE` |
 | **Color Values** | **None defined in source.** Badges use symbol (`✓` / `~` / `✗`) and text label (`Compatible` / `Uncertain` / `Incompatible`) only |
 | **Secondary Differentiators** | Symbol (✓ / ~ / ✗) · Text label · Tooltip text for Uncertain/Incompatible states |
 | **Color Is Sole Visual Differentiator?** | **No** — source defines symbol + text as primary differentiators. No color values exist in source. |
@@ -126,7 +126,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Order Dashboard: order status pill/badge for PENDING / IN_TRANSIT / ARRIVED / CANCELLED |
-| **Asset / Source Path** | `src/orders/order_status.py` → `OrderStatus` enum · `src/ui/order_dashboard.py` → view model (no `status_color` field) |
+| **Asset / Source Path** | `python/orders/order_status.py` → `OrderStatus` enum · `python/ui/order_dashboard.py` → view model (no `status_color` field) |
 | **Color Values** | **None defined in source.** The `order_dashboard.py` view model exposes `can_cancel` and `can_expedite` booleans and `eta_label` text but no color field. |
 | **Secondary Differentiators** | Status string values ("Pending", "In-Transit", "Arrived", "Cancelled") · `eta_label` text · `can_cancel` / `can_expedite` action availability |
 | **Color Is Sole Visual Differentiator?** | **No** — source defines text labels as differentiators. No color values exist in source. |
@@ -144,7 +144,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Diagnosis screen confidence indicator: LIKELY / POSSIBLE / UNLIKELY / NONE |
-| **Asset / Source Path** | `src/diagnosis/ConfidenceIndicator.js` → `CONFIDENCE` constants |
+| **Asset / Source Path** | `javascript/diagnosis/ConfidenceIndicator.js` → `CONFIDENCE` constants |
 | **Color Values** | **None defined in source.** States are string values: `'Likely'`, `'Possible'`, `'Unlikely'`, `'None'`. |
 | **Secondary Differentiators** | Text label (the confidence string itself is a human-readable label) |
 | **Color Is Sole Visual Differentiator?** | **No** — source defines text labels. |
@@ -162,7 +162,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Session-start and in-game notifications: PARTS_ARRIVED / MISSING_PART_INFO |
-| **Asset / Source Path** | `src/ui/notification_service.py` → `build_parts_arrived_notification()`, `build_missing_part_prompt()` |
+| **Asset / Source Path** | `python/ui/notification_service.py` → `build_parts_arrived_notification()`, `build_missing_part_prompt()` |
 | **Color Values** | None defined in source |
 | **Secondary Differentiators** | `type` string field · `title` text · `message` / `items` content |
 | **Color Is Sole Visual Differentiator?** | **No** |
@@ -178,7 +178,7 @@ This audit cross-referenced all source-defined UI state color values against thr
 | Field | Value |
 |---|---|
 | **Element Name** | Diagnosis screen symptom overlay: part highlight on anatomy diagram when a symptom is clicked |
-| **Asset / Source Path** | `src/diagnosis/SymptomOverlay.js` → `renderOverlay(symptomKey, parts)` — color delegated to engine renderer |
+| **Asset / Source Path** | `javascript/diagnosis/SymptomOverlay.js` → `renderOverlay(symptomKey, parts)` — color delegated to engine renderer |
 | **Color Values** | **Not defined in source** — color is fully determined by the injected `renderOverlay` implementation |
 | **Secondary Differentiators** | Highlighted part IDs are provided (structural overlay); tooltip system provides text labels; hint system provides textual context |
 | **Color Is Sole Visual Differentiator?** | **Unknown** — depends on rendering implementation not present in audited source |
@@ -200,7 +200,7 @@ The three Python modules (`damage_state_config.py`, `order_dashboard.py`, `notif
 > These are the **first targets** the implementation team should address before any other accessibility work, ranked by severity and player impact.
 
 ### 🔴 Target #1 (P0): Reassembly FSM — WRONG_ORI (#ef5350) vs LOCKED_IN (#66bb6a)
-**File:** `src/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS`
+**File:** `javascript/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS`
 
 This is the highest-severity finding. The two colors used for WRONG_ORI and LOCKED_IN form a classic **red-green pair** that collapses to near-identical brownish tones under both deuteranopia and protanopia (~2% of male players). Since LOCKED_IN is the **only state that triggers a snap**, a colorblind player who cannot distinguish these two states cannot reliably complete watch reassembly. Audio (`sfx_wrong_orientation_buzz` vs `sfx_locked_in_chime`) provides a backup, but players who have audio disabled are blocked.
 
@@ -209,7 +209,7 @@ This is the highest-severity finding. The two colors used for WRONG_ORI and LOCK
 ---
 
 ### 🟠 Target #2 (P0): Reassembly FSM — Full Three-State Color System (PROXIMITY/WRONG_ORI/LOCKED_IN)
-**File:** `src/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS`
+**File:** `javascript/reassembly/AssemblyFeedbackStateMachine.js` → `STATE_VISUALS`
 
 As a dependent remediation of Target #1, the entire three-color system should be replaced at the same time. The PROXIMITY blue (`#4fc3f7`) is safe for deuteranopia/protanopia (it's on the blue axis) but shifts significantly under tritanopia. Addressing all three states together produces a coherent, tested CVD-safe palette rather than piecemeal fixes.
 
@@ -218,7 +218,7 @@ As a dependent remediation of Target #1, the entire three-color system should be
 ---
 
 ### 🟡 Target #3 (P1): Damage State Intake Thumbnails — Water Ingress vs Oxidation Artwork Color
-**File:** `src/intake/WatchIntake.js` → `DAMAGE_STATE_VISUAL_CUES` + associated artwork assets
+**File:** `javascript/intake/WatchIntake.js` → `DAMAGE_STATE_VISUAL_CUES` + associated artwork assets
 
 The water ingress (blue-green verdigris) and oxidation (brown-black tarnish) damage states are identified at intake primarily through external cue color. Under deuteranopia and protanopia, the verdigris shifts toward grey-brown, making it visually confusable with the oxidation tarnish at thumbnail scale. Although text labels exist in the data, if the intake UI renders thumbnails before displaying labels (common in card-based UIs), colorblind players may misidentify the damage type and begin the wrong repair path.
 

@@ -5,7 +5,7 @@ const {
   MAX_AUDIO_BUNDLE_BYTES,
   WORKFLOW_EVENT_IDS,
   PHASE_1_REGRESSION_CUE_IDS,
-} = require('../../../src/audio/AudioEventLibrary');
+} = require('../../../javascript/audio/AudioEventLibrary');
 
 describe('AudioEventLibrary — AC1 full contextual event coverage', () => {
   test('defines 20–30+ restoration cues spanning the entire workflow', () => {

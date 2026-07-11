@@ -9,7 +9,7 @@
 
 'use strict';
 
-const { FAULT_HINTS, getHintsForFault, getAllFaultIds } = require('../../../src/data/fault-hints');
+const { FAULT_HINTS, getHintsForFault, getAllFaultIds } = require('../../../javascript/data/fault-hints');
 
 // ─── AC2 — magnetism_fault entry exists and has correct structure ─────────────
 

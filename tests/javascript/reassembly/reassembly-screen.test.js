@@ -18,8 +18,8 @@
  *   Scenario 10 — Playtest metric: undo telemetry tracked
  */
 
-const { ReassemblyScreen } = require('../../../src/reassembly/ReassemblyScreen');
-const { STATES } = require('../../../src/reassembly/AssemblyFeedbackStateMachine');
+const { ReassemblyScreen } = require('../../../javascript/reassembly/ReassemblyScreen');
+const { STATES } = require('../../../javascript/reassembly/AssemblyFeedbackStateMachine');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -190,7 +190,7 @@ describe('Scenario 8 — Regression: SnapZoneTolerance only activates in reassem
   });
 
   test('SnapZoneTolerance rejects "teardown" context if instantiated directly', () => {
-    const { SnapZoneTolerance } = require('../../../src/reassembly/SnapZoneTolerance');
+    const { SnapZoneTolerance } = require('../../../javascript/reassembly/SnapZoneTolerance');
     expect(() => new SnapZoneTolerance('teardown')).toThrow();
   });
 });

@@ -15,7 +15,7 @@ const {
   DAMAGE_STATE_HINTS,
   getDamageStateHints,
   getAllDamageStateFaultIds,
-} = require('../../../src/data/damage-state-hints');
+} = require('../../../javascript/data/damage-state-hints');
 
 const EXPECTED_FAULT_IDS = [
   'water_ingress_damage',

@@ -12,7 +12,7 @@ const {
   PlayerInputController,
   INPUT_STATE,
   INPUT_COMMANDS,
-} = require('../../../src/completion/PlayerInputController');
+} = require('../../../javascript/completion/PlayerInputController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

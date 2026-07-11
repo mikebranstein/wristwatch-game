@@ -15,7 +15,7 @@ const {
   INITIAL_DEVIATION_RANGE,
   ASSIST_MODE_TARGET_DEVIATION,
   DEFAULT_VISUAL_INDICATOR_ON,
-} = require('../../../src/regulation/RegulationConfig');
+} = require('../../../javascript/regulation/RegulationConfig');
 
 describe('RegulationConfig', () => {
   describe('GRADES', () => {

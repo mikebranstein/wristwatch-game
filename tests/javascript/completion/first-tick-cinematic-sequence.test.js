@@ -19,10 +19,10 @@
  *   Scenario 9  — Scene/state transition: abort() cancels animation, resumes input.
  */
 
-const { FirstTickCinematicSequence } = require('../../../src/completion/FirstTickCinematicSequence');
-const { CAMERA_STATE, CAMERA_COMMANDS } = require('../../../src/completion/CameraAnimationController');
-const { HIGHLIGHT_STATE, HIGHLIGHT_COMMANDS } = require('../../../src/completion/BalanceWheelHighlight');
-const { INPUT_STATE, INPUT_COMMANDS } = require('../../../src/completion/PlayerInputController');
+const { FirstTickCinematicSequence } = require('../../../javascript/completion/FirstTickCinematicSequence');
+const { CAMERA_STATE, CAMERA_COMMANDS } = require('../../../javascript/completion/CameraAnimationController');
+const { HIGHLIGHT_STATE, HIGHLIGHT_COMMANDS } = require('../../../javascript/completion/BalanceWheelHighlight');
+const { INPUT_STATE, INPUT_COMMANDS } = require('../../../javascript/completion/PlayerInputController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

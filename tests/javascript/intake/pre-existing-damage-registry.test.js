@@ -15,7 +15,7 @@
 
 'use strict';
 
-const { PreExistingDamageRegistry } = require('../../../src/intake/PreExistingDamageRegistry');
+const { PreExistingDamageRegistry } = require('../../../javascript/intake/PreExistingDamageRegistry');
 
 // ─── Basic flagging ───────────────────────────────────────────────────────────
 

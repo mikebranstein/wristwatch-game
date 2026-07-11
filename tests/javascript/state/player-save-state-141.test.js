@@ -13,7 +13,7 @@
 
 'use strict';
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 describe('PlayerSaveState — Issue #141: job_state_captures', () => {
   test('new save has job_state_captures default of empty object', () => {

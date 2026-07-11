@@ -17,8 +17,8 @@
 
 'use strict';
 
-const { StrapSelectionUI } = require('../../../src/cosmetic/StrapSelectionUI');
-const { getBaselineStrap, getSelectableStraps } = require('../../../src/cosmetic/StrapCatalogue');
+const { StrapSelectionUI } = require('../../../javascript/cosmetic/StrapSelectionUI');
+const { getBaselineStrap, getSelectableStraps } = require('../../../javascript/cosmetic/StrapCatalogue');
 
 // ─── AC1: variants exposed and baseline default ────────────────────────────
 

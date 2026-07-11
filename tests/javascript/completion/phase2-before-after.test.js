@@ -15,7 +15,7 @@ const {
   BeforeAfterComparison,
   AFTER_DESCRIPTIONS,
   PHASE2_SCATTER_STATES,
-} = require('../../../src/completion/BeforeAfterComparison');
+} = require('../../../javascript/completion/BeforeAfterComparison');
 
 const PHASE1_DAMAGE_STATES = ['water_ingress', 'oxidation', 'crystal_crazing'];
 const PHASE2_DAMAGE_STATES = ['shock_damage', 'rust_fused_fasteners'];

@@ -21,9 +21,9 @@
 
 'use strict';
 
-const { DeliveryHandler }       = require('../../../src/completion/DeliveryHandler');
-const { LedgerManager }         = require('../../../src/economy/LedgerManager');
-const { JobQualityAggregator }  = require('../../../src/completion/JobQualityAggregator');
+const { DeliveryHandler }       = require('../../../javascript/completion/DeliveryHandler');
+const { LedgerManager }         = require('../../../javascript/economy/LedgerManager');
+const { JobQualityAggregator }  = require('../../../javascript/completion/JobQualityAggregator');
 
 // ---------------------------------------------------------------------------
 // Helpers

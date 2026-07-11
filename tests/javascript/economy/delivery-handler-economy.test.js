@@ -18,8 +18,8 @@
 
 'use strict';
 
-const { DeliveryHandler } = require('../../../src/completion/DeliveryHandler');
-const { LedgerManager }   = require('../../../src/economy/LedgerManager');
+const { DeliveryHandler } = require('../../../javascript/completion/DeliveryHandler');
+const { LedgerManager }   = require('../../../javascript/economy/LedgerManager');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

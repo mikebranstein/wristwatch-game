@@ -13,8 +13,8 @@
 
 'use strict';
 
-const { DeliveryHandler } = require('../../../src/gallery/DeliveryHandler');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { DeliveryHandler } = require('../../../javascript/gallery/DeliveryHandler');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 const noop = () => {};
 

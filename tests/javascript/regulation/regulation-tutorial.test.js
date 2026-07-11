@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const { RegulationTutorial, TUTORIAL_STEPS } = require('../../../src/regulation/RegulationTutorial');
+const { RegulationTutorial, TUTORIAL_STEPS } = require('../../../javascript/regulation/RegulationTutorial');
 
 function makeSaveState(initial = {}) {
   const store = { regulation_tutorial_seen: false, ...initial };

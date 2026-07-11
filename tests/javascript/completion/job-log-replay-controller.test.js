@@ -19,9 +19,9 @@
 
 'use strict';
 
-const { JobLogReplayController, UNAVAILABLE_MSG } = require('../../../src/completion/JobLogReplayController');
-const { TRIGGER_SOURCES }  = require('../../../src/completion/RevealSequenceController');
-const { PlayerSaveState }  = require('../../../src/state/PlayerSaveState');
+const { JobLogReplayController, UNAVAILABLE_MSG } = require('../../../javascript/completion/JobLogReplayController');
+const { TRIGGER_SOURCES }  = require('../../../javascript/completion/RevealSequenceController');
+const { PlayerSaveState }  = require('../../../javascript/state/PlayerSaveState');
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
 

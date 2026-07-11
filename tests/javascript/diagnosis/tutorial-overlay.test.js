@@ -10,9 +10,9 @@
  * Scenario 8: Second fault in same session → overlay does NOT re-trigger.
  */
 
-const { TutorialOverlay, WALKTHROUGH_STEPS } = require('../../../src/tutorials/TutorialOverlay');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
+const { TutorialOverlay, WALKTHROUGH_STEPS } = require('../../../javascript/tutorials/TutorialOverlay');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

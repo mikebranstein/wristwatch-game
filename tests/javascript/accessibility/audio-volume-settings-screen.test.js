@@ -1,6 +1,6 @@
 'use strict';
 
-const { AccessibilitySettingsScreen } = require('../../../src/accessibility/AccessibilitySettingsScreen');
+const { AccessibilitySettingsScreen } = require('../../../javascript/accessibility/AccessibilitySettingsScreen');
 
 describe('Audio volume settings UI — Issue #132', () => {
   test('settings snapshot exposes audioVolumePct for the pause/settings surface', () => {

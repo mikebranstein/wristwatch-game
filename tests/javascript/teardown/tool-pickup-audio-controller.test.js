@@ -4,7 +4,7 @@ const {
   ToolPickupAudioController,
   TOOL_PICKUP_CUE,
   DEFAULT_COOLDOWN_MS,
-} = require('../../../src/teardown/ToolPickupAudioController');
+} = require('../../../javascript/teardown/ToolPickupAudioController');
 
 function makeController(audioEnabled = true, cooldownMs = DEFAULT_COOLDOWN_MS) {
   const audioHook = jest.fn();

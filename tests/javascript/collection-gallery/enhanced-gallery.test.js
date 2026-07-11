@@ -2,8 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { GalleryDetailView } = require('../../../src/ui/GalleryDetailView');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { GalleryDetailView } = require('../../../javascript/ui/GalleryDetailView');
 
 const makeEntry = (overrides = {}) => ({
   watch_name: 'Rolex Oyster',

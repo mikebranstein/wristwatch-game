@@ -20,9 +20,9 @@
 
 'use strict';
 
-const { CosmeticPhaseController } = require('../../../src/cosmetic/CosmeticPhaseController');
-const { PlayerSaveState }         = require('../../../src/state/PlayerSaveState');
-const { getSelectableStraps, getBaselineStrap } = require('../../../src/cosmetic/StrapCatalogue');
+const { CosmeticPhaseController } = require('../../../javascript/cosmetic/CosmeticPhaseController');
+const { PlayerSaveState }         = require('../../../javascript/state/PlayerSaveState');
+const { getSelectableStraps, getBaselineStrap } = require('../../../javascript/cosmetic/StrapCatalogue');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

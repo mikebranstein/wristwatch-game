@@ -5,15 +5,15 @@
  * AC4 — reuses #53 BeforeAfterUI and ClipSequencePacer; no duplicate component
  */
 
-jest.mock('../../../src/cleaning/BeforeAfterUI');
-jest.mock('../../../src/cleaning/ClipSequencePacer');
-jest.mock('../../../src/telemetry/TelemetryEmitter');
+jest.mock('../../../javascript/cleaning/BeforeAfterUI');
+jest.mock('../../../javascript/cleaning/ClipSequencePacer');
+jest.mock('../../../javascript/telemetry/TelemetryEmitter');
 
 const { PolishingRevealSequence, POLISHING_REVEAL_EVENTS, TRANSITION_DURATION_MS } =
-  require('../../../src/cosmetic/PolishingRevealSequence');
-const { BeforeAfterUI }    = require('../../../src/cleaning/BeforeAfterUI');
-const { ClipSequencePacer } = require('../../../src/cleaning/ClipSequencePacer');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
+  require('../../../javascript/cosmetic/PolishingRevealSequence');
+const { BeforeAfterUI }    = require('../../../javascript/cleaning/BeforeAfterUI');
+const { ClipSequencePacer } = require('../../../javascript/cleaning/ClipSequencePacer');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ── Fake timer implementation for synchronous test control ───────────────
 
@@ -73,12 +73,12 @@ beforeEach(() => {
 // ── AC4: reuses #53 BeforeAfterUI and ClipSequencePacer ───────────────────
 
 describe('AC4 — reuses #53 BeforeAfterUI and ClipSequencePacer (no duplicate component)', () => {
-  test('getBeforeAfterUI() returns an instance of BeforeAfterUI from src/cleaning/', () => {
+  test('getBeforeAfterUI() returns an instance of BeforeAfterUI from javascript/cleaning/', () => {
     const { seq } = makeRevealSequence();
     expect(seq.getBeforeAfterUI()).toBeInstanceOf(BeforeAfterUI);
   });
 
-  test('getPacer() returns an instance of ClipSequencePacer from src/cleaning/', () => {
+  test('getPacer() returns an instance of ClipSequencePacer from javascript/cleaning/', () => {
     const { seq } = makeRevealSequence();
     expect(seq.getPacer()).toBeInstanceOf(ClipSequencePacer);
   });

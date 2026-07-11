@@ -14,7 +14,7 @@
 
 'use strict';
 
-const { CosyModeManager } = require('../../../src/economy/CosyModeManager');
+const { CosyModeManager } = require('../../../javascript/economy/CosyModeManager');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

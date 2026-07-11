@@ -25,7 +25,7 @@ const {
   TIER_NARRATIVES,
   IMPROVEMENT_TIPS,
   PERFECT_SCORE_MESSAGE,
-} = require('../../../src/completion/CraftsmanshipScoreDisplay');
+} = require('../../../javascript/completion/CraftsmanshipScoreDisplay');
 
 // ---------------------------------------------------------------------------
 // Helpers

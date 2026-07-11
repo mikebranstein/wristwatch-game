@@ -29,18 +29,18 @@
 
 'use strict';
 
-const { getToolRationale, getAllOperationIds, RATIONALE_MAP } = require('../../../src/tools/ToolRationaleProvider');
+const { getToolRationale, getAllOperationIds, RATIONALE_MAP } = require('../../../javascript/tools/ToolRationaleProvider');
 const {
   ToolRationaleCardController,
   SUPPRESS_AFTER_N,
   SAVE_KEY_USE_COUNTS,
   SAVE_KEY_PLAYER_SUPPRESSED,
   TELEMETRY_EVENT,
-} = require('../../../src/tools/ToolRationaleCardController');
-const { ToolPanel } = require('../../../src/tools/ToolPanel');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
-const { WorkbenchHUD } = require('../../../src/workbench/WorkbenchHUD');
+} = require('../../../javascript/tools/ToolRationaleCardController');
+const { ToolPanel } = require('../../../javascript/tools/ToolPanel');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
+const { WorkbenchHUD } = require('../../../javascript/workbench/WorkbenchHUD');
 
 // ── Test Helpers ──────────────────────────────────────────────────────────────
 

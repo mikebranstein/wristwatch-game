@@ -34,11 +34,11 @@ const {
   TIME_MODIFIER_TIER_3,
   TIME_MODIFIER_TIER_4,
   ERROR_MARGIN_MODIFIER_TIER_5,
-} = require('../../../src/tools/ProficiencyEngine');
+} = require('../../../javascript/tools/ProficiencyEngine');
 
-const { MultiStepOperationTracker } = require('../../../src/tools/MultiStepOperationTracker');
-const { ToolPanel } = require('../../../src/tools/ToolPanel');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { MultiStepOperationTracker } = require('../../../javascript/tools/MultiStepOperationTracker');
+const { ToolPanel } = require('../../../javascript/tools/ToolPanel');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 

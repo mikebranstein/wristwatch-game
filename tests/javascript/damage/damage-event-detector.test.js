@@ -9,7 +9,7 @@
 
 'use strict';
 
-const { DamageEventDetector, DAMAGE_EVENT_TYPES } = require('../../../src/damage/DamageEventDetector');
+const { DamageEventDetector, DAMAGE_EVENT_TYPES } = require('../../../javascript/damage/DamageEventDetector');
 
 function makeDetector(onDamage = jest.fn()) {
   return new DamageEventDetector(onDamage);

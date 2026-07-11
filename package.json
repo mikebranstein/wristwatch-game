@@ -2,7 +2,7 @@
   "name": "wristwatch-game",
   "version": "0.1.0",
   "description": "Wristwatch Revival Simulator \u2014 a watch-repair puzzle game",
-  "main": "src/index.js",
+  "main": "javascript/index.js",
   "scripts": {
     "test": "jest --coverage",
     "check:boundary": "node scripts/check-boundary.js",
@@ -15,7 +15,7 @@
       "**/tests/javascript/**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "src/**/*.js"
+      "javascript/**/*.js"
     ]
   },
   "devDependencies": {

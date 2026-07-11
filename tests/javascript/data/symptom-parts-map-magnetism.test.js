@@ -12,7 +12,7 @@ const {
   SYMPTOM_PARTS_MAP,
   getPartsForSymptom,
   getAllSymptomKeys,
-} = require('../../../src/data/symptom-parts-map');
+} = require('../../../javascript/data/symptom-parts-map');
 
 // ─── AC2 — running_fast_no_visible_damage symptom key exists ─────────────────
 

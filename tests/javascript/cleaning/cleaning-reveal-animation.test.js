@@ -14,7 +14,7 @@
  *   Scenario 9  (Early dismiss abort) — abort() stops playback and clears render layer.
  */
 
-const { CleaningRevealAnimation } = require('../../../src/cleaning/CleaningRevealAnimation');
+const { CleaningRevealAnimation } = require('../../../javascript/cleaning/CleaningRevealAnimation');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

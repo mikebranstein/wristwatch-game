@@ -1,6 +1,6 @@
 'use strict';
 
-const { DeliveryAudioController, DELIVERY_CUE } = require('../../../src/completion/DeliveryAudioController');
+const { DeliveryAudioController, DELIVERY_CUE } = require('../../../javascript/completion/DeliveryAudioController');
 
 function makeController(audioEnabled = true) {
   const audioHook = jest.fn();

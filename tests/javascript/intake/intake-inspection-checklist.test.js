@@ -40,9 +40,9 @@ const {
   INSPECTION_CHECKLIST_ITEMS,
   ITEM_STATES,
   BYPASS_LOCK_TOOLTIP,
-} = require('../../../src/intake/IntakeInspectionChecklist');
-const { JobCardAnnotationWriter } = require('../../../src/intake/JobCardAnnotationWriter');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+} = require('../../../javascript/intake/IntakeInspectionChecklist');
+const { JobCardAnnotationWriter } = require('../../../javascript/intake/JobCardAnnotationWriter');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 // ─── Test helpers ─────────────────────────────────────────────────────────────
 

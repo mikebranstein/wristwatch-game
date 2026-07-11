@@ -21,7 +21,7 @@ const {
   MAX_HOLD_DURATION_MS,
   DEFAULT_ANIMATE_IN_DURATION_MS,
   DEFAULT_ANIMATE_OUT_DURATION_MS,
-} = require('../../../src/completion/CameraAnimationController');
+} = require('../../../javascript/completion/CameraAnimationController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

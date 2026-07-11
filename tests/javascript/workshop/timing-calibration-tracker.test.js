@@ -17,7 +17,7 @@
 
 'use strict';
 
-const { TimingCalibrationTracker, PAR_SECONDS, DEFAULT_PAR_SECONDS } = require('../../../src/workshop/TimingCalibrationTracker');
+const { TimingCalibrationTracker, PAR_SECONDS, DEFAULT_PAR_SECONDS } = require('../../../javascript/workshop/TimingCalibrationTracker');
 
 // ---------------------------------------------------------------------------
 // Helpers

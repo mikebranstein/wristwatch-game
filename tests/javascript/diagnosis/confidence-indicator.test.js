@@ -6,7 +6,7 @@
  * part shows "Likely"; selecting an unrelated part shows "Unlikely".
  */
 
-const { ConfidenceIndicator, CONFIDENCE } = require('../../../src/diagnosis/ConfidenceIndicator');
+const { ConfidenceIndicator, CONFIDENCE } = require('../../../javascript/diagnosis/ConfidenceIndicator');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

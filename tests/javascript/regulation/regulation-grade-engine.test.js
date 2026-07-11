@@ -6,8 +6,8 @@
  */
 'use strict';
 
-const { RegulationGradeEngine } = require('../../../src/regulation/RegulationGradeEngine');
-const { GRADES, GRADE_THRESHOLDS, GRADE_TO_ACCURACY_SCORE } = require('../../../src/regulation/RegulationConfig');
+const { RegulationGradeEngine } = require('../../../javascript/regulation/RegulationGradeEngine');
+const { GRADES, GRADE_THRESHOLDS, GRADE_TO_ACCURACY_SCORE } = require('../../../javascript/regulation/RegulationConfig');
 
 describe('RegulationGradeEngine', () => {
   describe('computeGrade()', () => {

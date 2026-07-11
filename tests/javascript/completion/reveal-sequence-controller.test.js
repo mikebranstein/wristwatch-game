@@ -20,9 +20,9 @@
 
 'use strict';
 
-const { RevealSequenceController, REVEAL_STATE, TRIGGER_SOURCES } = require('../../../src/completion/RevealSequenceController');
-const { RevealPacingConfig }  = require('../../../src/completion/RevealPacingConfig');
-const { SharePromptOverlay, OVERLAY_STATE }  = require('../../../src/completion/SharePromptOverlay');
+const { RevealSequenceController, REVEAL_STATE, TRIGGER_SOURCES } = require('../../../javascript/completion/RevealSequenceController');
+const { RevealPacingConfig }  = require('../../../javascript/completion/RevealPacingConfig');
+const { SharePromptOverlay, OVERLAY_STATE }  = require('../../../javascript/completion/SharePromptOverlay');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

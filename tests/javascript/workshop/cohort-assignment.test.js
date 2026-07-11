@@ -11,7 +11,7 @@
 
 'use strict';
 
-const { CohortAssignment, CohortArm, DEFAULT_COHORT_CONFIG } = require('../../../src/workshop/CohortAssignment');
+const { CohortAssignment, CohortArm, DEFAULT_COHORT_CONFIG } = require('../../../javascript/workshop/CohortAssignment');
 
 describe('CohortAssignment — Issue #116 stable A/B cohort arm', () => {
 

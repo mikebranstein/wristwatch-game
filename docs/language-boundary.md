@@ -23,13 +23,19 @@ No `.js` files are permitted anywhere under these directories.
 
 | Path | Responsibility |
 |---|---|
-| `src/analytics/` | Retention analytics and cohort reporting |
-| `src/catalog/` | Parts catalogue, compatibility badges, filtering, order history |
-| `src/config/` | Game configuration data (damage states, cozy mode, supplier tiers, diagnostics) |
-| `src/economy_analytics/` | Economy analytics and modelling |
-| `src/orders/` | Order domain model, queue, and status |
-| `src/reputation/` | Reputation system |
-| `src/upgrade_tree/` | Upgrade tree data model |
+| `python/accessibility/` | Accessibility settings, CVD palette, snap tolerance, UI scale config |
+| `python/analytics/` | Retention analytics and cohort reporting |
+| `python/catalog/` | Parts catalogue, compatibility badges, filtering, order history |
+| `python/clients/` | Client roster data |
+| `python/config/` | Game configuration data (damage states, cozy mode, supplier tiers, diagnostics) |
+| `python/cosmetic/` | Cosmetic package metadata and Python-side config |
+| `python/economy_analytics/` | Economy analytics and modelling |
+| `python/orders/` | Order domain model, queue, and status |
+| `python/reputation/` | Reputation system |
+| `python/save/` | Save system, cloud sync, conflict resolver |
+| `python/ui/` | Notification service and order dashboard |
+| `python/upgrade_tree/` | Upgrade tree data model |
+| `python/workshop/` | Bench slot management, AB cohort, probe telemetry, second-bench unlock |
 
 ---
 
@@ -39,42 +45,48 @@ No `.py` files are permitted anywhere under these directories.
 
 | Path | Responsibility |
 |---|---|
-| `src/audio/` | Audio design system, event library, volume settings |
-| `src/cleaning/` | Cleaning-phase UI and cinematic reveal sequence |
-| `src/completion/` | Completion reveal, job quality, balance wheel, delivery, first-tick cinematic |
-| `src/damage/` | Damage event detection, recovery, part replacement UI |
-| `src/data/` | Runtime game data (backstory templates, damage-state hints, fault hints, movement data, symptom-parts map) |
-| `src/diagnosis/` | Diagnosis screen, hint system, coaching, symptom overlay |
-| `src/disassembly/` | Fastener state |
-| `src/economy/` | Economy UI — cosy-mode manager, ledger, upgrade shop |
-| `src/gallery/` | Collection gallery and delivery handler UI |
-| `src/intake/` | Intake inspection, backstory card, job card, scope negotiation |
-| `src/onboarding/` | Onboarding annotation rubric and failure-map report |
-| `src/reassembly/` | Reassembly screen, snap-zone tolerance, scatter layout, micro-confirmation |
-| `src/regulation/` | Regulation phase controller, grade engine, timegrapher display, tutorial |
-| `src/sourcing/` | Sourcing screen |
-| `src/state/` | Player save state (runtime) |
-| `src/teardown/` | Teardown screen and tool-pickup audio |
-| `src/telemetry/` | Telemetry emitter, hint escalation analyser, playtest annotation framework |
-| `src/tools/` | Tool panel, proficiency engine, tool registry, contextual highlights, multi-step tracker |
-| `src/tooltips/` | Horology glossary and tooltip system |
-| `src/tutorials/` | Tutorial overlay, guided onboarding, part scaffolding, chronograph discovery |
-| `src/workbench/` | Workbench scene, HUD, save adapter, watch part model |
+| `javascript/accessibility/` | Accessibility runtime controls, palette management, snap tolerance assist, UI scale |
+| `javascript/audio/` | Audio design system, event library, volume settings |
+| `javascript/cleaning/` | Cleaning-phase UI and cinematic reveal sequence |
+| `javascript/clients/` | Backstory card selection UI |
+| `javascript/completion/` | Completion reveal, job quality, balance wheel, delivery, first-tick cinematic |
+| `javascript/cosmetic/` | Cosmetic restoration flow, shaders, strap selection, polishing reveal |
+| `javascript/damage/` | Damage event detection, recovery, part replacement UI |
+| `javascript/data/` | Runtime game data (backstory templates, damage-state hints, fault hints, movement data, symptom-parts map) |
+| `javascript/diagnosis/` | Diagnosis screen, hint system, coaching, symptom overlay |
+| `javascript/disassembly/` | Fastener state |
+| `javascript/economy/` | Economy UI — cosy-mode manager, ledger, upgrade shop |
+| `javascript/gallery/` | Collection gallery and delivery handler UI |
+| `javascript/intake/` | Intake inspection, backstory card, job card, scope negotiation |
+| `javascript/onboarding/` | Onboarding annotation rubric and failure-map report |
+| `javascript/reassembly/` | Reassembly screen, snap-zone tolerance, scatter layout, micro-confirmation |
+| `javascript/regulation/` | Regulation phase controller, grade engine, timegrapher display, tutorial |
+| `javascript/save/` | Runtime repair-session record model |
+| `javascript/sourcing/` | Sourcing screen |
+| `javascript/state/` | Player save state (runtime) |
+| `javascript/teardown/` | Teardown screen and tool-pickup audio |
+| `javascript/telemetry/` | Telemetry emitter, hint escalation analyser, playtest annotation framework |
+| `javascript/tools/` | Tool panel, proficiency engine, tool registry, contextual highlights, multi-step tracker |
+| `javascript/tooltips/` | Horology glossary and tooltip system |
+| `javascript/tutorials/` | Tutorial overlay, guided onboarding, part scaffolding, chronograph discovery |
+| `javascript/ui/` | Collection gallery shell and workshop navigation views |
+| `javascript/workbench/` | Workbench scene, HUD, save adapter, watch part model |
+| `javascript/workshop/` | Bench slot UI, cohort assignment, timing calibration tracker, workshop controller |
 
 ---
 
-## Mixed (Co-Resident) Paths
+## Paired Split-Layer Directories
 
-These directories contain both Python and JavaScript files **by design** — the Python module provides data or configuration that the co-located JavaScript module consumes directly. No cross-boundary enforcement is applied to these paths.
+Some gameplay domains now have matching directories under both roots. The Python implementation remains under `python/`, while the JavaScript runtime implementation lives under `javascript/`. Each directory is enforced independently by `check:boundary`.
 
-| Path | Python role | JavaScript role |
+| Python path | JavaScript counterpart | Shared domain |
 |---|---|---|
-| `src/accessibility/` | Accessibility settings, CVD palette, snap tolerance, UI scale config | `AccessibilitySettings.js`, `CvdPaletteManager.js`, `SnapToleranceAssist.js`, `UiScaleController.js` / `UiScaleManager.js` |
-| `src/clients/` | Client roster data | `BackstoryCardSelector.js` |
-| `src/cosmetic/` | Package init (`__init__.py`) | Full cosmetic restoration system in JS |
-| `src/save/` | Save system, cloud sync, conflict resolver | `RepairSessionRecord.js` |
-| `src/ui/` | Notification service, order dashboard | `CollectionGallery.js`, `GalleryDetailView.js`, `WorkshopHubNav.js` |
-| `src/workshop/` | Bench slot management, AB cohort, probe telemetry, second-bench unlock | `BenchSlot.js`, `CohortAssignment.js`, `TimingCalibrationTracker.js`, `WorkshopController.js` |
+| `python/accessibility/` | `javascript/accessibility/` | Accessibility settings and runtime accessibility controls |
+| `python/clients/` | `javascript/clients/` | Client data and backstory card presentation |
+| `python/cosmetic/` | `javascript/cosmetic/` | Cosmetic restoration configuration and runtime flow |
+| `python/save/` | `javascript/save/` | Save-system data and runtime repair-session state |
+| `python/ui/` | `javascript/ui/` | Shared UI-facing concepts split by language responsibility |
+| `python/workshop/` | `javascript/workshop/` | Workshop domain data and workshop runtime controllers |
 
 ---
 

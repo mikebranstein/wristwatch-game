@@ -14,7 +14,7 @@
  *   Scenario 8  — Regression: disassembly context rejected
  */
 
-const { SnapZoneTolerance, DEFAULT_TOLERANCES, ALLOWED_CONTEXTS } = require('../../../src/reassembly/SnapZoneTolerance');
+const { SnapZoneTolerance, DEFAULT_TOLERANCES, ALLOWED_CONTEXTS } = require('../../../javascript/reassembly/SnapZoneTolerance');
 
 // ─── Constructor guards ───────────────────────────────────────────────────────
 

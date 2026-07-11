@@ -12,9 +12,9 @@
  */
 'use strict';
 
-const { DeliveryHandler }      = require('../../../src/completion/DeliveryHandler');
-const { JobQualityAggregator } = require('../../../src/completion/JobQualityAggregator');
-const { GRADES }               = require('../../../src/regulation/RegulationConfig');
+const { DeliveryHandler }      = require('../../../javascript/completion/DeliveryHandler');
+const { JobQualityAggregator } = require('../../../javascript/completion/JobQualityAggregator');
+const { GRADES }               = require('../../../javascript/regulation/RegulationConfig');
 
 // ---------------------------------------------------------------------------
 // Helpers

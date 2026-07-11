@@ -13,7 +13,7 @@
 
 'use strict';
 
-const { CrystalReplacementMechanic, STATES } = require('../../../src/cosmetic/CrystalReplacementMechanic');
+const { CrystalReplacementMechanic, STATES } = require('../../../javascript/cosmetic/CrystalReplacementMechanic');
 
 function makeMechanic(stateChanges = []) {
   const mechanic = new CrystalReplacementMechanic({

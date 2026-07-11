@@ -1,6 +1,6 @@
 'use strict';
 
-const { CaseBackAudioController, CASE_BACK_CUE } = require('../../../src/completion/CaseBackAudioController');
+const { CaseBackAudioController, CASE_BACK_CUE } = require('../../../javascript/completion/CaseBackAudioController');
 
 function makeController(audioEnabled = true) {
   const audioHook = jest.fn();

@@ -15,7 +15,7 @@
 
 'use strict';
 
-const { JobCardIntake } = require('../../../src/intake/JobCardIntake');
+const { JobCardIntake } = require('../../../javascript/intake/JobCardIntake');
 
 // ─── AC2: Recording functional findings ──────────────────────────────────────
 

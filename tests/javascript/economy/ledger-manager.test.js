@@ -20,7 +20,7 @@
 
 'use strict';
 
-const { LedgerManager, PRICING_TIERS } = require('../../../src/economy/LedgerManager');
+const { LedgerManager, PRICING_TIERS } = require('../../../javascript/economy/LedgerManager');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -395,7 +395,7 @@ describe('LedgerManager.recordJobCompletion() — Issue #254 Cosmetic Grade Modi
   // ── Grade multiplier values are correct (GRADE_MULTIPLIERS export) ────────
 
   test('GRADE_MULTIPLIERS export: adequate=1.10, good=1.20, mirror=1.30', () => {
-    const { GRADE_MULTIPLIERS } = require('../../../src/economy/LedgerManager');
+    const { GRADE_MULTIPLIERS } = require('../../../javascript/economy/LedgerManager');
     expect(GRADE_MULTIPLIERS.adequate).toBe(1.10);
     expect(GRADE_MULTIPLIERS.good).toBe(1.20);
     expect(GRADE_MULTIPLIERS.mirror).toBe(1.30);

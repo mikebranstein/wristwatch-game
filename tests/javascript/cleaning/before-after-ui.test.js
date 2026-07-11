@@ -16,7 +16,7 @@
  *   Scenario 10 (Sequence boundary)    — onDismiss callback fires after auto/early dismiss.
  */
 
-const { BeforeAfterUI, MIN_DISPLAY_DURATION_MS } = require('../../../src/cleaning/BeforeAfterUI');
+const { BeforeAfterUI, MIN_DISPLAY_DURATION_MS } = require('../../../javascript/cleaning/BeforeAfterUI');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

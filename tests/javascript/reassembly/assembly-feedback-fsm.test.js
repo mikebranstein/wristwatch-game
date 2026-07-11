@@ -27,7 +27,7 @@ const {
   STATE_VISUALS,
   STATE_AUDIO,
   MIN_DWELL_MS,
-} = require('../../../src/reassembly/AssemblyFeedbackStateMachine');
+} = require('../../../javascript/reassembly/AssemblyFeedbackStateMachine');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

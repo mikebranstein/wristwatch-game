@@ -29,13 +29,19 @@ const path = require('path');
  * No .js files are permitted anywhere under these paths.
  */
 const PYTHON_ONLY_DIRS = [
-  'src/analytics',
-  'src/catalog',
-  'src/config',
-  'src/economy_analytics',
-  'src/orders',
-  'src/reputation',
-  'src/upgrade_tree',
+  'python/accessibility',
+  'python/analytics',
+  'python/catalog',
+  'python/clients',
+  'python/config',
+  'python/cosmetic',
+  'python/economy_analytics',
+  'python/orders',
+  'python/reputation',
+  'python/save',
+  'python/ui',
+  'python/upgrade_tree',
+  'python/workshop',
 ];
 
 /**
@@ -43,32 +49,37 @@ const PYTHON_ONLY_DIRS = [
  * No .py files are permitted anywhere under these paths.
  */
 const JS_ONLY_DIRS = [
-  'src/audio',
-  'src/cleaning',
-  'src/completion',
-  'src/damage',
-  'src/data',
-  'src/diagnosis',
-  'src/disassembly',
-  'src/economy',
-  'src/gallery',
-  'src/intake',
-  'src/onboarding',
-  'src/reassembly',
-  'src/regulation',
-  'src/sourcing',
-  'src/state',
-  'src/teardown',
-  'src/telemetry',
-  'src/tools',
-  'src/tooltips',
-  'src/tutorials',
-  'src/workbench',
+  'javascript/accessibility',
+  'javascript/audio',
+  'javascript/cleaning',
+  'javascript/clients',
+  'javascript/completion',
+  'javascript/cosmetic',
+  'javascript/damage',
+  'javascript/data',
+  'javascript/diagnosis',
+  'javascript/disassembly',
+  'javascript/economy',
+  'javascript/gallery',
+  'javascript/intake',
+  'javascript/onboarding',
+  'javascript/reassembly',
+  'javascript/regulation',
+  'javascript/save',
+  'javascript/sourcing',
+  'javascript/state',
+  'javascript/teardown',
+  'javascript/telemetry',
+  'javascript/tools',
+  'javascript/tooltips',
+  'javascript/tutorials',
+  'javascript/ui',
+  'javascript/workbench',
+  'javascript/workshop',
 ];
 
-// Mixed (co-resident) directories — both languages are present by design;
-// no enforcement is applied to these paths:
-//   src/accessibility, src/clients, src/cosmetic, src/save, src/ui, src/workshop
+// Split-language directories now live under separate roots (python/ and
+// javascript/) and are enforced independently.
 
 // ---------------------------------------------------------------------------
 // Helpers

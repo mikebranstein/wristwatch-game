@@ -13,7 +13,7 @@ const {
   BACKSTORY_TEMPLATES,
   WATCH_TYPES,
   getTemplatesForWatchType,
-} = require('../../../src/data/backstory-templates');
+} = require('../../../javascript/data/backstory-templates');
 
 // ─── Schema validation ────────────────────────────────────────────────────────
 

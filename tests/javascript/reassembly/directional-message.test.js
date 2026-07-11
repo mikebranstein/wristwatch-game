@@ -13,13 +13,13 @@
  *   Scenario 5  — Directional accuracy: each message contains the part name or a descriptor
  */
 
-const { DIRECTIONAL_MESSAGES } = require('../../../src/reassembly/DirectionalMessageMap');
+const { DIRECTIONAL_MESSAGES } = require('../../../javascript/reassembly/DirectionalMessageMap');
 const {
   DirectionalMessageService,
   MAX_WORDS,
   countWords,
-} = require('../../../src/reassembly/DirectionalMessageService');
-const { SNAP_ZONES } = require('../../../src/reassembly/SnapZoneTolerance');
+} = require('../../../javascript/reassembly/DirectionalMessageService');
+const { SNAP_ZONES } = require('../../../javascript/reassembly/SnapZoneTolerance');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AC1: Part coverage audit

@@ -39,7 +39,7 @@
 'use strict';
 
 const { performance } = require('perf_hooks');
-const { ReassemblyScreen } = require('../../../src/reassembly/ReassemblyScreen');
+const { ReassemblyScreen } = require('../../../javascript/reassembly/ReassemblyScreen');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Harness configuration
@@ -539,9 +539,9 @@ describe('AC5 — Spike completed within 2 business days', () => {
   });
 
   test('AC5.3 — Spike did not expand beyond producing a report (no production code changes)', () => {
-    // Verify spike harness is isolated to tests/ and docs/ — no src/ changes
+    // Verify spike harness is isolated to tests/ and docs/ — no javascript/ changes
     // This is validated structurally: this test file lives in tests/reassembly/
-    // and the spike report is in docs/. src/ is unchanged (enforced by contract).
+    // and the spike report is in docs/. javascript/ is unchanged (enforced by contract).
     const thisFilePath = __filename;
     expect(thisFilePath).toMatch(/tests[/\\\\]javascript[/\\\\]reassembly[/\\\\]/);
   });

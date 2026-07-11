@@ -14,8 +14,8 @@
  */
 'use strict';
 
-const { RegulationPhaseController, PHASE_STATE } = require('../../../src/regulation/RegulationPhaseController');
-const { GRADES } = require('../../../src/regulation/RegulationConfig');
+const { RegulationPhaseController, PHASE_STATE } = require('../../../javascript/regulation/RegulationPhaseController');
+const { GRADES } = require('../../../javascript/regulation/RegulationConfig');
 
 // ---------------------------------------------------------------------------
 // Helpers

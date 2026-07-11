@@ -18,9 +18,9 @@ const { app, BrowserWindow } = require('electron');
 // ─── AC2: Import existing JS game logic modules without modification ───────────
 // These require() calls import the framework-agnostic CommonJS modules directly
 // from the source tree — zero changes made to any source file.
-const { TelemetryEmitter } = require('../../src/telemetry/TelemetryEmitter');
-const { HintSystem }       = require('../../src/diagnosis/HintSystem');
-const { PlayerSaveState }  = require('../../src/state/PlayerSaveState');
+const { TelemetryEmitter } = require('../../javascript/telemetry/TelemetryEmitter');
+const { HintSystem }       = require('../../javascript/diagnosis/HintSystem');
+const { PlayerSaveState }  = require('../../javascript/state/PlayerSaveState');
 
 // Verify the imports are callable (AC2 gate)
 function verifyModuleImports() {

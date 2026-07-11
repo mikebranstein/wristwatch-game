@@ -13,8 +13,8 @@ const {
   RegulationAudioController,
   REGULATION_AUDIO_CUES,
   REGULATION_AUDIO_STATE,
-} = require('../../../src/regulation/RegulationAudioController');
-const { GRADE_THRESHOLDS, GRADES } = require('../../../src/regulation/RegulationConfig');
+} = require('../../../javascript/regulation/RegulationAudioController');
+const { GRADE_THRESHOLDS, GRADES } = require('../../../javascript/regulation/RegulationConfig');
 
 function makeController(audioEnabled = true) {
   const cues = [];

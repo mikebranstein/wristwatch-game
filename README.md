@@ -8,7 +8,7 @@ The Wristwatch Revival Simulator uses a **dual-language architecture** by design
 
 | Layer | Language | What lives here |
 |-------|----------|-----------------|
-| Game engine | JavaScript (`src/**/*.js`) | Snap-zone tolerances, assembly state machines, UI interaction, real-time simulation, player save state |
+| Game engine | JavaScript (`javascript/**/*.js`) | Snap-zone tolerances, assembly state machines, UI interaction, real-time simulation, player save state |
 | Data & persistence | Python (`python/**/*.py`) | Parts catalog, data model definitions, compatibility logic, save system persistence, analytics, accessibility config |
 
 ### Interop Boundary
@@ -23,14 +23,21 @@ The two layers communicate through **`catalog.json`**: Python serialises the par
 |---------|---------|
 | Run JavaScript tests | `npm test` |
 | Run Python tests | `pytest` |
-| Run both test suites | `npm test && pytest` |
+| Run both test suites | `npm run test:all` |
 
 ## Project Layout
 
 - `python/` — Python source files (save system, analytics, orders, catalog, etc.)
-- `src/` — JavaScript source files (game runtime, completion, economy, cosmetic, etc.)
+- `javascript/` — JavaScript source files (game runtime, completion, economy, cosmetic, etc.)
 - `tests/python/` — Python pytest suite
 - `tests/javascript/` — JavaScript Jest suite
+
+## Source Layout
+
+| Directory | Language | Responsibility |
+|---|---|---|
+| `javascript/` | JavaScript (Node.js) | Game runtime — simulation, UI, interaction, assembly state machines, player state, game loop |
+| `python/` | Python | Data & persistence — parts catalogue, save system, analytics, configuration, orders, reputation |
 
 ## Setup
 
@@ -103,6 +110,9 @@ npm test && pytest
 
 The JS/Python interop boundary is documented in **[`docs/language-boundary.md`](docs/language-boundary.md)**.  
 Read it before adding new source files to understand which paths belong to each language layer.
+
+- JavaScript source files live in **`javascript/`** (top-level)
+- Python source files live in **`python/`** (top-level)
 
 To verify the boundary is clean on your local checkout:
 

@@ -4,7 +4,7 @@
  * Run with: npm test
  */
 
-const { ReassemblyScreen } = require('../../../src/reassembly/ReassemblyScreen');
+const { ReassemblyScreen } = require('../../../javascript/reassembly/ReassemblyScreen');
 
 // Minimal stubs
 const noop = () => {};

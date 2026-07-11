@@ -20,9 +20,9 @@
 const {
   ChronographDiscoveryOverlay,
   DISCOVERY_STEPS,
-} = require('../../../src/tutorials/ChronographDiscoveryOverlay');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+} = require('../../../javascript/tutorials/ChronographDiscoveryOverlay');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

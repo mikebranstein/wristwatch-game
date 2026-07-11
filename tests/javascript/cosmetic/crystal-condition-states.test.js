@@ -20,7 +20,7 @@ const {
   resolveCrystalCondition,
   getAllCrystalConditionStates,
   getPartConditionDescriptor,
-} = require('../../../src/cosmetic/CrystalConditionStates');
+} = require('../../../javascript/cosmetic/CrystalConditionStates');
 
 describe('CrystalConditionStates — static data', () => {
   test('exports exactly three condition IDs: scratched, cracked, clean', () => {

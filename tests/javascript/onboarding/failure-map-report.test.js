@@ -19,7 +19,7 @@ const {
   AnnotationRubric,
   EVENT_TYPES,
   TOOLTIP_INTERACTIONS,
-} = require('../../../src/onboarding/AnnotationRubric');
+} = require('../../../javascript/onboarding/AnnotationRubric');
 
 const {
   FailureMapReport,
@@ -28,7 +28,7 @@ const {
   MINIMUM_COHORT_SIZE,
   PREFERRED_COHORT_SIZE,
   BASELINE_COMPLETION_RATE_HYPOTHESIS,
-} = require('../../../src/onboarding/FailureMapReport');
+} = require('../../../javascript/onboarding/FailureMapReport');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

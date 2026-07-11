@@ -1,12 +1,12 @@
 'use strict';
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 const {
   AudioVolumeSettings,
   DEFAULT_AUDIO_VOLUME,
   AUDIO_VOLUME_STORAGE_KEY,
-} = require('../../../src/audio/AudioVolumeSettings');
-const { AudioDesignSystem } = require('../../../src/audio/AudioDesignSystem');
+} = require('../../../javascript/audio/AudioVolumeSettings');
+const { AudioDesignSystem } = require('../../../javascript/audio/AudioDesignSystem');
 
 describe('AC3 — volume control and persistence', () => {
   test('volume defaults to 100% and can be adjusted across the full 0–100 range', () => {

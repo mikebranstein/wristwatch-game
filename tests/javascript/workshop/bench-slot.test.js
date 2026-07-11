@@ -14,7 +14,7 @@
 
 'use strict';
 
-const { BenchSlot, SlotState } = require('../../../src/workshop/BenchSlot');
+const { BenchSlot, SlotState } = require('../../../javascript/workshop/BenchSlot');
 
 describe('BenchSlot — Issue #116 independent per-slot state machine', () => {
 

@@ -26,8 +26,8 @@
 
 'use strict';
 
-const { CosmeticRestorationController } = require('../../../src/cosmetic/CosmeticRestorationController');
-const { PlayerSaveState }               = require('../../../src/state/PlayerSaveState');
+const { CosmeticRestorationController } = require('../../../javascript/cosmetic/CosmeticRestorationController');
+const { PlayerSaveState }               = require('../../../javascript/state/PlayerSaveState');
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -185,7 +185,7 @@ describe('AC3 — before/after reuses Phase 1 StrapBeforeAfterDisplay component'
   });
 
   test('TS5: crystal before/after uses same StrapBeforeAfterDisplay class as strap (AC3, TS5)', () => {
-    const { StrapBeforeAfterDisplay } = require('../../../src/cosmetic/StrapBeforeAfterDisplay');
+    const { StrapBeforeAfterDisplay } = require('../../../javascript/cosmetic/StrapBeforeAfterDisplay');
     const h = makeController({ watchData: { crystal_condition: 'scratched' } });
     // The crystalBeforeAfterDisplay accessor must return an instance of StrapBeforeAfterDisplay
     const display = h.controller.getCrystalBeforeAfterDisplay();

@@ -20,9 +20,9 @@
 
 'use strict';
 
-const { WorkbenchScene, SCENE_STATE } = require('../../../src/workbench/WorkbenchScene');
-const { PART_STATE, SESSION_FAULT_PART_ID } = require('../../../src/workbench/WatchPartModel');
-const { REPAIR_STEP } = require('../../../src/workbench/WorkbenchHUD');
+const { WorkbenchScene, SCENE_STATE } = require('../../../javascript/workbench/WorkbenchScene');
+const { PART_STATE, SESSION_FAULT_PART_ID } = require('../../../javascript/workbench/WatchPartModel');
+const { REPAIR_STEP } = require('../../../javascript/workbench/WorkbenchHUD');
 
 // ── Shared test helpers ───────────────────────────────────────────────────────
 
@@ -546,7 +546,7 @@ describe('Scenario 9: Module integration stability', () => {
   });
 
   it('WorkbenchSaveAdapter builds payload without errors', () => {
-    const { WorkbenchSaveAdapter } = require('../../../src/workbench/WorkbenchSaveAdapter');
+    const { WorkbenchSaveAdapter } = require('../../../javascript/workbench/WorkbenchSaveAdapter');
     const adapter = new WorkbenchSaveAdapter();
     const payload = adapter.buildSavePayload({ order_queue: [] }, { parts: {} });
     expect(payload).toHaveProperty('workbench_state');

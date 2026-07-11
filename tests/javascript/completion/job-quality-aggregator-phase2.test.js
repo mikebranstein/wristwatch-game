@@ -16,7 +16,7 @@
 
 'use strict';
 
-const { JobQualityAggregator, ALL_DIMENSIONS, DEFAULT_UNLOCKED_DIMENSIONS } = require('../../../src/completion/JobQualityAggregator');
+const { JobQualityAggregator, ALL_DIMENSIONS, DEFAULT_UNLOCKED_DIMENSIONS } = require('../../../javascript/completion/JobQualityAggregator');
 
 // ---------------------------------------------------------------------------
 // Helpers (same mock pattern as Phase 1 tests)

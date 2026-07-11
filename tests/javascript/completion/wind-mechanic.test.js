@@ -14,7 +14,7 @@
  *   Scenario 7 (Incorrect assembly)— activation hook suppressed when assembly wrong.
  */
 
-const { WindMechanic, TOTAL_WIND_STEPS, TENSION_WINDOW_STEPS } = require('../../../src/completion/WindMechanic');
+const { WindMechanic, TOTAL_WIND_STEPS, TENSION_WINDOW_STEPS } = require('../../../javascript/completion/WindMechanic');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

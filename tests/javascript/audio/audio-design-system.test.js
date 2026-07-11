@@ -2,8 +2,8 @@
 
 const { performance } = require('perf_hooks');
 
-const { AudioDesignSystem } = require('../../../src/audio/AudioDesignSystem');
-const { AudioVolumeSettings } = require('../../../src/audio/AudioVolumeSettings');
+const { AudioDesignSystem } = require('../../../javascript/audio/AudioDesignSystem');
+const { AudioVolumeSettings } = require('../../../javascript/audio/AudioVolumeSettings');
 
 function makeSystem(volumePct = 100) {
   const audioHook = jest.fn();

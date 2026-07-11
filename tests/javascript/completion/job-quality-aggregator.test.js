@@ -14,7 +14,7 @@
 
 'use strict';
 
-const { JobQualityAggregator, DEFAULT_UNLOCKED_DIMENSIONS } = require('../../../src/completion/JobQualityAggregator');
+const { JobQualityAggregator, DEFAULT_UNLOCKED_DIMENSIONS } = require('../../../javascript/completion/JobQualityAggregator');
 
 // ---------------------------------------------------------------------------
 // Helpers — minimal mock factory functions

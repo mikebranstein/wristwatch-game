@@ -21,7 +21,7 @@ const {
   DEFAULT_PACING,
   MIN_TOTAL_MS,
   MAX_TOTAL_MS,
-} = require('../../../src/completion/RevealPacingConfig');
+} = require('../../../javascript/completion/RevealPacingConfig');
 
 // ── Construction ──────────────────────────────────────────────────────────────
 

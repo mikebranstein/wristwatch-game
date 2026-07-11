@@ -1,16 +1,16 @@
-jest.mock('../../../src/cleaning/RevealAnimation');
-jest.mock('../../../src/cleaning/RevealAudioController');
-jest.mock('../../../src/cleaning/BeforeAfterUI');
-jest.mock('../../../src/cleaning/CinematicCameraController');
-jest.mock('../../../src/cleaning/ClipSequencePacer');
-jest.mock('../../../src/telemetry/TelemetryEmitter');
-const { CleaningRevealSequence } = require('../../../src/cleaning/CleaningRevealSequence');
-const { RevealAnimation } = require('../../../src/cleaning/RevealAnimation');
-const { RevealAudioController } = require('../../../src/cleaning/RevealAudioController');
-const { BeforeAfterUI } = require('../../../src/cleaning/BeforeAfterUI');
-const { CinematicCameraController } = require('../../../src/cleaning/CinematicCameraController');
-const { ClipSequencePacer } = require('../../../src/cleaning/ClipSequencePacer');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
+jest.mock('../../../javascript/cleaning/RevealAnimation');
+jest.mock('../../../javascript/cleaning/RevealAudioController');
+jest.mock('../../../javascript/cleaning/BeforeAfterUI');
+jest.mock('../../../javascript/cleaning/CinematicCameraController');
+jest.mock('../../../javascript/cleaning/ClipSequencePacer');
+jest.mock('../../../javascript/telemetry/TelemetryEmitter');
+const { CleaningRevealSequence } = require('../../../javascript/cleaning/CleaningRevealSequence');
+const { RevealAnimation } = require('../../../javascript/cleaning/RevealAnimation');
+const { RevealAudioController } = require('../../../javascript/cleaning/RevealAudioController');
+const { BeforeAfterUI } = require('../../../javascript/cleaning/BeforeAfterUI');
+const { CinematicCameraController } = require('../../../javascript/cleaning/CinematicCameraController');
+const { ClipSequencePacer } = require('../../../javascript/cleaning/ClipSequencePacer');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
 function mkSeq(fn) { return new CleaningRevealSequence({ renderReveal:jest.fn(),clearReveal:jest.fn(),audioHook:jest.fn(),instrumentationHook:jest.fn(),cameraOverrideHook:jest.fn(),cameraRestoreHook:jest.fn(),audioCohortFn:fn }); }
 function setup(fn) {
   jest.clearAllMocks(); const seq = mkSeq(fn);

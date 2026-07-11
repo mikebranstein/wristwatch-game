@@ -10,7 +10,7 @@
  *   - New events do not duplicate or conflict with existing events
  */
 
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 describe('TelemetryEmitter — reassembly extension: undoAttempted()', () => {
   let hook, emitter;

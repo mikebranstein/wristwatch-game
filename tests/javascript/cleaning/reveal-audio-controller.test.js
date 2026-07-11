@@ -12,7 +12,7 @@
  *   Scenario 7 (Back-to-back)         — no audio stacking after onCueComplete().
  */
 
-const { RevealAudioController, MAX_SYNC_TOLERANCE_MS } = require('../../../src/cleaning/RevealAudioController');
+const { RevealAudioController, MAX_SYNC_TOLERANCE_MS } = require('../../../javascript/cleaning/RevealAudioController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

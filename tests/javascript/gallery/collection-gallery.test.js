@@ -16,9 +16,9 @@
 
 'use strict';
 
-const { CollectionGallery, PAGE_SIZE, EMPTY_STATE_MESSAGE } = require('../../../src/gallery/CollectionGallery');
-const { PlayerSaveState }                                   = require('../../../src/state/PlayerSaveState');
-const { DeliveryHandler }                                   = require('../../../src/gallery/DeliveryHandler');
+const { CollectionGallery, PAGE_SIZE, EMPTY_STATE_MESSAGE } = require('../../../javascript/gallery/CollectionGallery');
+const { PlayerSaveState }                                   = require('../../../javascript/state/PlayerSaveState');
+const { DeliveryHandler }                                   = require('../../../javascript/gallery/DeliveryHandler');
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
 
