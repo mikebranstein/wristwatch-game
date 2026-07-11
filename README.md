@@ -25,7 +25,7 @@ pytest
 To run only the analytics tests:
 
 ```bash
-pytest tests/analytics/
+pytest tests/python/analytics/
 ```
 
 ### JavaScript tests
@@ -37,7 +37,7 @@ npm test
 To run a specific test file:
 
 ```bash
-npx jest tests/completion/job-quality-aggregator.test.js
+npx jest tests/javascript/completion/job-quality-aggregator.test.js
 ```
 
 Both test suites should be run before submitting changes:
