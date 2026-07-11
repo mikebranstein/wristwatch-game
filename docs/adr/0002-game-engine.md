@@ -39,7 +39,7 @@ Constraints from `docs/discovery-focus.md`:
 - **No external engine lock-in**: Custom JS engine avoids Unity/Unreal/Godot licensing risk, plugin compatibility drift, and opaque upgrade paths for a small team.
 - **Testability**: Jest-based unit tests run the full game logic in Node.js without a rendering environment, enabling fast CI and high coverage of interaction states.
 - **Lightweight distribution**: Browser + Electron deployment requires no separate runtime installer on Windows.
-- **Modular content pipeline**: New part types and movement families can be added as data changes (Python catalog) + snap-zone config without engine modification.
+- **Modular content pipeline**: New part types and movement families can be added as JavaScript catalog/data changes plus snap-zone config without engine modification.
 
 ---
 
@@ -49,7 +49,7 @@ Constraints from `docs/discovery-focus.md`:
 |--------|---------|------|------|
 | A — **Custom JS Canvas/WebGL engine (current)** | Hand-rolled JS simulation modules + Canvas/WebGL renderer | Benchmarked; fully testable in Node.js/Jest; zero licensing cost; no framework upgrade surprises | Render pipeline (WebGL draw calls) not yet fully validated in browser; polygon budget system not yet implemented |
 | B — Phaser 3 | Popular 2D JS game framework | Large community; built-in input, physics, tilemap | General-purpose 2D framework not optimised for precision snap-zone simulation; adds framework upgrade risk; browser-only; not tested for 80+ micro-part workload |
-| C — Unity (WebGL export) | Industry-standard C# game engine | Rich toolset; asset store | C# diverges from JS/Python team stack; WebGL export performance uncertain for 60Hz precision interaction; Unity licensing changes (2024) introduce commercial risk for small team |
+| C — Unity (WebGL export) | Industry-standard C# game engine | Rich toolset; asset store | C# diverges from JavaScript-first team stack; WebGL export performance uncertain for 60Hz precision interaction; Unity licensing changes (2024) introduce commercial risk for small team |
 | D — Godot 4 (GDScript/C#) | Open-source game engine | Free; 2D support; GDScript approachable | Different language from existing codebase; no measured evidence for watch-part precision simulation; cross-compiling to Windows adds toolchain complexity |
 | E — React + Canvas | React UI with HTML5 Canvas for rendering | Familiar web stack | React state model conflicts with tight game-loop timing requirements; not game-optimised |
 
@@ -64,7 +64,7 @@ The engine is already implemented, tested, and benchmarked. Switching to Phaser,
 2. Require a full rewrite of the snap-zone, state-machine, and interaction systems.
 3. Introduce licensing or toolchain risk.
 
-The custom engine's design — O(1) hash-based snap-zone lookup, per-part FSM updates, and a clear JS/Python interop boundary — is well-suited to the game's requirements.
+The custom engine's design — O(1) hash-based snap-zone lookup and per-part FSM updates in JavaScript — is well-suited to the game's requirements.
 
 ### Open Items (not blockers)
 

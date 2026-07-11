@@ -16,31 +16,26 @@ Constraints from `docs/discovery-focus.md`:
 - Sessions from 20 to 90 minutes must be completable without risk of losing state.
 - The recovery loop includes part orders with delivery timers — in-transit order state must survive abnormal exits (force-quit, crash).
 
-The existing save/load architecture is implemented across two layers:
+Python code existed in this repository before ADR creation, but the architecture decision is now JavaScript-only. Save/load responsibilities are consolidated into JavaScript modules.
 
-**Python persistence layer** (`src/save/save_system.py`):
-- `autosave_checkpoint(stage, game_state, save_path)` — writes a stage checkpoint at each phase boundary (teardown, cleaning, sourcing, reassembly) using `tempfile + os.replace()` for atomic writes. No partial/corrupt file is ever visible on disk.
-- `save_async(game_state, save_path, on_success, on_error)` — non-blocking background thread write that never pauses the game loop.
+**JavaScript persistence layer** (`src/save/`, `src/state/PlayerSaveState.js`):
+- `autosave_checkpoint(stage, game_state, save_path)` — writes a stage checkpoint at each phase boundary using atomic temp-file replacement semantics.
+- `save_async(game_state, save_path, on_success, on_error)` — non-blocking asynchronous write that never pauses the game loop.
 - `load_session(raw_save_data)` — deserialises save data with null-safe defaults for pre-feature saves; resolves in-transit order arrivals at session boundary.
-- `_atomic_write()` — writes to a sibling `.tmp` file, then calls `os.replace()` (POSIX-atomic on NTFS same-volume moves).
+- `atomicWrite()` — writes to a sibling `.tmp` file and then replaces the target save file atomically on Windows NTFS.
 
-**JavaScript state layer** (`src/state/PlayerSaveState.js`):
-- In-memory `DEFAULT_SAVE` object with additive backward-compatible fields.
-- `setCurrentStage(stage)` / `markCheckpointStage(stage)` — track restoration phase progress.
-- `snapshot()` — serialises current state for persistence handoff.
-- Designed for localStorage, IndexedDB, or save-file API in the production integration layer.
-
-This two-layer design was implemented for Issue #82 (Save/Load Reliability System) with full pytest and Jest test coverage.
+This single-language design supports Issue #82 (Save/Load Reliability System) with JavaScript test coverage.
 
 ---
 
 ## Decision Drivers
 
-- **Reliability over complexity**: Progress loss on a 90-minute restoration is game-breaking. Atomic writes with `.tmp` + `os.replace()` eliminate partial-write corruption on Windows NTFS.
+- **Reliability over complexity**: Progress loss on a 90-minute restoration is game-breaking. Atomic writes with `.tmp` replacement eliminate partial-write corruption on Windows NTFS.
 - **Non-blocking game loop**: Async background writes ensure the game loop never pauses at save boundaries — critical for the real-time simulation target.
 - **Additive backward compatibility**: The `DEFAULT_SAVE` pattern (Object.assign with defaults) means new fields added in future features load cleanly on existing save files with null/false/zero defaults.
 - **Stage checkpoints**: Checkpoint at each of 4 restoration phases (teardown, cleaning, sourcing, reassembly) means the maximum progress loss on abnormal exit is one phase — not the full session.
 - **In-transit order survival**: Orders placed during sourcing are persisted immediately at `place_order()` time, not deferred to session end — ensuring delivery timers survive force-quit.
+- **Single language**: Consolidating persistence in JavaScript removes cross-language ownership and integration risk.
 
 ---
 
@@ -48,7 +43,7 @@ This two-layer design was implemented for Issue #82 (Save/Load Reliability Syste
 
 | Option | Summary | Pros | Cons |
 |--------|---------|------|------|
-| **A — Atomic JSON + stage checkpoints + async writes (current)** | `tempfile + os.replace()`, per-phase checkpoints, background thread writes | Atomic; non-blocking; proven on NTFS; additive schema; in-transit order survival | JSON grows with save slots; threading requires careful callback design |
+| **A — Atomic JSON + stage checkpoints + async writes (chosen)** | JavaScript atomic temp-file replacement, per-phase checkpoints, async writes | Atomic; non-blocking; additive schema; in-transit order survival; single-language stack | JSON grows with save slots; callback/error handling needs discipline |
 | B — SQLite save database | All game state in SQLite | Transactional; queryable; WAL mode for concurrent access | Requires SQLite on Windows; schema migrations on every new field; overkill for single-player local saves |
 | C — localStorage / IndexedDB only | Browser-native persistent storage | Works in browser out-of-the-box; no file I/O | 5–10MB quota limits; not suitable for large save slots; no atomic write guarantees; Electron requires polyfill |
 | D — Cloud save only | Remote REST API for save state | Cross-device; backup handled | Requires network; violates "no live-service dependency for core play" constraint from discovery-focus.md |
@@ -62,11 +57,13 @@ This two-layer design was implemented for Issue #82 (Save/Load Reliability Syste
 
 This architecture satisfies all reliability constraints stated in `docs/discovery-focus.md` with minimal infrastructure:
 
-- **Atomic write**: No partial/corrupt save files on Windows NTFS — `os.replace()` on same-volume is atomic.
+- **Atomic write**: No partial/corrupt save files on Windows NTFS — atomic replace on same-volume move.
 - **Non-blocking**: Game loop continuity maintained — async thread fires and the game loop proceeds immediately.
 - **Stage checkpoints**: Maximum progress loss = one restoration phase (minutes, not the full session).
 - **Order survival**: In-transit orders persisted at placement time, not session end.
 - **Backward compatibility**: Every new save field uses an additive pattern — old saves load correctly with safe defaults.
+
+Python-era save implementations are legacy and are superseded by JavaScript ownership in this ADR revision.
 
 Option D (cloud save) is explicitly excluded by the discovery focus constraint: "No online PvP, MMO economy, or live-service dependency for core play."
 
@@ -103,7 +100,7 @@ If save corruption is detected at load time:
 - In-transit part orders survive force-quit and crash scenarios.
 - JSON format is human-readable for debugging and player mod support.
 - Additive schema pattern allows unlimited new fields without migration tooling.
-- Full pytest test coverage of all autosave/load paths.
+- Single-language implementation and test surface for autosave/load behavior.
 
 ## Negative Consequences / Trade-offs
 
@@ -116,7 +113,7 @@ If save corruption is detected at load time:
 ## Compliance Notes
 
 - Save files are stored locally on the player's Windows PC. No cloud transmission of save data unless the player explicitly opts into a future cloud-save feature (out of scope for initial release).
-- `tempfile` and `os.replace()` are Python standard library functions with no third-party dependency.
+- Atomic temp-file replacement in JavaScript uses standard filesystem APIs and has no third-party runtime dependency requirement.
 
 ---
 
@@ -125,5 +122,5 @@ If save corruption is detected at load time:
 - Related ADR(s): ADR-0001 (Runtime), ADR-0003 (Data Model)
 - Foundation Decision Pack entry: FD-004 (Save/Load Architecture)
 - Discovery Focus section: Technical Constraints — "Save/load reliability is critical to prevent progress loss during long restorations."
-- Source: `src/save/save_system.py`, `src/state/PlayerSaveState.js`
+- Source: `src/save/`, `src/state/PlayerSaveState.js`
 - Issue: #82 (Save/Load Reliability System)
