@@ -2,6 +2,7 @@
 
 **Status:** ACCEPTED  
 **Date:** 2026-07-10  
+**Revised:** 2026-07-11  
 **Deciders:** Foundation Research Agent  
 **Tags:** runtime, language, architecture
 
@@ -51,9 +52,11 @@ Constraints from `docs/discovery-focus.md`:
 
 **Chosen option: C — JavaScript (Node.js) for real-time game engine + Python for data model and persistence.**
 
-The dual-language architecture is already established, tested, and validated by the chronograph spike. Forcing a single-language rewrite would incur high migration cost with no measurable benefit to the product's core constraint (responsive real-time simulation on Windows PC).
+The dual-language architecture is already established, tested, and validated by the chronograph spike. At the time of this decision, the cost/benefit analysis favoured maintaining the current dual-language separation because migration cost exceeded measurable benefit to the core constraint (responsive real-time simulation on Windows PC).
 
-The architectural boundary is clear:
+**Revision note (2026-07-11):** A single-language consolidation (either JavaScript-only or Python-only) remains viable and desirable **if and only if** the net effect is a simpler codebase. Migration to a single language that improves maintainability, reduces testing complexity, or eliminates boundary-management overhead may be warranted in a future ADR decision. The criterion is simplicity of the resulting system, not adherence to the current split.
+
+The architectural boundary (if dual-language is retained) is clear:
 - **JS side**: All real-time simulation, UI, interaction, player state, and event-driven game loop.
 - **Python side**: All static data definitions (parts, compatibility tables, movement families), save file I/O, analytics event emission, and catalog filtering.
 
@@ -69,6 +72,8 @@ The architectural boundary is clear:
 - Two build pipelines must be maintained (npm/Jest + Python/pytest).
 - Interop boundary (JSON files or IPC) must be explicitly documented so future agents don't accidentally mix runtime responsibilities.
 - TypeScript migration (if desired later) must be planned as a separate ADR.
+
+**Note:** A single-language consolidation would eliminate these multi-language overheads but would introduce different trade-offs (e.g., performance overhead if moving simulation to Python; dataclass expressiveness loss if moving data layer to JavaScript). Future ADRs should re-evaluate this choice when simplicity gains are demonstrable.
 
 ---
 
