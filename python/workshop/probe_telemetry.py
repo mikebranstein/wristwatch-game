@@ -222,10 +222,10 @@ class ProbeTelemetry:
             feedback_responses : list[dict]
             sufficient_data : bool              — True when both cohorts have ≥ MIN_COHORT_SAMPLE_SIZE
         """
-        probe_n, control_n = self._collect_session_counts()
-        probe_sourcing, probe_immediate = self._collect_start_behavior_stats()
-        slot2_count = self._collect_slot2_activations()
-        feedback_responses = self._collect_feedback_responses()
+        probe_n, control_n = collect_session_counts(self._records)
+        probe_sourcing, probe_immediate = collect_start_behavior_stats(self._records)
+        slot2_count = collect_slot2_activations(self._records)
+        feedback_responses = collect_feedback_responses(self._records)
 
         return {
             "probe_session_count": probe_n,
@@ -281,26 +281,6 @@ class ProbeTelemetry:
     def was_emitted(self, event_name: str) -> bool:
         """Return True if *event_name* was emitted at least once."""
         return any(r["name"] == event_name for r in self._records)
-
-    # -----------------------------------------------------------------------
-    # Private data-collection helpers (extracted from get_probe_data)
-    # -----------------------------------------------------------------------
-
-    def _collect_session_counts(self) -> tuple:
-        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
-        return collect_session_counts(self._records)
-
-    def _collect_start_behavior_stats(self) -> tuple:
-        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
-        return collect_start_behavior_stats(self._records)
-
-    def _collect_slot2_activations(self) -> int:
-        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
-        return collect_slot2_activations(self._records)
-
-    def _collect_feedback_responses(self) -> list:
-        """Thin delegation wrapper — delegates to the pure function in probe_data_summary."""
-        return collect_feedback_responses(self._records)
 
     # -----------------------------------------------------------------------
     # Internal helpers
