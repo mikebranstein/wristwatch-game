@@ -275,7 +275,7 @@ class TestSourceCodeCrossReference:
     """
 
     REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-    FSM_PATH = os.path.join(REPO_ROOT, "src", "reassembly", "AssemblyFeedbackStateMachine.js")
+    FSM_PATH = os.path.join(REPO_ROOT, "javascript", "reassembly", "AssemblyFeedbackStateMachine.js")
 
     def test_fsm_source_file_exists(self):
         """AssemblyFeedbackStateMachine.js must exist at the documented path."""
@@ -373,7 +373,7 @@ class TestSourceCodeCrossReference:
 
     def test_confidence_indicator_text_labels_present(self):
         """ConfidenceIndicator must define text label constants (not color-only states)."""
-        ci_path = os.path.join(self.REPO_ROOT, "src", "diagnosis", "ConfidenceIndicator.js")
+        ci_path = os.path.join(self.REPO_ROOT, "javascript", "diagnosis", "ConfidenceIndicator.js")
         with open(ci_path, "r", encoding="utf-8") as f:
             content = f.read()
         for label in ["Likely", "Possible", "Unlikely", "None"]:
