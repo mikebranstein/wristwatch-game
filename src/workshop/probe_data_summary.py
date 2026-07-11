@@ -4,9 +4,9 @@ probe_data_summary — Pure data-collection helpers for the Second Bench Probe.
 
 Issue #327: Extract probe data-collection helpers to pure functions.
 
-This module is the authoritative owner of the four event name constants used
-by the data-collection helpers.  probe_telemetry.py re-imports them from here
-so its public API remains unchanged (no breakage to existing callers or tests).
+This module imports and re-exports the event name constants used by the
+data-collection helpers so probe_telemetry.py can keep its public API unchanged
+without duplicating constant definitions.
 
 Pure functions
 --------------
@@ -17,10 +17,9 @@ side effects and do **not** depend on any instance state.
 Event constants
 ---------------
 EVENT_SESSION_FREQUENCY_PROBE, EVENT_SESSION_START_BEHAVIOR,
-EVENT_SLOT2_ACTIVATED, EVENT_FEEDBACK_RESPONSE are defined here because they
-are the primary dependency of the pure functions above.  Keeping them in this
-module prevents a circular import that would arise if probe_data_summary.py
-imported from probe_telemetry.py.
+EVENT_SLOT2_ACTIVATED, EVENT_FEEDBACK_RESPONSE are imported from
+probe_telemetry_constants.py and re-exported here for compatibility with
+existing callers and tests.
 """
 
 from __future__ import annotations
@@ -28,16 +27,12 @@ from __future__ import annotations
 from typing import List
 
 from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
-
-# ---------------------------------------------------------------------------
-# Event name constants (authoritative source — re-imported by probe_telemetry)
-# ---------------------------------------------------------------------------
-
-EVENT_SESSION_FREQUENCY_PROBE = "session_frequency_probe"
-EVENT_SESSION_START_BEHAVIOR  = "session_start_behavior_probe"
-EVENT_SLOT2_ACTIVATED         = "second_bench_slot_activated"
-EVENT_FEEDBACK_RESPONSE       = "second_bench_feedback_response"
-
+from src.workshop.probe_telemetry_constants import (
+    EVENT_FEEDBACK_RESPONSE,
+    EVENT_SESSION_FREQUENCY_PROBE,
+    EVENT_SESSION_START_BEHAVIOR,
+    EVENT_SLOT2_ACTIVATED,
+)
 
 # ---------------------------------------------------------------------------
 # Pure data-collection helpers

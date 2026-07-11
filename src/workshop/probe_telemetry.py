@@ -42,53 +42,12 @@ from typing import Any, Callable, Dict, List, Optional
 
 from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
 from src.workshop.probe_data_summary import (
-    EVENT_SESSION_FREQUENCY_PROBE,
-    EVENT_SESSION_START_BEHAVIOR,
-    EVENT_SLOT2_ACTIVATED,
-    EVENT_FEEDBACK_RESPONSE,
     collect_session_counts,
     collect_start_behavior_stats,
     collect_slot2_activations,
     collect_feedback_responses,
 )
-
-# ---------------------------------------------------------------------------
-# Event name constants
-# ---------------------------------------------------------------------------
-
-EVENT_COHORT_ASSIGNED            = "second_bench_cohort_assigned"
-# EVENT_SESSION_FREQUENCY_PROBE, EVENT_SESSION_START_BEHAVIOR,
-# EVENT_SLOT2_ACTIVATED, EVENT_FEEDBACK_RESPONSE are imported from
-# probe_data_summary (authoritative owner) and re-exported here so that
-# existing callers/tests that import them from probe_telemetry continue to work.
-EVENT_FEEDBACK_PROMPTED          = "second_bench_feedback_prompted"
-
-PROBE_EVENTS_ALL = (
-    EVENT_COHORT_ASSIGNED,
-    EVENT_SESSION_FREQUENCY_PROBE,
-    EVENT_SESSION_START_BEHAVIOR,
-    EVENT_SLOT2_ACTIVATED,
-    EVENT_FEEDBACK_PROMPTED,
-    EVENT_FEEDBACK_RESPONSE,
-)
-
-# ---------------------------------------------------------------------------
-# Probe outcome verdicts (AC5)
-# ---------------------------------------------------------------------------
-
-PROBE_VERDICT_VALIDATE   = "VALIDATE"
-PROBE_VERDICT_ITERATE    = "ITERATE"
-PROBE_VERDICT_INVALIDATE = "INVALIDATE"
-
-# Default success threshold: 15% session-frequency uplift in the probe arm.
-# Overridable based on FR1-defined threshold findings.
-DEFAULT_SUCCESS_THRESHOLD_PCT = 15.0
-
-# Minimum recommended sample size per cohort (from issue scope).
-MIN_COHORT_SAMPLE_SIZE = 50
-
-# Seconds in two weeks — used for the qualitative feedback prompt gate.
-_TWO_WEEKS_SECONDS = 14 * 24 * 3600
+from src.workshop.probe_telemetry_constants import *  # noqa: F401,F403  (intentional re-export)
 
 
 class ProbeTelemetry:
