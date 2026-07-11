@@ -98,19 +98,19 @@ describe('AC2 — Electron+Pixi.js PoC structure and module import verification'
     expect(fs.existsSync(ELECTRON_MAIN)).toBe(true);
   });
 
-  test('PoC main.js imports TelemetryEmitter from src/ without modification', () => {
+  test('PoC main.js imports TelemetryEmitter from javascript/ without modification', () => {
     const content = fs.readFileSync(ELECTRON_MAIN, 'utf8');
-    expect(content).toMatch(/require.*src\/telemetry\/TelemetryEmitter/);
+    expect(content).toMatch(/require.*javascript\/telemetry\/TelemetryEmitter/);
   });
 
-  test('PoC main.js imports HintSystem from src/ without modification', () => {
+  test('PoC main.js imports HintSystem from javascript/ without modification', () => {
     const content = fs.readFileSync(ELECTRON_MAIN, 'utf8');
-    expect(content).toMatch(/require.*src\/diagnosis\/HintSystem/);
+    expect(content).toMatch(/require.*javascript\/diagnosis\/HintSystem/);
   });
 
-  test('PoC main.js imports PlayerSaveState from src/ without modification', () => {
+  test('PoC main.js imports PlayerSaveState from javascript/ without modification', () => {
     const content = fs.readFileSync(ELECTRON_MAIN, 'utf8');
-    expect(content).toMatch(/require.*src\/state\/PlayerSaveState/);
+    expect(content).toMatch(/require.*javascript\/state\/PlayerSaveState/);
   });
 
   test('verify-module-imports.js script exists', () => {
@@ -123,12 +123,12 @@ describe('AC2 — Electron+Pixi.js PoC structure and module import verification'
 
   test('TelemetryEmitter: require() succeeds without source modification', () => {
     expect(() => {
-      require(path.join(PROJECT_ROOT, 'src/telemetry/TelemetryEmitter'));
+      require(path.join(PROJECT_ROOT, 'javascript/telemetry/TelemetryEmitter'));
     }).not.toThrow();
   });
 
   test('TelemetryEmitter: constructs and emits an event', () => {
-    const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'src/telemetry/TelemetryEmitter'));
+    const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'javascript/telemetry/TelemetryEmitter'));
     const t = new TelemetryEmitter(() => {});
     t.tutorialDiagnosisStarted('test-inst');
     expect(t.wasEmitted('tutorial_diagnosis_started')).toBe(true);
@@ -136,13 +136,13 @@ describe('AC2 — Electron+Pixi.js PoC structure and module import verification'
 
   test('HintSystem: require() succeeds without source modification', () => {
     expect(() => {
-      require(path.join(PROJECT_ROOT, 'src/diagnosis/HintSystem'));
+      require(path.join(PROJECT_ROOT, 'javascript/diagnosis/HintSystem'));
     }).not.toThrow();
   });
 
   test('HintSystem: constructs and registers a fault instance', () => {
-    const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'src/telemetry/TelemetryEmitter'));
-    const { HintSystem }       = require(path.join(PROJECT_ROOT, 'src/diagnosis/HintSystem'));
+    const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'javascript/telemetry/TelemetryEmitter'));
+    const { HintSystem }       = require(path.join(PROJECT_ROOT, 'javascript/diagnosis/HintSystem'));
     const t = new TelemetryEmitter(() => {});
     const h = new HintSystem(t);
     h.registerFaultInstance('fi-test', 'mainspring_worn');
@@ -151,12 +151,12 @@ describe('AC2 — Electron+Pixi.js PoC structure and module import verification'
 
   test('PlayerSaveState: require() succeeds without source modification', () => {
     expect(() => {
-      require(path.join(PROJECT_ROOT, 'src/state/PlayerSaveState'));
+      require(path.join(PROJECT_ROOT, 'javascript/state/PlayerSaveState'));
     }).not.toThrow();
   });
 
   test('PlayerSaveState: constructs without error', () => {
-    const { PlayerSaveState } = require(path.join(PROJECT_ROOT, 'src/state/PlayerSaveState'));
+    const { PlayerSaveState } = require(path.join(PROJECT_ROOT, 'javascript/state/PlayerSaveState'));
     expect(() => new PlayerSaveState()).not.toThrow();
   });
 });

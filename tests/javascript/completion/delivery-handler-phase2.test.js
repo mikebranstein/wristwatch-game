@@ -14,8 +14,8 @@
 
 'use strict';
 
-const { DeliveryHandler } = require('../../../src/completion/DeliveryHandler');
-const { JobQualityAggregator } = require('../../../src/completion/JobQualityAggregator');
+const { DeliveryHandler } = require('../../../javascript/completion/DeliveryHandler');
+const { JobQualityAggregator } = require('../../../javascript/completion/JobQualityAggregator');
 
 // ---------------------------------------------------------------------------
 // Helpers

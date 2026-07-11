@@ -13,7 +13,7 @@
  * Scenario 2: Full hint-assisted path — all hint events + diagnosis_completed_with_hint fire in order.
  */
 
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

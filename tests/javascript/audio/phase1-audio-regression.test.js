@@ -1,12 +1,12 @@
 'use strict';
 
-const { AudioDesignSystem } = require('../../../src/audio/AudioDesignSystem');
-const { AudioVolumeSettings } = require('../../../src/audio/AudioVolumeSettings');
-const { RevealAudioController } = require('../../../src/cleaning/RevealAudioController');
-const { FirstTickAudioController } = require('../../../src/completion/FirstTickAudioController');
-const { CaseBackAudioController } = require('../../../src/completion/CaseBackAudioController');
-const { ToolPickupAudioController } = require('../../../src/teardown/ToolPickupAudioController');
-const { DeliveryAudioController } = require('../../../src/completion/DeliveryAudioController');
+const { AudioDesignSystem } = require('../../../javascript/audio/AudioDesignSystem');
+const { AudioVolumeSettings } = require('../../../javascript/audio/AudioVolumeSettings');
+const { RevealAudioController } = require('../../../javascript/cleaning/RevealAudioController');
+const { FirstTickAudioController } = require('../../../javascript/completion/FirstTickAudioController');
+const { CaseBackAudioController } = require('../../../javascript/completion/CaseBackAudioController');
+const { ToolPickupAudioController } = require('../../../javascript/teardown/ToolPickupAudioController');
+const { DeliveryAudioController } = require('../../../javascript/completion/DeliveryAudioController');
 
 describe('AC5 — Phase 1 audio events remain regression-free through AudioDesignSystem', () => {
   beforeEach(() => jest.useFakeTimers());

@@ -22,10 +22,10 @@
 const {
   GuidedJobOnboardingController,
   PLACEHOLDER_STEP_CONFIG,
-} = require('../../../src/tutorials/GuidedJobOnboardingController');
-const { ComponentHighlightController } = require('../../../src/tutorials/ComponentHighlightController');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+} = require('../../../javascript/tutorials/GuidedJobOnboardingController');
+const { ComponentHighlightController } = require('../../../javascript/tutorials/ComponentHighlightController');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Test Helpers ─────────────────────────────────────────────────────────────
 

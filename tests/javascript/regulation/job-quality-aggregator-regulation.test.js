@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const { JobQualityAggregator, ALL_DIMENSIONS } = require('../../../src/completion/JobQualityAggregator');
+const { JobQualityAggregator, ALL_DIMENSIONS } = require('../../../javascript/completion/JobQualityAggregator');
 
 function makeSaveState(initial = {}) {
   const store = Object.assign({

@@ -11,8 +11,8 @@
  */
 'use strict';
 
-const { TimegrapherDisplay } = require('../../../src/regulation/TimegrapherDisplay');
-const { GRADES, GRADE_THRESHOLDS } = require('../../../src/regulation/RegulationConfig');
+const { TimegrapherDisplay } = require('../../../javascript/regulation/TimegrapherDisplay');
+const { GRADES, GRADE_THRESHOLDS } = require('../../../javascript/regulation/RegulationConfig');
 
 function makeDisplay(opts = {}) {
   const renders = [];

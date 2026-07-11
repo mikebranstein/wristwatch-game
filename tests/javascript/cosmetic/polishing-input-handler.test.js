@@ -7,7 +7,7 @@
  */
 
 const { PolishingInputHandler, MAX_DELTA_PER_EVENT, MIN_DELTA } =
-  require('../../../src/cosmetic/PolishingInputHandler');
+  require('../../../javascript/cosmetic/PolishingInputHandler');
 
 function makeHandler(overrides = {}) {
   const onProgressUpdate = overrides.onProgressUpdate || jest.fn();

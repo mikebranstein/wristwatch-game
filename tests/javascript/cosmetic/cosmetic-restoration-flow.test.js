@@ -11,18 +11,18 @@
  * AC9  — summary reports 'Cosmetically Restored' after all phases
  */
 
-jest.mock('../../../src/cosmetic/SurfaceConditionShader');
-jest.mock('../../../src/cosmetic/PolishingInputHandler');
-jest.mock('../../../src/cosmetic/PolishingRevealSequence');
-jest.mock('../../../src/cosmetic/CosmeticRestorationSummary');
+jest.mock('../../../javascript/cosmetic/SurfaceConditionShader');
+jest.mock('../../../javascript/cosmetic/PolishingInputHandler');
+jest.mock('../../../javascript/cosmetic/PolishingRevealSequence');
+jest.mock('../../../javascript/cosmetic/CosmeticRestorationSummary');
 
 const { CosmeticRestorationFlow, FLOW_STATE } =
-  require('../../../src/cosmetic/CosmeticRestorationFlow');
-const { SurfaceConditionShader }    = require('../../../src/cosmetic/SurfaceConditionShader');
-const { PolishingInputHandler }      = require('../../../src/cosmetic/PolishingInputHandler');
-const { PolishingRevealSequence }    = require('../../../src/cosmetic/PolishingRevealSequence');
+  require('../../../javascript/cosmetic/CosmeticRestorationFlow');
+const { SurfaceConditionShader }    = require('../../../javascript/cosmetic/SurfaceConditionShader');
+const { PolishingInputHandler }      = require('../../../javascript/cosmetic/PolishingInputHandler');
+const { PolishingRevealSequence }    = require('../../../javascript/cosmetic/PolishingRevealSequence');
 const { CosmeticRestorationSummary, PHASES } =
-  require('../../../src/cosmetic/CosmeticRestorationSummary');
+  require('../../../javascript/cosmetic/CosmeticRestorationSummary');
 
 function makeFlow(overrides = {}) {
   return new CosmeticRestorationFlow({

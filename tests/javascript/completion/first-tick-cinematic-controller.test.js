@@ -1,16 +1,16 @@
 'use strict';
 
-const { FirstTickCinematicController } = require('../../../src/completion/FirstTickCinematicController');
+const { FirstTickCinematicController } = require('../../../javascript/completion/FirstTickCinematicController');
 const {
   AUDIO_CUES,
   MIN_SILENCE_GATE_MS,
-} = require('../../../src/completion/FirstTickAudioController');
+} = require('../../../javascript/completion/FirstTickAudioController');
 const {
   DEFAULT_ANIMATION_IN_MS,
   DEFAULT_ANIMATION_OUT_MS,
   MIN_HOLD_DURATION_MS,
   MAX_HOLD_DURATION_MS,
-} = require('../../../src/completion/CameraAnimationSystem');
+} = require('../../../javascript/completion/CameraAnimationSystem');
 
 function makeHarness(overrides = {}) {
   const viewState = {

@@ -10,8 +10,8 @@
  * Scenario 9: Performance — overlay renders within 1 second on minimum spec.
  */
 
-const { SymptomOverlay } = require('../../../src/diagnosis/SymptomOverlay');
-const { SYMPTOM_PARTS_MAP, getPartsForSymptom } = require('../../../src/data/symptom-parts-map');
+const { SymptomOverlay } = require('../../../javascript/diagnosis/SymptomOverlay');
+const { SYMPTOM_PARTS_MAP, getPartsForSymptom } = require('../../../javascript/data/symptom-parts-map');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@
  *   - EVENTS constants include all three new event names.
  */
 
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -4,7 +4,7 @@
  * Run with: npm test
  */
 
-const { SourcingScreen } = require('../../../src/sourcing/SourcingScreen');
+const { SourcingScreen } = require('../../../javascript/sourcing/SourcingScreen');
 
 const noop = () => {};
 const makeOpts = (overrides = {}) => ({

@@ -36,7 +36,7 @@ const {
   EVENT_TYPES,
   TOOLTIP_INTERACTIONS,
   FIRST_JOB_STEPS,
-} = require('../../../src/onboarding/AnnotationRubric');
+} = require('../../../javascript/onboarding/AnnotationRubric');
 
 // ─── Rubric construction guards ───────────────────────────────────────────────
 

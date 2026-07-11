@@ -1,5 +1,5 @@
 'use strict';
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 describe('PlayerSaveState ab_audio_cohort (Issue #128)', () => {
   test('defaults to null', () => { expect(new PlayerSaveState().get('ab_audio_cohort')).toBeNull(); });
   test('present in snapshot', () => { expect(new PlayerSaveState().snapshot()).toHaveProperty('ab_audio_cohort', null); });

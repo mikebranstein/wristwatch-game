@@ -19,7 +19,7 @@ const {
   pickScatterLayout,
   getCanonicalPosition,
   getSupportedWatchModels,
-} = require('../../../src/reassembly/ScatterLayout');
+} = require('../../../javascript/reassembly/ScatterLayout');
 
 // ─── Layout library structure ─────────────────────────────────────────────────
 

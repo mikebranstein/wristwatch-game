@@ -18,7 +18,7 @@ const {
   ComponentPositionValidator,
   DEFAULT_COMPONENT_TOLERANCES,
   FALLBACK_TOLERANCE,
-} = require('../../../src/reassembly/ComponentPositionValidator');
+} = require('../../../javascript/reassembly/ComponentPositionValidator');
 
 // ─── Default tolerance values ─────────────────────────────────────────────────
 

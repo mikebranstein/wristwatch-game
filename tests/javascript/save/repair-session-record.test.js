@@ -12,8 +12,8 @@
 
 'use strict';
 
-const { RepairSessionRecord } = require('../../../src/save/RepairSessionRecord');
-const { FastenerState } = require('../../../src/disassembly/FastenerState');
+const { RepairSessionRecord } = require('../../../javascript/save/RepairSessionRecord');
+const { FastenerState } = require('../../../javascript/disassembly/FastenerState');
 
 // ─── Basic construction and core fields ──────────────────────────────────────
 

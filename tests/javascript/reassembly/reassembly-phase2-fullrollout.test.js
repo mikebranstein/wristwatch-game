@@ -15,12 +15,12 @@
  *          event fires for all sessions (no cohort gating).
  */
 
-const { ReassemblyScreen }       = require('../../../src/reassembly/ReassemblyScreen');
+const { ReassemblyScreen }       = require('../../../javascript/reassembly/ReassemblyScreen');
 const { ReassemblyMicroConfirmationController, COHORTS, AUDIO_CUE } =
-  require('../../../src/reassembly/ReassemblyMicroConfirmationController');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
-const { SNAP_ZONES }              = require('../../../src/reassembly/SnapZoneTolerance');
-const { STATES }                  = require('../../../src/reassembly/AssemblyFeedbackStateMachine');
+  require('../../../javascript/reassembly/ReassemblyMicroConfirmationController');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
+const { SNAP_ZONES }              = require('../../../javascript/reassembly/SnapZoneTolerance');
+const { STATES }                  = require('../../../javascript/reassembly/AssemblyFeedbackStateMachine');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

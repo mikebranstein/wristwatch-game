@@ -12,7 +12,7 @@
  * Test Scenario 10: COMPLICATION_GATE_REACHED fires pre-launch for D30 baseline.
  */
 
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

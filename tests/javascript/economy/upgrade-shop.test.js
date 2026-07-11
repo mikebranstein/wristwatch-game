@@ -15,8 +15,8 @@
 
 'use strict';
 
-const { LedgerManager }                    = require('../../../src/economy/LedgerManager');
-const { UpgradeShop, ALL_UPGRADE_IDS }     = require('../../../src/economy/UpgradeShop');
+const { LedgerManager }                    = require('../../../javascript/economy/LedgerManager');
+const { UpgradeShop, ALL_UPGRADE_IDS }     = require('../../../javascript/economy/UpgradeShop');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

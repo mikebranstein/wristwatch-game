@@ -12,7 +12,7 @@
 
 'use strict';
 
-const { DamageRecoveryPrompt, PROMPT_STATE, PLAYER_CHOICE } = require('../../../src/damage/DamageRecoveryPrompt');
+const { DamageRecoveryPrompt, PROMPT_STATE, PLAYER_CHOICE } = require('../../../javascript/damage/DamageRecoveryPrompt');
 
 function makePrompt({ onOrder = jest.fn(), onDecline = jest.fn() } = {}) {
   return new DamageRecoveryPrompt({ onOrder, onDecline });

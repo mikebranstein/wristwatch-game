@@ -6,8 +6,8 @@
  */
 'use strict';
 
-const { RegulatorSimulator } = require('../../../src/regulation/RegulatorSimulator');
-const { REGULATOR_INDEX, LINEAR_SENSITIVITY_CONSTANT } = require('../../../src/regulation/RegulationConfig');
+const { RegulatorSimulator } = require('../../../javascript/regulation/RegulatorSimulator');
+const { REGULATOR_INDEX, LINEAR_SENSITIVITY_CONSTANT } = require('../../../javascript/regulation/RegulationConfig');
 
 describe('RegulatorSimulator', () => {
   describe('constructor', () => {
@@ -27,7 +27,7 @@ describe('RegulatorSimulator', () => {
     });
 
     it('seeds random deviation within configured range when no override', () => {
-      const { INITIAL_DEVIATION_RANGE } = require('../../../src/regulation/RegulationConfig');
+      const { INITIAL_DEVIATION_RANGE } = require('../../../javascript/regulation/RegulationConfig');
       const sim = new RegulatorSimulator();
       const abs = Math.abs(sim.getInitialDeviation());
       expect(abs).toBeGreaterThanOrEqual(INITIAL_DEVIATION_RANGE.MIN_ABS);

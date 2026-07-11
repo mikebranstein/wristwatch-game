@@ -12,7 +12,7 @@ const {
   CLIP_WINDOW_MAX_S,
   BEFORE_AFTER_MIN_S,
   DEFAULT_PHASES,
-} = require('../../../src/cleaning/ClipSequencePacer');
+} = require('../../../javascript/cleaning/ClipSequencePacer');
 
 // ── Construction ──────────────────────────────────────────────────────────────
 

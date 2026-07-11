@@ -32,7 +32,7 @@ const {
   MIN_COHORT_SIZE,
   PREFERRED_COHORT_SIZE,
   CONFUSION_PAUSE_THRESHOLD_SECONDS,
-} = require('../../../src/telemetry/PlaytestAnnotationFramework');
+} = require('../../../javascript/telemetry/PlaytestAnnotationFramework');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -725,7 +725,7 @@ describe('Regression — TelemetryEmitter untouched (no game code changes)', () 
   let TelemetryEmitter, EVENTS;
 
   beforeAll(() => {
-    ({ TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter'));
+    ({ TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter'));
   });
 
   test('EVENTS.TUTORIAL_DIAGNOSIS_STARTED unchanged', () => {
@@ -747,7 +747,7 @@ describe('Regression — TelemetryEmitter untouched (no game code changes)', () 
 
   test('PlaytestAnnotationFramework does not modify TelemetryEmitter', () => {
     // Importing the framework should not change TelemetryEmitter behaviour
-    const { PlaytestCohort: C } = require('../../../src/telemetry/PlaytestAnnotationFramework');
+    const { PlaytestCohort: C } = require('../../../javascript/telemetry/PlaytestAnnotationFramework');
     const emitter = new TelemetryEmitter(() => {});
     expect(emitter.wasEmitted).toBeDefined(); // existing method still present
   });

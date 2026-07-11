@@ -7,8 +7,8 @@
  * backend orchestrator class (distinct from AccessibilitySettingsScreen.js).
  */
 
-const { AccessibilitySettings } = require('../../../src/accessibility/AccessibilitySettings');
-const { DEFAULT_AUDIO_VOLUME } = require('../../../src/audio/AudioVolumeSettings');
+const { AccessibilitySettings } = require('../../../javascript/accessibility/AccessibilitySettings');
+const { DEFAULT_AUDIO_VOLUME } = require('../../../javascript/audio/AudioVolumeSettings');
 
 // ---------------------------------------------------------------------------
 // AC3a — Constructor stores audioVolumeApplier callback and initialises

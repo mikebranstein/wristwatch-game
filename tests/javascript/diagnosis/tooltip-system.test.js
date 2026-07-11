@@ -11,8 +11,8 @@
  * tooltips.
  */
 
-const { TooltipSystem } = require('../../../src/tooltips/TooltipSystem');
-const { GLOSSARY, getAllTermKeys } = require('../../../src/tooltips/HorologyGlossary');
+const { TooltipSystem } = require('../../../javascript/tooltips/TooltipSystem');
+const { GLOSSARY, getAllTermKeys } = require('../../../javascript/tooltips/HorologyGlossary');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

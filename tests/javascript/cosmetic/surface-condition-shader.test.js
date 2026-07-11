@@ -7,7 +7,7 @@
  */
 
 const { SurfaceConditionShader, PERCEPTIBLE_THRESHOLD } =
-  require('../../../src/cosmetic/SurfaceConditionShader');
+  require('../../../javascript/cosmetic/SurfaceConditionShader');
 
 function makeShader(overrides = {}) {
   return new SurfaceConditionShader(

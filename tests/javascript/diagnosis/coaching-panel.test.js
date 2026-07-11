@@ -29,7 +29,7 @@ const {
   PANEL_STATE,
   MISTAKE_TYPE,
   COACHING_COPY,
-} = require('../../../src/diagnosis/CoachingPanel');
+} = require('../../../javascript/diagnosis/CoachingPanel');
 
 // ── Construction ──────────────────────────────────────────────────────────────
 
@@ -253,7 +253,7 @@ describe('CoachingPanel — AC4: non-blocking (pure state layer)', () => {
   test('CoachingPanel does not import any DOM or canvas modules', () => {
     // Pure state: require() should succeed in Node (no DOM globals needed).
     // This test passing in Node confirms no renderer dependency.
-    const { CoachingPanel: CP } = require('../../../src/diagnosis/CoachingPanel');
+    const { CoachingPanel: CP } = require('../../../javascript/diagnosis/CoachingPanel');
     expect(typeof CP).toBe('function');
   });
 
@@ -489,7 +489,7 @@ describe('CoachingPanel — exported constants', () => {
 
 describe('CoachingPanel — Scenario 10: regression — HintSystem untouched', () => {
   test('HintSystem module can still be required and constructed independently', () => {
-    const { HintSystem } = require('../../../src/diagnosis/HintSystem');
+    const { HintSystem } = require('../../../javascript/diagnosis/HintSystem');
     const mockTelemetry = {
       hintTier1Shown: jest.fn(),
       hintTier2Shown: jest.fn(),
@@ -502,7 +502,7 @@ describe('CoachingPanel — Scenario 10: regression — HintSystem untouched', (
   });
 
   test('CoachingPanel and HintSystem can coexist independently in the same session', () => {
-    const { HintSystem } = require('../../../src/diagnosis/HintSystem');
+    const { HintSystem } = require('../../../javascript/diagnosis/HintSystem');
     const mockTelemetry = {
       hintTier1Shown: jest.fn(),
       hintTier2Shown: jest.fn(),

@@ -1,5 +1,5 @@
 'use strict';
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 const mk = () => { const hook = jest.fn(); return { emitter: new TelemetryEmitter(hook), hook }; };
 describe('TelemetryEmitter audio events (Issue #128)', () => {
   test('AUDIO_SESSION_START', () => { expect(EVENTS.AUDIO_SESSION_START).toBe('audio_session_start'); });

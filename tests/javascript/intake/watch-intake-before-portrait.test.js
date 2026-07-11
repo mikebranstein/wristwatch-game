@@ -1,6 +1,6 @@
 'use strict';
 
-const { WatchIntake } = require('../../../src/intake/WatchIntake');
+const { WatchIntake } = require('../../../javascript/intake/WatchIntake');
 
 describe('WatchIntake.captureBeforePortraitUrl — Issue #129', () => {
   test('returns watchId and before_portrait_url when a URL is provided', () => {

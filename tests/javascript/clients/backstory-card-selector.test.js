@@ -1,8 +1,8 @@
 'use strict';
 
-const { BackstoryCardSelector, WATCH_TYPE_POOL_MAP, CLIENT_PERSONAS } = require('../../../src/clients/BackstoryCardSelector');
-const { BACKSTORY_TEMPLATES } = require('../../../src/data/backstory_templates');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { BackstoryCardSelector, WATCH_TYPE_POOL_MAP, CLIENT_PERSONAS } = require('../../../javascript/clients/BackstoryCardSelector');
+const { BACKSTORY_TEMPLATES } = require('../../../javascript/data/backstory_templates');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 function makeSelector(overrides = {}) {
   return new BackstoryCardSelector({

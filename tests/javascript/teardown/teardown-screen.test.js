@@ -4,7 +4,7 @@
  * Run with: npm test
  */
 
-const { TeardownScreen } = require('../../../src/teardown/TeardownScreen');
+const { TeardownScreen } = require('../../../javascript/teardown/TeardownScreen');
 
 const noop = () => {};
 const makeOpts = (overrides = {}) => ({

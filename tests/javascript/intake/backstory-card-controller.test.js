@@ -23,16 +23,16 @@
 
 'use strict';
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 const {
   BackstoryCardController,
   COHORT_BACKSTORY,
   COHORT_CONTROL,
   VARIABLE_FALLBACKS,
   RECENCY_BUFFER_SIZE,
-} = require('../../../src/intake/BackstoryCardController');
-const { BACKSTORY_TEMPLATES, WATCH_TYPES } = require('../../../src/data/backstory-templates');
+} = require('../../../javascript/intake/BackstoryCardController');
+const { BACKSTORY_TEMPLATES, WATCH_TYPES } = require('../../../javascript/data/backstory-templates');
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 

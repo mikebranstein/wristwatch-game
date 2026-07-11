@@ -17,7 +17,7 @@
 
 'use strict';
 
-const { SourcingScreen, CONDITION_ORDER, SOURCING_THRESHOLD } = require('../../../src/sourcing/SourcingScreen');
+const { SourcingScreen, CONDITION_ORDER, SOURCING_THRESHOLD } = require('../../../javascript/sourcing/SourcingScreen');
 
 // ---------------------------------------------------------------------------
 // Helper

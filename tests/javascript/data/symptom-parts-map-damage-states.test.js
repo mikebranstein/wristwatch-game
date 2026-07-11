@@ -11,7 +11,7 @@ const {
   SYMPTOM_PARTS_MAP,
   getPartsForSymptom,
   getAllSymptomKeys,
-} = require('../../../src/data/symptom-parts-map');
+} = require('../../../javascript/data/symptom-parts-map');
 
 describe('symptom-parts-map: Phase 1 damage state symptom keys present', () => {
   test('water_damage_visible maps to gasket, crown, crystal (pre-existing, unchanged)', () => {

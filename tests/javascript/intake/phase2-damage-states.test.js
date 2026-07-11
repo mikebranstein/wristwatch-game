@@ -24,7 +24,7 @@ const {
   getPhase2VisualCues,
   getAllPhase2DamageStateDescriptors,
   isPhase2DamageState,
-} = require('../../../src/intake/Phase2DamageStates');
+} = require('../../../javascript/intake/Phase2DamageStates');
 
 const {
   WatchIntake,
@@ -33,7 +33,7 @@ const {
   ALL_DAMAGE_STATE_VISUAL_CUES,
   DEFAULT_INTAKE_CONFIG,
   PHASE2_INTAKE_CONFIG,
-} = require('../../../src/intake/WatchIntake');
+} = require('../../../javascript/intake/WatchIntake');
 
 // ─── Deterministic RNG helpers ────────────────────────────────────────────────
 

@@ -6,15 +6,15 @@
 
 // Mock all subsystems (BeforeAfterUI requires injected functions — mock it so
 // CleaningRevealSequence can be constructed without wiring up real render hooks).
-jest.mock('../../../src/cleaning/RevealAnimation');
-jest.mock('../../../src/cleaning/RevealAudioController');
-jest.mock('../../../src/cleaning/BeforeAfterUI');
-jest.mock('../../../src/cleaning/CinematicCameraController');
-jest.mock('../../../src/cleaning/ClipSequencePacer');
-jest.mock('../../../src/telemetry/TelemetryEmitter');
+jest.mock('../../../javascript/cleaning/RevealAnimation');
+jest.mock('../../../javascript/cleaning/RevealAudioController');
+jest.mock('../../../javascript/cleaning/BeforeAfterUI');
+jest.mock('../../../javascript/cleaning/CinematicCameraController');
+jest.mock('../../../javascript/cleaning/ClipSequencePacer');
+jest.mock('../../../javascript/telemetry/TelemetryEmitter');
 
-const { CleaningRevealSequence } = require('../../../src/cleaning/CleaningRevealSequence');
-const { CinematicCameraController } = require('../../../src/cleaning/CinematicCameraController');
+const { CleaningRevealSequence } = require('../../../javascript/cleaning/CleaningRevealSequence');
+const { CinematicCameraController } = require('../../../javascript/cleaning/CinematicCameraController');
 
 // Minimal stubs for all required hooks
 const noop = () => {};

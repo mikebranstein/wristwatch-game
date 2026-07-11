@@ -17,7 +17,7 @@ const {
   CompletionRevealAudioController,
   COMPLETION_AUDIO_CUES,
   COMPLETION_AUDIO_STATE,
-} = require('../../../src/completion/CompletionRevealAudioController');
+} = require('../../../javascript/completion/CompletionRevealAudioController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

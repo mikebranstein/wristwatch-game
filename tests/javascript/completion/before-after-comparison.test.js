@@ -21,9 +21,9 @@
 const {
   BeforeAfterComparison,
   AFTER_DESCRIPTIONS,
-} = require('../../../src/completion/BeforeAfterComparison');
+} = require('../../../javascript/completion/BeforeAfterComparison');
 
-const { PHASE1_DAMAGE_STATES } = require('../../../src/intake/WatchIntake');
+const { PHASE1_DAMAGE_STATES } = require('../../../javascript/intake/WatchIntake');
 
 // ─── AC5: buildPayload for all Phase 1 damage states ──────────────────────────
 

@@ -29,7 +29,7 @@ const {
   OVERLAY_STATE,
   COPY_REGISTRY,
   MAX_SCREEN_AREA_PERCENT,
-} = require('../../../src/completion/SharePromptOverlay');
+} = require('../../../javascript/completion/SharePromptOverlay');
 
 // ── Construction ──────────────────────────────────────────────────────────────
 

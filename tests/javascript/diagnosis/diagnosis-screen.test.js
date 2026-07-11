@@ -8,26 +8,26 @@
  * DiagnosisScreen.js (currently 0% — PRIMARY BLOCKER).
  */
 
-const { DiagnosisScreen } = require('../../../src/diagnosis/DiagnosisScreen');
-const { SymptomOverlay } = require('../../../src/diagnosis/SymptomOverlay');
-const { HintSystem } = require('../../../src/diagnosis/HintSystem');
-const { ConfidenceIndicator } = require('../../../src/diagnosis/ConfidenceIndicator');
-const { TooltipSystem } = require('../../../src/tooltips/TooltipSystem');
-const { TutorialOverlay } = require('../../../src/tutorials/TutorialOverlay');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { DiagnosisScreen } = require('../../../javascript/diagnosis/DiagnosisScreen');
+const { SymptomOverlay } = require('../../../javascript/diagnosis/SymptomOverlay');
+const { HintSystem } = require('../../../javascript/diagnosis/HintSystem');
+const { ConfidenceIndicator } = require('../../../javascript/diagnosis/ConfidenceIndicator');
+const { TooltipSystem } = require('../../../javascript/tooltips/TooltipSystem');
+const { TutorialOverlay } = require('../../../javascript/tutorials/TutorialOverlay');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 // ─── Mock all subsystem modules ────────────────────────────────────────────────
 // DiagnosisScreen constructs these internally; mocking them here replaces every
 // constructor and prototype method with a jest.fn() so we can verify delegation.
 
-jest.mock('../../../src/diagnosis/SymptomOverlay');
-jest.mock('../../../src/diagnosis/HintSystem');
-jest.mock('../../../src/diagnosis/ConfidenceIndicator');
-jest.mock('../../../src/tooltips/TooltipSystem');
-jest.mock('../../../src/tutorials/TutorialOverlay');
-jest.mock('../../../src/telemetry/TelemetryEmitter');
-jest.mock('../../../src/state/PlayerSaveState');
+jest.mock('../../../javascript/diagnosis/SymptomOverlay');
+jest.mock('../../../javascript/diagnosis/HintSystem');
+jest.mock('../../../javascript/diagnosis/ConfidenceIndicator');
+jest.mock('../../../javascript/tooltips/TooltipSystem');
+jest.mock('../../../javascript/tutorials/TutorialOverlay');
+jest.mock('../../../javascript/telemetry/TelemetryEmitter');
+jest.mock('../../../javascript/state/PlayerSaveState');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

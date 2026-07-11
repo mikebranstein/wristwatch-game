@@ -1,9 +1,9 @@
 'use strict';
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
-const { DeliveryHandler } = require('../../../src/completion/DeliveryHandler');
-const { CollectionGallery, PAGE_SIZE, EMPTY_STATE_MESSAGE } = require('../../../src/ui/CollectionGallery');
-const { WorkshopHubNav } = require('../../../src/ui/WorkshopHubNav');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
+const { DeliveryHandler } = require('../../../javascript/completion/DeliveryHandler');
+const { CollectionGallery, PAGE_SIZE, EMPTY_STATE_MESSAGE } = require('../../../javascript/ui/CollectionGallery');
+const { WorkshopHubNav } = require('../../../javascript/ui/WorkshopHubNav');
 
 const makeEntry = (overrides = {}) => ({
   watch_name: 'Omega Seamaster',

@@ -45,7 +45,7 @@ function cleanup(dir) {
 // ---------------------------------------------------------------------------
 
 describe('Scenario 1 — Boundary violation: Python file in JS-only path', () => {
-  const jsOnlyPaths = ['src/audio', 'src/completion', 'src/economy', 'src/intake'];
+  const jsOnlyPaths = ['javascript/audio', 'javascript/completion', 'javascript/economy', 'javascript/intake'];
 
   test.each(jsOnlyPaths)(
     'reports violation for .py file under %s',
@@ -68,7 +68,7 @@ describe('Scenario 1 — Boundary violation: Python file in JS-only path', () =>
 
   test('violation includes the offending file path', () => {
     const tmp = makeTempRepo({
-      'src/audio/unexpected.py': '# wrong layer\n',
+      'javascript/audio/unexpected.py': '# wrong layer\n',
     });
     try {
       const violations = checkBoundary(tmp);
@@ -85,7 +85,7 @@ describe('Scenario 1 — Boundary violation: Python file in JS-only path', () =>
 // ---------------------------------------------------------------------------
 
 describe('Scenario 2 — Boundary violation: JS file in Python-only path', () => {
-  const pyOnlyPaths = ['src/analytics', 'src/catalog', 'src/orders', 'src/config'];
+  const pyOnlyPaths = ['python/analytics', 'python/catalog', 'python/orders', 'python/config'];
 
   test.each(pyOnlyPaths)(
     'reports violation for .js file under %s',
@@ -108,7 +108,7 @@ describe('Scenario 2 — Boundary violation: JS file in Python-only path', () =>
 
   test('violation includes the offending file path', () => {
     const tmp = makeTempRepo({
-      'src/analytics/unexpected.js': 'module.exports = {};',
+      'python/analytics/unexpected.js': 'module.exports = {};',
     });
     try {
       const violations = checkBoundary(tmp);
@@ -148,38 +148,37 @@ describe('Scenario 3 — Clean baseline: no boundary violations in unmodified re
 
 describe('Path classification', () => {
   test('PYTHON_ONLY_DIRS contains required Python data/persistence paths', () => {
-    expect(PYTHON_ONLY_DIRS).toContain('src/analytics');
-    expect(PYTHON_ONLY_DIRS).toContain('src/catalog');
-    expect(PYTHON_ONLY_DIRS).toContain('src/config');
-    expect(PYTHON_ONLY_DIRS).toContain('src/economy_analytics');
-    expect(PYTHON_ONLY_DIRS).toContain('src/orders');
-    expect(PYTHON_ONLY_DIRS).toContain('src/reputation');
-    expect(PYTHON_ONLY_DIRS).toContain('src/upgrade_tree');
+    expect(PYTHON_ONLY_DIRS).toContain('python/analytics');
+    expect(PYTHON_ONLY_DIRS).toContain('python/catalog');
+    expect(PYTHON_ONLY_DIRS).toContain('python/config');
+    expect(PYTHON_ONLY_DIRS).toContain('python/economy_analytics');
+    expect(PYTHON_ONLY_DIRS).toContain('python/orders');
+    expect(PYTHON_ONLY_DIRS).toContain('python/reputation');
+    expect(PYTHON_ONLY_DIRS).toContain('python/upgrade_tree');
   });
 
   test('JS_ONLY_DIRS contains required JS runtime paths', () => {
-    expect(JS_ONLY_DIRS).toContain('src/audio');
-    expect(JS_ONLY_DIRS).toContain('src/cleaning');
-    expect(JS_ONLY_DIRS).toContain('src/completion');
-    expect(JS_ONLY_DIRS).toContain('src/economy');
-    expect(JS_ONLY_DIRS).toContain('src/intake');
-    expect(JS_ONLY_DIRS).toContain('src/regulation');
-    expect(JS_ONLY_DIRS).toContain('src/workbench');
+    expect(JS_ONLY_DIRS).toContain('javascript/audio');
+    expect(JS_ONLY_DIRS).toContain('javascript/cleaning');
+    expect(JS_ONLY_DIRS).toContain('javascript/completion');
+    expect(JS_ONLY_DIRS).toContain('javascript/economy');
+    expect(JS_ONLY_DIRS).toContain('javascript/intake');
+    expect(JS_ONLY_DIRS).toContain('javascript/regulation');
+    expect(JS_ONLY_DIRS).toContain('javascript/workbench');
   });
 
-  test('mixed co-resident directories are absent from both restricted lists', () => {
-    const allRestricted = [...PYTHON_ONLY_DIRS, ...JS_ONLY_DIRS];
-    // These dirs are mixed by design — both languages co-reside in them
-    const mixedDirs = [
-      'src/accessibility',
-      'src/clients',
-      'src/cosmetic',
-      'src/save',
-      'src/ui',
-      'src/workshop',
+  test('split-layer directory pairs are represented under separate roots', () => {
+    const pairedDirs = [
+      ['python/accessibility', 'javascript/accessibility'],
+      ['python/clients', 'javascript/clients'],
+      ['python/cosmetic', 'javascript/cosmetic'],
+      ['python/save', 'javascript/save'],
+      ['python/ui', 'javascript/ui'],
+      ['python/workshop', 'javascript/workshop'],
     ];
-    for (const dir of mixedDirs) {
-      expect(allRestricted).not.toContain(dir);
+    for (const [pythonDir, javascriptDir] of pairedDirs) {
+      expect(PYTHON_ONLY_DIRS).toContain(pythonDir);
+      expect(JS_ONLY_DIRS).toContain(javascriptDir);
     }
   });
 
@@ -213,9 +212,9 @@ describe('Edge cases', () => {
 
   test('multiple violations are all reported', () => {
     const tmp = makeTempRepo({
-      'src/audio/bad1.py': '# wrong\n',
-      'src/completion/bad2.py': '# wrong\n',
-      'src/analytics/bad3.js': 'module.exports = {};',
+      'javascript/audio/bad1.py': '# wrong\n',
+      'javascript/completion/bad2.py': '# wrong\n',
+      'python/analytics/bad3.js': 'module.exports = {};',
     });
     try {
       const violations = checkBoundary(tmp);
@@ -227,8 +226,8 @@ describe('Edge cases', () => {
 
   test('__pycache__ contents are ignored', () => {
     const tmp = makeTempRepo({
-      'src/audio/__pycache__/something.pyc': 'binary',
-      'src/audio/ValidModule.js': 'module.exports = {};',
+      'javascript/audio/__pycache__/something.pyc': 'binary',
+      'javascript/audio/ValidModule.js': 'module.exports = {};',
     });
     try {
       const violations = checkBoundary(tmp);

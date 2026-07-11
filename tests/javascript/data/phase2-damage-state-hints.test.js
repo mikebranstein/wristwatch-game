@@ -12,7 +12,7 @@ const {
   DAMAGE_STATE_HINTS,
   getDamageStateHints,
   getAllDamageStateFaultIds,
-} = require('../../../src/data/damage-state-hints');
+} = require('../../../javascript/data/damage-state-hints');
 
 const PHASE1_FAULT_IDS = ['water_ingress_damage', 'oxidation_tarnish_damage', 'crystal_crazing_damage'];
 const PHASE2_FAULT_IDS = ['shock_damage_fault', 'rust_fused_fasteners_fault'];

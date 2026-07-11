@@ -6,7 +6,7 @@
  * imported and instantiated in a plain Node.js context (and therefore in
  * Electron's main process) WITHOUT ANY MODIFICATION to the source files.
  *
- * Run with: node src/verify-module-imports.js
+ * Run with: node javascript/verify-module-imports.js
  * Expected: prints PASS lines and exits with code 0.
  *
  * This script is also exercised by the Jest test suite in
@@ -37,11 +37,11 @@ console.log(`Project root: ${PROJECT_ROOT}\n`);
 
 // ── TelemetryEmitter ────────────────────────────────────────────────────────
 check('TelemetryEmitter: require', () => {
-  const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'src/telemetry/TelemetryEmitter'));
+  const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'javascript/telemetry/TelemetryEmitter'));
   if (typeof TelemetryEmitter !== 'function') throw new Error('Not a constructor');
 });
 check('TelemetryEmitter: construct + call method', () => {
-  const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'src/telemetry/TelemetryEmitter'));
+  const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'javascript/telemetry/TelemetryEmitter'));
   const t = new TelemetryEmitter(() => {});
   t.tutorialDiagnosisStarted('inst-001');
   if (!t.wasEmitted('tutorial_diagnosis_started')) throw new Error('Event not emitted');
@@ -49,12 +49,12 @@ check('TelemetryEmitter: construct + call method', () => {
 
 // ── HintSystem ──────────────────────────────────────────────────────────────
 check('HintSystem: require', () => {
-  const { HintSystem } = require(path.join(PROJECT_ROOT, 'src/diagnosis/HintSystem'));
+  const { HintSystem } = require(path.join(PROJECT_ROOT, 'javascript/diagnosis/HintSystem'));
   if (typeof HintSystem !== 'function') throw new Error('Not a constructor');
 });
 check('HintSystem: construct + registerFaultInstance', () => {
-  const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'src/telemetry/TelemetryEmitter'));
-  const { HintSystem }       = require(path.join(PROJECT_ROOT, 'src/diagnosis/HintSystem'));
+  const { TelemetryEmitter } = require(path.join(PROJECT_ROOT, 'javascript/telemetry/TelemetryEmitter'));
+  const { HintSystem }       = require(path.join(PROJECT_ROOT, 'javascript/diagnosis/HintSystem'));
   const t = new TelemetryEmitter(() => {});
   const h = new HintSystem(t);
   h.registerFaultInstance('fi-001', 'mainspring_worn');
@@ -63,11 +63,11 @@ check('HintSystem: construct + registerFaultInstance', () => {
 
 // ── PlayerSaveState ─────────────────────────────────────────────────────────
 check('PlayerSaveState: require', () => {
-  const { PlayerSaveState } = require(path.join(PROJECT_ROOT, 'src/state/PlayerSaveState'));
+  const { PlayerSaveState } = require(path.join(PROJECT_ROOT, 'javascript/state/PlayerSaveState'));
   if (typeof PlayerSaveState !== 'function') throw new Error('Not a constructor');
 });
 check('PlayerSaveState: construct', () => {
-  const { PlayerSaveState } = require(path.join(PROJECT_ROOT, 'src/state/PlayerSaveState'));
+  const { PlayerSaveState } = require(path.join(PROJECT_ROOT, 'javascript/state/PlayerSaveState'));
   const s = new PlayerSaveState();
   if (s === null || s === undefined) throw new Error('Constructor returned null/undefined');
 });

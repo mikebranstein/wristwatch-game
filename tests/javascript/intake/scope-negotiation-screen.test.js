@@ -19,12 +19,12 @@
 
 'use strict';
 
-const { PreExistingDamageRegistry } = require('../../../src/intake/PreExistingDamageRegistry');
+const { PreExistingDamageRegistry } = require('../../../javascript/intake/PreExistingDamageRegistry');
 const {
   ScopeNegotiationScreen,
   SCOPE_DECISIONS,
   PARTIAL_INTAKE_FEE,
-} = require('../../../src/intake/ScopeNegotiationScreen');
+} = require('../../../javascript/intake/ScopeNegotiationScreen');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

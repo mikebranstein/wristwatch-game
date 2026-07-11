@@ -14,7 +14,7 @@
 
 'use strict';
 
-const { WatchStateCapture } = require('../../../src/completion/WatchStateCapture');
+const { WatchStateCapture } = require('../../../javascript/completion/WatchStateCapture');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

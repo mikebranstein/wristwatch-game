@@ -30,22 +30,22 @@
 const {
   OperationGatingSystem,
   DEFAULT_COMPONENT_MANIFEST,
-} = require('../../../src/tools/OperationGatingSystem');
+} = require('../../../javascript/tools/OperationGatingSystem');
 
 const {
   DamageEventDetector,
   DAMAGE_EVENT_TYPES,
-} = require('../../../src/damage/DamageEventDetector');
+} = require('../../../javascript/damage/DamageEventDetector');
 
-const { DamageRecoveryController } = require('../../../src/damage/DamageRecoveryController');
+const { DamageRecoveryController } = require('../../../javascript/damage/DamageRecoveryController');
 
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 const {
   PHASE1_FAILURE_MODES,
   getPhase1FailureMode,
   getPhase1OperationIds,
-} = require('../../../src/data/phase1-failure-modes');
+} = require('../../../javascript/data/phase1-failure-modes');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

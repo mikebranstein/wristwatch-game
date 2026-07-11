@@ -19,8 +19,8 @@
 
 'use strict';
 
-const { StrapAssetSwap } = require('../../../src/cosmetic/StrapAssetSwap');
-const { getAllStraps, getSelectableStraps } = require('../../../src/cosmetic/StrapCatalogue');
+const { StrapAssetSwap } = require('../../../javascript/cosmetic/StrapAssetSwap');
+const { getAllStraps, getSelectableStraps } = require('../../../javascript/cosmetic/StrapCatalogue');
 
 // ─── Constructor guard ─────────────────────────────────────────────────────
 

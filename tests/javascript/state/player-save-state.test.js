@@ -8,7 +8,7 @@
  * Run with: npm test
  */
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 describe('PlayerSaveState — Issue #82 save reliability fields', () => {
   // ── Backward compatibility ─────────────────────────────────────────────

@@ -29,7 +29,7 @@ const {
   StrapBeforeAfterDisplay,
   VALID_DISPLAY_MODES,
   DEFAULT_DISPLAY_MODE,
-} = require('../../../src/cosmetic/StrapBeforeAfterDisplay');
+} = require('../../../javascript/cosmetic/StrapBeforeAfterDisplay');
 
 const WORN_SNAPSHOT = {
   assetKey: 'strap_worn_original',

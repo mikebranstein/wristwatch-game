@@ -7,7 +7,7 @@
  */
 
 const { CosmeticRestorationSummary, PHASES, STATUS_LABELS } =
-  require('../../../src/cosmetic/CosmeticRestorationSummary');
+  require('../../../javascript/cosmetic/CosmeticRestorationSummary');
 
 function makeSummary(overrides = {}) {
   return new CosmeticRestorationSummary(

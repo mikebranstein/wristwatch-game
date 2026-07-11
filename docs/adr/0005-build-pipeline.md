@@ -72,15 +72,15 @@ Source (JS + Python)
 
 | Layer | Runner | Coverage target | Files |
 |-------|--------|-----------------|-------|
-| JavaScript game engine | Jest 29 (`npm test`) | ≥80% line coverage | `src/**/*.js`, `tests/**/*.test.js` |
-| Python data/persistence | pytest 8 (`pytest`) | ≥80% line coverage | `src/**/*.py`, `tests/**/test_*.py` |
+| JavaScript game engine | Jest 29 (`npm test`) | ≥80% line coverage | `javascript/**/*.js`, `tests/javascript/**/*.test.js` |
+| Python data/persistence | pytest 8 (`pytest`) | ≥80% line coverage | `python/**/*.py`, `tests/python/**/test_*.py` |
 
 Coverage thresholds are enforced via `jest --coverage` and the pytest `--cov` plugin.
 
 ### Content Update Deployment
 
 For content-only sprints (new movement families, new part types):
-1. Author adds enum values and catalog entries in Python (`src/catalog/data/part_compatibility.py`).
+1. Author adds enum values and catalog entries in Python (`python/catalog/data/part_compatibility.py`).
 2. `pytest` validates new compatibility entries.
 3. Python serialisation script generates updated `catalog.json`.
 4. Electron package is rebuilt with updated JSON assets — no JS engine changes required.
@@ -105,7 +105,7 @@ For content-only sprints (new movement families, new part types):
 
 ## Positive Consequences
 
-- Single `npm test && pytest` command runs the full test suite across both language layers.
+- Single `npm run test:all` command runs the full test suite across both language layers.
 - Electron provides a proven path to Windows `.exe` distribution with Steam Greenlight / direct download.
 - Content authors can ship new calibres without touching the game engine or JS test suite.
 - CI is low-maintenance: two standard test runners, no custom build tooling.

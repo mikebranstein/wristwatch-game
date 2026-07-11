@@ -24,7 +24,7 @@ const {
   PHASE1_DAMAGE_STATES,
   DAMAGE_STATE_VISUAL_CUES,
   DEFAULT_INTAKE_CONFIG,
-} = require('../../../src/intake/WatchIntake');
+} = require('../../../javascript/intake/WatchIntake');
 
 // ─── Deterministic RNG helpers ────────────────────────────────────────────────
 

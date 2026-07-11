@@ -9,7 +9,7 @@
 
 'use strict';
 
-const { TelemetryEmitter, EVENTS } = require('../../../src/telemetry/TelemetryEmitter');
+const { TelemetryEmitter, EVENTS } = require('../../../javascript/telemetry/TelemetryEmitter');
 
 function makeEmitter() {
   return new TelemetryEmitter(jest.fn());

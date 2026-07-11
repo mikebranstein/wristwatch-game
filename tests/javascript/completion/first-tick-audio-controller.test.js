@@ -31,7 +31,7 @@ const {
   DEFAULT_SILENCE_GATE_MS,
   MIN_SILENCE_GATE_MS,
   MAX_SILENCE_GATE_MS,
-} = require('../../../src/completion/FirstTickAudioController');
+} = require('../../../javascript/completion/FirstTickAudioController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

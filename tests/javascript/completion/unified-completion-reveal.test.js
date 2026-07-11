@@ -29,11 +29,11 @@
 
 'use strict';
 
-const { CompletionRevealSequence, REVEAL_EVENTS, COMPLETION_AUDIO_CUES } = require('../../../src/completion/CompletionRevealSequence');
-const { CompletionRevealScreen }  = require('../../../src/completion/CompletionRevealScreen');
-const { WatchStateCapture }       = require('../../../src/completion/WatchStateCapture');
-const { CosmeticRestorationSummary, PHASES } = require('../../../src/cosmetic/CosmeticRestorationSummary');
-const { SharePromptOverlay, OVERLAY_STATE }  = require('../../../src/completion/SharePromptOverlay');
+const { CompletionRevealSequence, REVEAL_EVENTS, COMPLETION_AUDIO_CUES } = require('../../../javascript/completion/CompletionRevealSequence');
+const { CompletionRevealScreen }  = require('../../../javascript/completion/CompletionRevealScreen');
+const { WatchStateCapture }       = require('../../../javascript/completion/WatchStateCapture');
+const { CosmeticRestorationSummary, PHASES } = require('../../../javascript/cosmetic/CosmeticRestorationSummary');
+const { SharePromptOverlay, OVERLAY_STATE }  = require('../../../javascript/completion/SharePromptOverlay');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

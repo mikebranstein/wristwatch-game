@@ -10,9 +10,9 @@
  * Scenario 10: Hint ladder resets per fault instance (not per fault type).
  */
 
-const { HintSystem } = require('../../../src/diagnosis/HintSystem');
-const { TelemetryEmitter } = require('../../../src/telemetry/TelemetryEmitter');
-const { getAllFaultIds } = require('../../../src/data/fault-hints');
+const { HintSystem } = require('../../../javascript/diagnosis/HintSystem');
+const { TelemetryEmitter } = require('../../../javascript/telemetry/TelemetryEmitter');
+const { getAllFaultIds } = require('../../../javascript/data/fault-hints');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

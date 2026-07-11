@@ -16,7 +16,7 @@
 
 'use strict';
 
-const { CompletionRevealScreen, DEFAULT_DISMISSABLE_AFTER_MS } = require('../../../src/completion/CompletionRevealScreen');
+const { CompletionRevealScreen, DEFAULT_DISMISSABLE_AFTER_MS } = require('../../../javascript/completion/CompletionRevealScreen');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

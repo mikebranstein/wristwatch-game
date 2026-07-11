@@ -29,7 +29,7 @@ const {
   PHASE_BY_EVENT_NAME,
   resolveEventPhase,
   isHintEvent,
-} = require('../../../src/telemetry/HintEscalationAnalyzer');
+} = require('../../../javascript/telemetry/HintEscalationAnalyzer');
 
 // ─── Fixture helpers ──────────────────────────────────────────────────────────
 

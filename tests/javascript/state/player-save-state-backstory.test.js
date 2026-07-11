@@ -8,7 +8,7 @@
 
 'use strict';
 
-const { PlayerSaveState } = require('../../../src/state/PlayerSaveState');
+const { PlayerSaveState } = require('../../../javascript/state/PlayerSaveState');
 
 describe('PlayerSaveState — Issue #126: ab_backstory_cohort field', () => {
   test('ab_backstory_cohort defaults to null for new saves', () => {

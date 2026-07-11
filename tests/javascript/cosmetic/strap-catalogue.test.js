@@ -26,7 +26,7 @@ const {
   getSelectableStraps,
   getBaselineStrap,
   getStrapById,
-} = require('../../../src/cosmetic/StrapCatalogue');
+} = require('../../../javascript/cosmetic/StrapCatalogue');
 
 describe('StrapCatalogue — AC1: at least 3 selectable strap variants', () => {
   test('getSelectableStraps() returns 3 or more non-baseline variants', () => {

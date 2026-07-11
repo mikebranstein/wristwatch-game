@@ -15,9 +15,9 @@
 
 'use strict';
 
-const { CvdPaletteManager, CVD_PALETTES, VALID_MODES } = require('../../../src/accessibility/CvdPaletteManager');
-const { UiScaleManager, UI_SCALE_MIN, UI_SCALE_MAX, UI_SCALE_DEFAULT } = require('../../../src/accessibility/UiScaleManager');
-const { AccessibilitySettingsScreen, SNAP_TOLERANCE_LEVELS, ASSIST_MULTIPLIERS } = require('../../../src/accessibility/AccessibilitySettingsScreen');
+const { CvdPaletteManager, CVD_PALETTES, VALID_MODES } = require('../../../javascript/accessibility/CvdPaletteManager');
+const { UiScaleManager, UI_SCALE_MIN, UI_SCALE_MAX, UI_SCALE_DEFAULT } = require('../../../javascript/accessibility/UiScaleManager');
+const { AccessibilitySettingsScreen, SNAP_TOLERANCE_LEVELS, ASSIST_MULTIPLIERS } = require('../../../javascript/accessibility/AccessibilitySettingsScreen');
 
 // ============================================================================
 // AC1 — CVD Palette Mode

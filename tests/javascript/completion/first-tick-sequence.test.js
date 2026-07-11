@@ -22,8 +22,8 @@
  *  Scenario 10 — Regression: sequence constructs without breaking existing modules.
  */
 
-const { FirstTickSequence, FIRST_TICK_EVENTS } = require('../../../src/completion/FirstTickSequence');
-const { AUDIO_CUES, AUDIO_STATE } = require('../../../src/completion/FirstTickAudioController');
+const { FirstTickSequence, FIRST_TICK_EVENTS } = require('../../../javascript/completion/FirstTickSequence');
+const { AUDIO_CUES, AUDIO_STATE } = require('../../../javascript/completion/FirstTickAudioController');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
