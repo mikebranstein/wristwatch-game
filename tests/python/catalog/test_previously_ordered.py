@@ -12,8 +12,8 @@ Scenario 7 — Player with prior order history opens catalog →
 """
 
 import pytest
-from src.catalog.data.order_history import OrderHistory, MAX_PREVIOUSLY_ORDERED, OrderEntry
-from src.catalog.previously_ordered import PreviouslyOrdered
+from catalog.data.order_history import OrderHistory, MAX_PREVIOUSLY_ORDERED, OrderEntry
+from catalog.previously_ordered import PreviouslyOrdered
 
 
 class TestOrderHistory:

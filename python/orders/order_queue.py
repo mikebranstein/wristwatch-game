@@ -26,9 +26,9 @@ import math
 import time
 from typing import Optional
 
-from src.orders.order import Order
-from src.orders.order_status import OrderStatus
-from src.config.supplier_tiers import SUPPLIER_TIERS
+from orders.order import Order
+from orders.order_status import OrderStatus
+from config.supplier_tiers import SUPPLIER_TIERS
 
 
 class InsufficientFundsError(Exception):

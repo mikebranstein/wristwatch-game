@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from src.workshop.bench_slot import BenchSlot, SLOT_STATE_EMPTY
+from workshop.bench_slot import BenchSlot, SLOT_STATE_EMPTY
 
 MAX_SLOTS = 2
 

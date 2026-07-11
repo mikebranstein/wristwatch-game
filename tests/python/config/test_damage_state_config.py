@@ -1,5 +1,5 @@
 """
-Tests for src/config/damage_state_config.py — Issue #81, AC6 / Test Scenario 11.
+Tests for python/config/damage_state_config.py — Issue #81, AC6 / Test Scenario 11.
 
 Covers:
   - DamageStateConfig dataclass instantiation with valid arguments
@@ -14,7 +14,7 @@ Covers:
 import dataclasses
 import pytest
 
-from src.config.damage_state_config import (
+from config.damage_state_config import (
     DamageStateConfig,
     DAMAGE_STATE_CONFIG,
     PHASE1_DAMAGE_STATES,

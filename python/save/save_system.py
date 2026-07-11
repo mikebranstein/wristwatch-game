@@ -82,7 +82,7 @@ class SaveSystem:
         queue_data = (raw_save_data or {}).get("order_queue", None)
 
         # Session-boundary event: resolve In-Transit orders that are now due.
-        # Pure-dict helper — no src.orders import required.
+        # Pure-dict helper — no orders import required.
         resolved_queue_dict, arrived_orders = SaveSystem._resolve_arrivals(queue_data)
 
         # Write resolved state back so callers get a consistent snapshot.
@@ -263,7 +263,7 @@ class SaveSystem:
         Pure-dict session-boundary arrival resolution.
 
         Replicates the behaviour of ``OrderQueue(queue_dict).resolve_arrivals()``
-        without importing any domain objects from ``src.orders``, keeping
+        without importing any domain objects from ``orders``, keeping
         ``save/`` dependency-layer compliant (may import from ``config`` only).
 
         Algorithm (mirrors ``OrderQueue.resolve_arrivals()``):

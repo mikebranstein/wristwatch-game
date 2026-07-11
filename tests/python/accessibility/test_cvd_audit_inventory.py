@@ -336,7 +336,7 @@ class TestSourceCodeCrossReference:
 
     def test_order_dashboard_no_color_fields(self):
         """order_dashboard.py must not define color fields (clean finding from audit)."""
-        dashboard_path = os.path.join(self.REPO_ROOT, "src", "ui", "order_dashboard.py")
+        dashboard_path = os.path.join(self.REPO_ROOT, "python", "ui", "order_dashboard.py")
         with open(dashboard_path, "r", encoding="utf-8") as f:
             content = f.read()
         # No hex colors should be in the view model
@@ -349,7 +349,7 @@ class TestSourceCodeCrossReference:
 
     def test_notification_service_no_color_fields(self):
         """notification_service.py must not define color fields (clean finding from audit)."""
-        ns_path = os.path.join(self.REPO_ROOT, "src", "ui", "notification_service.py")
+        ns_path = os.path.join(self.REPO_ROOT, "python", "ui", "notification_service.py")
         with open(ns_path, "r", encoding="utf-8") as f:
             content = f.read()
         hex_pattern = re.compile(r'#[0-9a-fA-F]{3,6}')
@@ -361,7 +361,7 @@ class TestSourceCodeCrossReference:
 
     def test_compatibility_badge_no_color_fields(self):
         """compatibility_badge.py must define symbol and label fields (not color-only)."""
-        badge_path = os.path.join(self.REPO_ROOT, "src", "catalog", "compatibility_badge.py")
+        badge_path = os.path.join(self.REPO_ROOT, "python", "catalog", "compatibility_badge.py")
         with open(badge_path, "r", encoding="utf-8") as f:
             content = f.read()
         assert "symbol" in content, "BadgeResult must have a 'symbol' field."

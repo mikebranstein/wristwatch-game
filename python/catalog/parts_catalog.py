@@ -9,10 +9,10 @@ Top-level class orchestrating:
 
 Usage::
 
-    from src.catalog.parts_catalog import PartsCatalog
-    from src.catalog.data.order_history import OrderHistory
-    from src.catalog.catalog_filter import ActiveJobContext
-    from src.catalog.data.part_compatibility import MovementFamily, PartType
+    from catalog.parts_catalog import PartsCatalog
+    from catalog.data.order_history import OrderHistory
+    from catalog.catalog_filter import ActiveJobContext
+    from catalog.data.part_compatibility import MovementFamily, PartType
 
     history = OrderHistory()
     catalog = PartsCatalog(history)
@@ -40,11 +40,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from src.catalog.catalog_filter import CatalogFilter, ActiveJobContext, FilterState
-from src.catalog.compatibility_badge import evaluate_badge, BadgeResult
-from src.catalog.previously_ordered import PreviouslyOrdered, OrderFormPayload
-from src.catalog.data.order_history import OrderHistory
-from src.catalog.data.part_compatibility import Part, PARTS_CATALOG
+from catalog.catalog_filter import CatalogFilter, ActiveJobContext, FilterState
+from catalog.compatibility_badge import evaluate_badge, BadgeResult
+from catalog.previously_ordered import PreviouslyOrdered, OrderFormPayload
+from catalog.data.order_history import OrderHistory
+from catalog.data.part_compatibility import Part, PARTS_CATALOG
 
 
 @dataclass

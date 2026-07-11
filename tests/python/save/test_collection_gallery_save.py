@@ -5,7 +5,7 @@ Tests for Collection Gallery save compatibility
 Issue #127 / #129 additive save-schema coverage for completed_watches.
 """
 
-from src.save.save_system import SaveSystem
+from save.save_system import SaveSystem
 
 
 class TestCollectionGallerySaveCompatibility:

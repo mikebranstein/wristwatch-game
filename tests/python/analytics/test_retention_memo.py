@@ -25,7 +25,7 @@ Scenarios:
 
 import pytest
 
-from src.analytics.retention_memo import (
+from analytics.retention_memo import (
     _fmt_rate,
     _compose_memo,
     MIN_SESSIONS,
@@ -36,7 +36,7 @@ from src.analytics.retention_memo import (
     COHORT_4_PLUS,
     COHORT_KEYS,
 )
-from src.analytics.retention_analytics import RetentionAnalytics, SECONDS_PER_DAY
+from analytics.retention_analytics import RetentionAnalytics, SECONDS_PER_DAY
 
 # ---------------------------------------------------------------------------
 # Helpers

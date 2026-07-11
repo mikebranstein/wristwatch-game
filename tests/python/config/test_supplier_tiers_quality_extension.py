@@ -13,7 +13,7 @@ S9   — No duplicate sourcing decision; quality modifier derived from supplier_
 
 import pytest
 
-from src.config.supplier_tiers import SUPPLIER_TIERS, SupplierTierConfig
+from config.supplier_tiers import SUPPLIER_TIERS, SupplierTierConfig
 
 
 # ---------------------------------------------------------------------------

@@ -28,7 +28,7 @@ Run with:
 
 import pytest
 
-from src.workshop.probe_telemetry import (
+from workshop.probe_telemetry import (
     ProbeTelemetry,
     EVENT_COHORT_ASSIGNED,
     EVENT_SESSION_FREQUENCY_PROBE,
@@ -43,7 +43,7 @@ from src.workshop.probe_telemetry import (
     MIN_COHORT_SAMPLE_SIZE,
     _TWO_WEEKS_SECONDS,
 )
-from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
+from workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
 
 
 # ---------------------------------------------------------------------------

@@ -9,7 +9,7 @@ The Wristwatch Revival Simulator uses a **dual-language architecture** by design
 | Layer | Language | What lives here |
 |-------|----------|-----------------|
 | Game engine | JavaScript (`src/**/*.js`) | Snap-zone tolerances, assembly state machines, UI interaction, real-time simulation, player save state |
-| Data & persistence | Python (`src/**/*.py`) | Parts catalog, data model definitions, compatibility logic, save system persistence, analytics, accessibility config |
+| Data & persistence | Python (`python/**/*.py`) | Parts catalog, data model definitions, compatibility logic, save system persistence, analytics, accessibility config |
 
 ### Interop Boundary
 
@@ -24,6 +24,13 @@ The two layers communicate through **`catalog.json`**: Python serialises the par
 | Run JavaScript tests | `npm test` |
 | Run Python tests | `pytest` |
 | Run both test suites | `npm test && pytest` |
+
+## Project Layout
+
+- `python/` — Python source files (save system, analytics, orders, catalog, etc.)
+- `src/` — JavaScript source files (game runtime, completion, economy, cosmetic, etc.)
+- `tests/python/` — Python pytest suite
+- `tests/javascript/` — JavaScript Jest suite
 
 ## Setup
 

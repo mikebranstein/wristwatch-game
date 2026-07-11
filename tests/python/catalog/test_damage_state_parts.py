@@ -14,13 +14,13 @@ Covers:
 """
 
 import pytest
-from src.catalog.data.part_compatibility import (
+from catalog.data.part_compatibility import (
     PARTS_CATALOG,
     PartType,
     Part,
 )
-from src.catalog.catalog_filter import ActiveJobContext, CatalogFilter
-from src.catalog.data.part_compatibility import MovementFamily
+from catalog.catalog_filter import ActiveJobContext, CatalogFilter
+from catalog.data.part_compatibility import MovementFamily
 
 
 # ---------------------------------------------------------------------------

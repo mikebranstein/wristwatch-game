@@ -18,7 +18,7 @@ Run with:
 
 import pytest
 
-from src.workshop.second_bench_unlock import (
+from workshop.second_bench_unlock import (
     SecondBenchUnlock,
     DEFAULT_UNLOCK_THRESHOLD,
 )

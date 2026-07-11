@@ -26,8 +26,8 @@ from __future__ import annotations
 
 from typing import List
 
-from src.workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
-from src.workshop.probe_telemetry_constants import (
+from workshop.ab_cohort_manager import COHORT_PROBE, COHORT_CONTROL
+from workshop.probe_telemetry_constants import (
     EVENT_FEEDBACK_RESPONSE,
     EVENT_SESSION_FREQUENCY_PROBE,
     EVENT_SESSION_START_BEHAVIOR,

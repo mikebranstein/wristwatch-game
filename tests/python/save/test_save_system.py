@@ -15,8 +15,8 @@ import time
 import tempfile
 
 import pytest
-from src.save.save_system import SaveSystem, CHECKPOINT_STAGES
-from src.orders.order_queue import OrderQueue
+from save.save_system import SaveSystem, CHECKPOINT_STAGES
+from orders.order_queue import OrderQueue
 
 
 class TestSaveSystem:

@@ -13,10 +13,10 @@ Run with:
 
 import pytest
 from unittest.mock import MagicMock
-from src.save.save_conflict_resolver import (
+from save.save_conflict_resolver import (
     SaveConflictResolver, RESOLVER_STATE, ConflictScreenState
 )
-from src.save.cloud_sync_manager import CloudSyncManager, ConflictInfo, SaveMetadata
+from save.cloud_sync_manager import CloudSyncManager, ConflictInfo, SaveMetadata
 
 
 # ---------------------------------------------------------------------------

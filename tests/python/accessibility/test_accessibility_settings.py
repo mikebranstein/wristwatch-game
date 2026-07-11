@@ -19,7 +19,7 @@ Test command: pytest tests/accessibility/test_accessibility_settings.py -v
 
 import pytest
 
-from src.accessibility.accessibility_settings import (
+from accessibility.accessibility_settings import (
     AccessibilitySettings,
     CVD_MODES,
     SNAP_TOLERANCE_LEVELS,
@@ -27,9 +27,9 @@ from src.accessibility.accessibility_settings import (
     UI_SCALE_MAX,
     UI_SCALE_DEFAULT,
 )
-from src.accessibility.cvd_palette import CvdPalette, CVD_SAFE_PALETTES
-from src.accessibility.ui_scale import UiScaleManager
-from src.accessibility.snap_tolerance_assist import SnapToleranceAssist, ASSIST_MULTIPLIERS
+from accessibility.cvd_palette import CvdPalette, CVD_SAFE_PALETTES
+from accessibility.ui_scale import UiScaleManager
+from accessibility.snap_tolerance_assist import SnapToleranceAssist, ASSIST_MULTIPLIERS
 
 
 # ===========================================================================

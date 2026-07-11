@@ -119,7 +119,7 @@ class SaveConflictResolver:
         bool
             True ↔ conflict exists.
         """
-        from src.save.cloud_sync_manager import ConflictInfo
+        from save.cloud_sync_manager import ConflictInfo
 
         conflict: ConflictInfo = self._cloud.detect_conflict(
             local_save_data, local_timestamp
@@ -161,7 +161,7 @@ class SaveConflictResolver:
                 "Must be in CONFLICT_DETECTED or AWAITING_CONFIRMATION."
             )
 
-        from src.save.cloud_sync_manager import SaveMetadata
+        from save.cloud_sync_manager import SaveMetadata
 
         local_meta = SaveMetadata(
             timestamp=self._local_timestamp,

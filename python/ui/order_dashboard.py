@@ -7,8 +7,8 @@ Accessible from the workbench at any time during an active job.
 
 from __future__ import annotations
 
-from src.orders.order_queue import OrderQueue
-from src.orders.order_status import OrderStatus
+from orders.order_queue import OrderQueue
+from orders.order_status import OrderStatus
 
 
 class OrderDashboard:

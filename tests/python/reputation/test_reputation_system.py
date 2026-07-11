@@ -14,7 +14,7 @@ S10  — Session persistence (save/load round-trip)
 
 import pytest
 
-from src.reputation.reputation_system import (
+from reputation.reputation_system import (
     ReputationSystem,
     HIGH_QUALITY_THRESHOLD,
     POOR_QUALITY_THRESHOLD,

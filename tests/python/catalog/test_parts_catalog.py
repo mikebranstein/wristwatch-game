@@ -6,13 +6,13 @@ covering all five acceptance criteria and all 10 test scenarios.
 """
 
 import pytest
-from src.catalog.parts_catalog import PartsCatalog
-from src.catalog.catalog_filter import ActiveJobContext
-from src.catalog.data.order_history import OrderHistory
-from src.catalog.compatibility_badge import (
+from catalog.parts_catalog import PartsCatalog
+from catalog.catalog_filter import ActiveJobContext
+from catalog.data.order_history import OrderHistory
+from catalog.compatibility_badge import (
     BADGE_COMPATIBLE, BADGE_UNCERTAIN, BADGE_INCOMPATIBLE, BADGE_NONE,
 )
-from src.catalog.data.part_compatibility import (
+from catalog.data.part_compatibility import (
     PartType, MovementFamily, PartCondition, PARTS_CATALOG, Part
 )
 

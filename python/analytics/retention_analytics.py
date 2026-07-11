@@ -7,8 +7,8 @@ Slimmed to orchestrator role as part of Issue #203.
 
 Extracted modules
 -----------------
-- ``src.analytics.retention_memo``          — memo composition (Issue #201)
-- ``src.analytics.retention_cohort_rates``  — cohort-rate computation (Issue #202)
+- ``analytics.retention_memo``          — memo composition (Issue #201)
+- ``analytics.retention_cohort_rates``  — cohort-rate computation (Issue #202)
 
 Retained in this module
 -----------------------
@@ -27,7 +27,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
-from src.analytics.retention_cohort_rates import (
+from analytics.retention_cohort_rates import (
     COHORT_0,
     COHORT_1,
     COHORT_2_3,
@@ -42,7 +42,7 @@ from src.analytics.retention_cohort_rates import (
     _compute_uplift,
     _compute_queue_gap_signal,
 )
-from src.analytics.retention_memo import (
+from analytics.retention_memo import (
     MIN_SESSIONS,
     _compose_memo,
 )

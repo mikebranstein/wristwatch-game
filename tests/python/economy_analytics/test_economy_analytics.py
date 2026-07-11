@@ -12,7 +12,7 @@ S10  — Economy analytics data persists across sessions
 
 import pytest
 
-from src.economy_analytics.economy_analytics import EconomyAnalytics, MIN_JOBS
+from economy_analytics.economy_analytics import EconomyAnalytics, MIN_JOBS
 
 
 # ---------------------------------------------------------------------------

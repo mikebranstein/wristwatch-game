@@ -34,7 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List
 
-from src.reputation.reputation_system import ReputationSystem, PREMIUM_CLIENT_THRESHOLD
+from reputation.reputation_system import ReputationSystem, PREMIUM_CLIENT_THRESHOLD
 
 # ---------------------------------------------------------------------------
 # Constants
