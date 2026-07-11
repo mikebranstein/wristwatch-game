@@ -77,6 +77,22 @@ The architectural boundary (if dual-language is retained) is clear:
 
 ---
 
+## Interop Contract
+
+The Python-to-JS serialization boundary is formalized by `schema/catalog.schema.json` (JSON Schema Draft-07). This schema is the authoritative contract for the catalog artifact:
+
+- **Python (producer):** `PARTS_CATALOG` in `python/catalog/data/part_compatibility.py` is the sole data source. Python serializes it to the catalog JSON format; `tests/python/test_catalog_schema.py` validates the serialized output against the schema using `jsonschema`.
+- **JavaScript (consumer):** `tests/javascript/catalog-schema.test.js` validates catalog JSON loading against the same schema using `Ajv`, ensuring both sides agree on the contract.
+
+### Schema Evolution Policy
+
+- **Additive changes** (adding new optional fields, new enum values) are non-breaking and do not require an ADR update.
+- **Breaking changes** (removing or renaming required fields, changing field types, adding new required fields) require a new ADR before the schema may be updated. Content authors adding new movement families must verify their Python output passes `pytest tests/python/test_catalog_schema.py` before merging.
+
+See `schema/catalog.schema.json` for the full schema definition.
+
+---
+
 ## Compliance Notes
 
 - Node.js (MIT licence), Jest (MIT), Python (PSF licence), pytest (MIT) — all permissive, no commercial licensing concerns.
@@ -91,4 +107,3 @@ The architectural boundary (if dual-language is retained) is clear:
 - Discovery Focus section: Technical Constraints — "Target mid-range Windows gaming PCs first; keyboard/mouse as primary input. Real-time simulation must remain responsive despite many small interactive parts."
 - Spike evidence: `docs/spike-chronograph-part-count-2026-07-10.md` — Node.js v24.18.0 benchmark results
 - Language boundary registry and enforcement: `docs/language-boundary.md` — path-ownership map enforced by `npm run check:boundary` (Issue #321)
-
