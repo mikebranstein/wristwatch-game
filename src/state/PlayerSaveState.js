@@ -92,6 +92,13 @@
  *   Added `audio_volume: 100` (0–100, backward-compatible).
  *   Used by AudioVolumeSettings as a save-profile fallback when localStorage is absent.
  *
+ * Issue #297: Per-Tool Mastery Progression — Core Engine (2–3 Tools, Tier 1–5)
+ * Issue #307: Per-Tool Mastery Progression — All 8 Tools + Vocabulary Migration Notice
+ *   Added `tool_proficiency_vocabulary_updated` (boolean, false default, backward-compatible).
+ *   When the player opens the proficiency panel and this flag is false, display a brief
+ *   one-time notice acknowledging the TIER_NAMES vocabulary rebranding, then set to true.
+ *   No save migration required — false default is safe for all pre-#307 saves.
+ *
  * Issue #131 — Tool-Switching MVP: Core Repair Loop (6-8 Tools):
  *   Added `tutorial_tool_switching_seen` (false default, backward-compatible).
  *   Set to true after the player dismisses the tool-switching tutorial for the first time.
@@ -242,6 +249,19 @@ const DEFAULT_SAVE = {
   // Written by ProficiencyEngine.serialize() via PlayerSaveState.setToolProficiency()
   // after each operation where proficiency is earned.
   tool_proficiency: null,
+
+  // Issue #307: Per-Tool Mastery Progression — Vocabulary Migration Notice Flag
+  // (additive, backward-compatible — false default = notice not yet shown)
+  //
+  // tool_proficiency_vocabulary_updated: one-time in-game notice flag.
+  //   When the player opens the proficiency panel and this flag is false, display a brief
+  //   notice acknowledging the vocabulary rebranding (Expert→Craftsman, Artisan→Master,
+  //   Master→Grand Maître for #297 tools), then set this flag to true.
+  //   Once true, the notice is never shown again for this player profile.
+  //   false default ensures existing #297 players see the notice exactly once after #307 ships.
+  //   New players (no prior #297 proficiency) also receive the notice on their first
+  //   proficiency-panel open; this is acceptable as it introduces the vocabulary.
+  tool_proficiency_vocabulary_updated: false,
   // Issue #301: In-Context Tool Rationale — Core System & Pilot Set (Phase 1 MVP)
   // (additive, backward-compatible — pre-existing saves receive these defaults on load)
   //

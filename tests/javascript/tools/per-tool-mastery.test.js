@@ -59,17 +59,24 @@ function doAccurateUses(engine, toolId, count) {
 const TOOL_A = 'fine-tip-tweezers';
 const TOOL_B = 'flat-blade-screwdriver';
 const TOOL_C = 'spring-bar-tool';
-const NON_DESIGNATED = 'case-knife';
+// Issue #307 — 5 new designated tools
+const TOOL_D = 'cross-tip-screwdriver';
+const TOOL_E = 'case-knife';
+const TOOL_F = 'movement-holder';
+const TOOL_G = 'hand-setting-tool';
+const TOOL_H = 'dust-blower';
+// NON_DESIGNATED: a tool ID that is not in ToolRegistry and never will be
+const NON_DESIGNATED = 'wrench';
 
 // ─── ProficiencyEngine — basics ────────────────────────────────────────────────
 
 describe('ProficiencyEngine — designated tool set', () => {
-  test('Phase 1 has exactly 3 designated tools', () => {
+  test('Issue #307: all 8 tools are now designated', () => {
     const engine = makeEngine();
-    expect(engine.getDesignatedToolIds()).toHaveLength(3);
+    expect(engine.getDesignatedToolIds()).toHaveLength(8);
   });
 
-  test('designated tools include fine-tip-tweezers, flat-blade-screwdriver, spring-bar-tool', () => {
+  test('designated tools include all 3 original Phase-1 tools', () => {
     const engine = makeEngine();
     const ids = engine.getDesignatedToolIds();
     expect(ids).toContain(TOOL_A);
@@ -77,30 +84,39 @@ describe('ProficiencyEngine — designated tool set', () => {
     expect(ids).toContain(TOOL_C);
   });
 
-  test('isDesignatedTool returns true for designated tools', () => {
+  test('Issue #307: designated tools include all 5 new Phase-2 tools', () => {
     const engine = makeEngine();
-    expect(engine.isDesignatedTool(TOOL_A)).toBe(true);
-    expect(engine.isDesignatedTool(TOOL_B)).toBe(true);
-    expect(engine.isDesignatedTool(TOOL_C)).toBe(true);
+    const ids = engine.getDesignatedToolIds();
+    expect(ids).toContain(TOOL_D);
+    expect(ids).toContain(TOOL_E);
+    expect(ids).toContain(TOOL_F);
+    expect(ids).toContain(TOOL_G);
+    expect(ids).toContain(TOOL_H);
   });
 
-  test('isDesignatedTool returns false for out-of-scope tools', () => {
+  test('isDesignatedTool returns true for all 8 designated tools', () => {
+    const engine = makeEngine();
+    for (const toolId of [TOOL_A, TOOL_B, TOOL_C, TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
+      expect(engine.isDesignatedTool(toolId)).toBe(true);
+    }
+  });
+
+  test('isDesignatedTool returns false for unknown/out-of-scope tools', () => {
     const engine = makeEngine();
     expect(engine.isDesignatedTool(NON_DESIGNATED)).toBe(false);
-    expect(engine.isDesignatedTool('hand-setting-tool')).toBe(false);
-    expect(engine.isDesignatedTool('movement-holder')).toBe(false);
-    expect(engine.isDesignatedTool('dust-blower')).toBe(false);
-    expect(engine.isDesignatedTool('cross-tip-screwdriver')).toBe(false);
+    expect(engine.isDesignatedTool('unknown-tool')).toBe(false);
+    expect(engine.isDesignatedTool('')).toBe(false);
   });
 
   test('new engine: all designated tools start at Tier 0 with 0 points', () => {
     const engine = makeEngine();
-    for (const toolId of [TOOL_A, TOOL_B, TOOL_C]) {
+    for (const toolId of [TOOL_A, TOOL_B, TOOL_C, TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
       const p = engine.getProficiency(toolId);
       expect(p).not.toBeNull();
       expect(p.tier).toBe(0);
       expect(p.points).toBe(0);
-      expect(p.tierName).toBe('Novice');
+      // Issue #307: tier 0 is now unnamed (empty string), not 'Novice'
+      expect(p.tierName).toBe('');
       expect(p.isMaxTier).toBe(false);
     }
   });
@@ -108,7 +124,7 @@ describe('ProficiencyEngine — designated tool set', () => {
   test('getProficiency returns null for non-designated tools', () => {
     const engine = makeEngine();
     expect(engine.getProficiency(NON_DESIGNATED)).toBeNull();
-    expect(engine.getProficiency('hand-setting-tool')).toBeNull();
+    expect(engine.getProficiency('unknown-tool')).toBeNull();
   });
 });
 
@@ -246,8 +262,8 @@ describe('AC3 / Scenario 3 — Fast first milestone: Tier 1 in 5–10 accurate u
     expect(transitionSeen).toBe(true);
   });
 
-  test('fast milestone works for all 3 designated tools independently', () => {
-    for (const toolId of [TOOL_A, TOOL_B, TOOL_C]) {
+  test('fast milestone works for all 8 designated tools independently', () => {
+    for (const toolId of [TOOL_A, TOOL_B, TOOL_C, TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
       const engine = makeEngine();
       doAccurateUses(engine, toolId, 10);
       const p = engine.getProficiency(toolId);
@@ -466,18 +482,22 @@ describe('AC5 / Scenario 7 — ToolPanel: in-scope tools show bar, others show n
     const panel = new ToolPanel();
     const engine = makeEngine();
     panel.setProficiencyEngine(engine);
+    // Only truly unknown/non-registry tools should return null
     expect(panel.getProficiencyBarData(NON_DESIGNATED)).toBeNull();
-    expect(panel.getProficiencyBarData('hand-setting-tool')).toBeNull();
-    expect(panel.getProficiencyBarData('movement-holder')).toBeNull();
-    expect(panel.getProficiencyBarData('dust-blower')).toBeNull();
-    expect(panel.getProficiencyBarData('cross-tip-screwdriver')).toBeNull();
+    expect(panel.getProficiencyBarData('unknown-tool')).toBeNull();
+    // Issue #307: all 5 previously out-of-scope tools are now designated — they must return bar data
+    expect(panel.getProficiencyBarData(TOOL_D)).not.toBeNull(); // cross-tip-screwdriver
+    expect(panel.getProficiencyBarData(TOOL_E)).not.toBeNull(); // case-knife
+    expect(panel.getProficiencyBarData(TOOL_F)).not.toBeNull(); // movement-holder
+    expect(panel.getProficiencyBarData(TOOL_G)).not.toBeNull(); // hand-setting-tool
+    expect(panel.getProficiencyBarData(TOOL_H)).not.toBeNull(); // dust-blower
   });
 
-  test('getProficiencyBarData returns bar data for designated tools when engine is set', () => {
+  test('getProficiencyBarData returns bar data for all 8 designated tools when engine is set', () => {
     const panel = new ToolPanel();
     const engine = makeEngine();
     panel.setProficiencyEngine(engine);
-    for (const toolId of [TOOL_A, TOOL_B, TOOL_C]) {
+    for (const toolId of [TOOL_A, TOOL_B, TOOL_C, TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
       const bar = panel.getProficiencyBarData(toolId);
       expect(bar).not.toBeNull();
       expect(typeof bar.tier).toBe('number');
@@ -488,13 +508,14 @@ describe('AC5 / Scenario 7 — ToolPanel: in-scope tools show bar, others show n
     }
   });
 
-  test('getAllProficiencyBarData: designated tools have non-null bar; others null', () => {
+  test('getAllProficiencyBarData: all 8 designated tools have non-null bar', () => {
     const panel = new ToolPanel();
     const engine = makeEngine();
     panel.setProficiencyEngine(engine);
     const all = panel.getAllProficiencyBarData();
+    const allDesignated = [TOOL_A, TOOL_B, TOOL_C, TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H];
     for (const entry of all) {
-      if ([TOOL_A, TOOL_B, TOOL_C].includes(entry.id)) {
+      if (allDesignated.includes(entry.id)) {
         expect(entry.proficiencyBar).not.toBeNull();
       } else {
         expect(entry.proficiencyBar).toBeNull();
@@ -592,11 +613,11 @@ describe('Scenario 9 — Edge case: Tier 5 ceiling (no overflow, no crash)', () 
     expect(bar.progressFraction).toBe(1.0);
   });
 
-  test('Tier 5 tierName is "Master"', () => {
+  test('Tier 5 tierName is "Grand Maître" (Issue #307 vocabulary rename)', () => {
     const engine = makeEngine();
     engine.injectProficiency(TOOL_A, MAX_TIER);
     const p = engine.getProficiency(TOOL_A);
-    expect(p.tierName).toBe('Master');
+    expect(p.tierName).toBe('Grand Maître');
   });
 
   test('at Tier 5: pointsToNextTier is null (no next tier)', () => {
@@ -709,12 +730,17 @@ describe('Scenario 10 — Regression: MultiStepOperationTracker retry counter', 
 // ─── Serialisation ────────────────────────────────────────────────────────────
 
 describe('ProficiencyEngine — serialisation', () => {
-  test('serialize returns object with all 3 designated tool entries', () => {
+  test('serialize returns object with all 8 designated tool entries', () => {
     const engine = makeEngine();
     const s = engine.serialize();
     expect(s).toHaveProperty(TOOL_A);
     expect(s).toHaveProperty(TOOL_B);
     expect(s).toHaveProperty(TOOL_C);
+    expect(s).toHaveProperty(TOOL_D);
+    expect(s).toHaveProperty(TOOL_E);
+    expect(s).toHaveProperty(TOOL_F);
+    expect(s).toHaveProperty(TOOL_G);
+    expect(s).toHaveProperty(TOOL_H);
   });
 
   test('each serialised entry has tier and points', () => {
@@ -785,5 +811,214 @@ describe('PlayerSaveState — tool_proficiency integration', () => {
     // Existing fields must be unaffected
     expect(save.get('workshop_upgrades')).toEqual(['precision_tweezers']);
     expect(save.get('ledger_balance')).toBe(300);
+  });
+});
+
+// ─── Issue #307 — 5 New Designated Tools ────────────────────────────────────
+
+describe('Issue #307 — 5 new designated tools: proficiency tracking', () => {
+  test('cross-tip-screwdriver earns proficiency on accurate use', () => {
+    const engine = makeEngine();
+    const result = engine.recordToolUse(TOOL_D, 0);
+    expect(result).not.toBeNull();
+    expect(result.pointsGained).toBeCloseTo(DESIGNATED_TOOLS[TOOL_D].baseGain);
+  });
+
+  test('case-knife earns proficiency on accurate use', () => {
+    const engine = makeEngine();
+    const result = engine.recordToolUse(TOOL_E, 0);
+    expect(result).not.toBeNull();
+    expect(result.pointsGained).toBeCloseTo(DESIGNATED_TOOLS[TOOL_E].baseGain);
+  });
+
+  test('movement-holder earns proficiency on accurate use', () => {
+    const engine = makeEngine();
+    const result = engine.recordToolUse(TOOL_F, 0);
+    expect(result).not.toBeNull();
+    expect(result.pointsGained).toBeCloseTo(DESIGNATED_TOOLS[TOOL_F].baseGain);
+  });
+
+  test('hand-setting-tool earns proficiency on accurate use', () => {
+    const engine = makeEngine();
+    const result = engine.recordToolUse(TOOL_G, 0);
+    expect(result).not.toBeNull();
+    expect(result.pointsGained).toBeCloseTo(DESIGNATED_TOOLS[TOOL_G].baseGain);
+  });
+
+  test('dust-blower earns proficiency on accurate use', () => {
+    const engine = makeEngine();
+    const result = engine.recordToolUse(TOOL_H, 0);
+    expect(result).not.toBeNull();
+    expect(result.pointsGained).toBeCloseTo(DESIGNATED_TOOLS[TOOL_H].baseGain);
+  });
+
+  test('all 5 new tools reach Tier 1 within 10 accurate uses', () => {
+    for (const toolId of [TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
+      const engine = makeEngine();
+      doAccurateUses(engine, toolId, 10);
+      const p = engine.getProficiency(toolId);
+      expect(p.tier).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  test('all 5 new tools have Tier 3 time modifier applied', () => {
+    for (const toolId of [TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
+      const engine = makeEngine();
+      engine.injectProficiency(toolId, 3);
+      expect(engine.getTimeModifier(toolId)).toBe(TIME_MODIFIER_TIER_3);
+    }
+  });
+
+  test('all 5 new tools have Tier 5 error margin modifier applied', () => {
+    for (const toolId of [TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
+      const engine = makeEngine();
+      engine.injectProficiency(toolId, 5);
+      expect(engine.getErrorMarginModifier(toolId)).toBe(ERROR_MARGIN_MODIFIER_TIER_5);
+    }
+  });
+
+  test('5 new tools track proficiency independently of original 3 tools', () => {
+    const engine = makeEngine();
+    doAccurateUses(engine, TOOL_D, 10); // cross-tip-screwdriver reaches Tier 1
+    // Original tools must be unaffected
+    expect(engine.getProficiency(TOOL_A).points).toBe(0);
+    expect(engine.getProficiency(TOOL_B).points).toBe(0);
+    expect(engine.getProficiency(TOOL_C).points).toBe(0);
+    // New tools other than TOOL_D must be unaffected
+    expect(engine.getProficiency(TOOL_E).points).toBe(0);
+    expect(engine.getProficiency(TOOL_H).points).toBe(0);
+  });
+
+  test('serialize captures proficiency for all 8 tools after gaining on new tools', () => {
+    const engine = makeEngine();
+    doAccurateUses(engine, TOOL_D, 5);
+    doAccurateUses(engine, TOOL_F, 6);
+    const s = engine.serialize();
+    expect(s[TOOL_D].points).toBeGreaterThan(0);
+    expect(s[TOOL_F].points).toBeGreaterThan(0);
+    expect(s[TOOL_A].points).toBe(0); // unaffected
+  });
+
+  test('injectProficiency works on all 5 new tools without throwing', () => {
+    const engine = makeEngine();
+    for (const toolId of [TOOL_D, TOOL_E, TOOL_F, TOOL_G, TOOL_H]) {
+      expect(() => engine.injectProficiency(toolId, 3)).not.toThrow();
+      expect(engine.getProficiency(toolId).tier).toBe(3);
+    }
+  });
+});
+
+// ─── Issue #307 — TIER_NAMES vocabulary rename ───────────────────────────────
+
+describe('Issue #307 — TIER_NAMES global vocabulary rename', () => {
+  test('TIER_NAMES[0] is empty string (unnamed tier 0)', () => {
+    expect(TIER_NAMES[0]).toBe('');
+  });
+
+  test('TIER_NAMES[1] is "Apprentice"', () => {
+    expect(TIER_NAMES[1]).toBe('Apprentice');
+  });
+
+  test('TIER_NAMES[2] is "Journeyman"', () => {
+    expect(TIER_NAMES[2]).toBe('Journeyman');
+  });
+
+  test('TIER_NAMES[3] is "Craftsman" (was "Expert" in #297)', () => {
+    expect(TIER_NAMES[3]).toBe('Craftsman');
+  });
+
+  test('TIER_NAMES[4] is "Master" (was "Artisan" in #297)', () => {
+    expect(TIER_NAMES[4]).toBe('Master');
+  });
+
+  test('TIER_NAMES[5] is "Grand Maître" (was "Master" in #297)', () => {
+    expect(TIER_NAMES[5]).toBe('Grand Maître');
+  });
+
+  test('tier 0 getProficiency().tierName is "" (empty string, not "Novice")', () => {
+    const engine = makeEngine();
+    const p = engine.getProficiency(TOOL_A);
+    expect(p.tierName).toBe('');
+    expect(p.tierName).not.toBe('Novice');
+  });
+
+  test('tier 3 getProficiency().tierName is "Craftsman" (not "Expert")', () => {
+    const engine = makeEngine();
+    engine.injectProficiency(TOOL_A, 3);
+    expect(engine.getProficiency(TOOL_A).tierName).toBe('Craftsman');
+  });
+
+  test('tier 4 getProficiency().tierName is "Master" (not "Artisan")', () => {
+    const engine = makeEngine();
+    engine.injectProficiency(TOOL_A, 4);
+    expect(engine.getProficiency(TOOL_A).tierName).toBe('Master');
+  });
+
+  test('getProficiencyBarData label at tier 0 includes "no proficiency earned"', () => {
+    const engine = makeEngine();
+    const bar = engine.getProficiencyBarData(TOOL_A);
+    expect(bar.label).toContain('no proficiency earned');
+  });
+
+  test('getProficiencyBarData tierName at tier 0 is "" (empty string)', () => {
+    const engine = makeEngine();
+    const bar = engine.getProficiencyBarData(TOOL_A);
+    expect(bar.tierName).toBe('');
+  });
+});
+
+// ─── Issue #307 — Vocabulary migration notice flag ───────────────────────────
+
+describe('Issue #307 — tool_proficiency_vocabulary_updated one-time notice flag', () => {
+  test('DEFAULT_SAVE has tool_proficiency_vocabulary_updated = false', () => {
+    const save = new PlayerSaveState();
+    expect(save.get('tool_proficiency_vocabulary_updated')).toBe(false);
+  });
+
+  test('pre-#307 saves without the flag receive false default on load', () => {
+    const preSave = {
+      tool_proficiency: null,
+      workshop_upgrades: [],
+      tutorial_tool_switching_seen: true,
+    };
+    const save = new PlayerSaveState(preSave);
+    expect(save.get('tool_proficiency_vocabulary_updated')).toBe(false);
+  });
+
+  test('flag can be set to true (marks notice as shown)', () => {
+    const save = new PlayerSaveState();
+    expect(save.get('tool_proficiency_vocabulary_updated')).toBe(false);
+    save.set('tool_proficiency_vocabulary_updated', true);
+    expect(save.get('tool_proficiency_vocabulary_updated')).toBe(true);
+  });
+
+  test('flag persists through snapshot/reload cycle', () => {
+    const save = new PlayerSaveState();
+    save.set('tool_proficiency_vocabulary_updated', true);
+    const snap = save.snapshot();
+    const reloaded = new PlayerSaveState(snap);
+    expect(reloaded.get('tool_proficiency_vocabulary_updated')).toBe(true);
+  });
+
+  test('flag is independent of tool_proficiency field', () => {
+    const save = new PlayerSaveState();
+    const engine = makeEngine();
+    engine.injectProficiency(TOOL_A, 2);
+    save.setToolProficiency(engine.serialize());
+    // Proficiency set but notice flag still false (not yet acknowledged)
+    expect(save.get('tool_proficiency_vocabulary_updated')).toBe(false);
+    save.set('tool_proficiency_vocabulary_updated', true);
+    // Proficiency state must be unaffected
+    expect(save.getToolProficiency()[TOOL_A].tier).toBe(2);
+  });
+
+  test('setting flag does not corrupt other save fields', () => {
+    const save = new PlayerSaveState({
+      workshop_upgrades: ['precision_tweezers'],
+      ledger_balance: 500,
+    });
+    save.set('tool_proficiency_vocabulary_updated', true);
+    expect(save.get('workshop_upgrades')).toEqual(['precision_tweezers']);
+    expect(save.get('ledger_balance')).toBe(500);
   });
 });

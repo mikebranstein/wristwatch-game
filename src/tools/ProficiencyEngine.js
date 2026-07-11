@@ -2,11 +2,14 @@
  * ProficiencyEngine — per-tool mastery progression core engine.
  *
  * Issue #297 — Per-Tool Mastery Progression: Core Engine (2–3 Tools, Tier 1–5)
+ * Issue #307 — Per-Tool Mastery Progression: 5-Tier Proficiency System for All 8 Repair Tools
  *
  * Design contract (from approved design):
  *   - Manages per-tool proficiency state: { tier, points } for each designated tool.
- *   - Tier progression: 0 (Novice) → 1 (Apprentice) → 2 (Journeyman) → 3 (Expert)
- *     → 4 (Artisan) → 5 (Master).
+ *   - Tier progression: 0 (unnamed) → 1 (Apprentice) → 2 (Journeyman) → 3 (Craftsman)
+ *     → 4 (Master) → 5 (Grand Maître).
+ *   - Tier 0 is the unnamed starting state — displayed as "no proficiency earned".
+ *     TIER_NAMES[0] = '' (empty string); getProficiency() returns '' for tier 0.
  *   - Accuracy-weighted gain: points earned on each tool use, weighted by retry/undo count.
  *     accuracyMultiplier = max(0.2, 1.0 - retryCount * 0.4)
  *     pointsGained = baseGain * accuracyMultiplier
@@ -16,12 +19,17 @@
  *       Tier 5:  error margin narrows (0.75 = 25% tightening)
  *   - Fast first milestone: Tier 1 reachable within 5–10 accurate uses per session.
  *     With baseGain = 2.0 and TIER_THRESHOLDS[0] = 10, 5 accurate uses → Tier 1 ✓
- *   - Designated Phase 1 tools (confirmed by highest eligible-operation count as proxy
- *     for MultiStepOperationTracker highest-use — pre-build telemetry gate satisfied):
- *       1. fine-tip-tweezers    (5 eligible operations — highest in registry)
- *       2. flat-blade-screwdriver (4 eligible operations)
- *       3. spring-bar-tool       (4 eligible operations)
- *   - Out-of-scope tools: no proficiency UI or gain in Phase 1.
+ *   - Designated tools (all 8 ToolRegistry tools, Issue #307 expansion):
+ *       Phase 1 (Issue #297):
+ *         1. fine-tip-tweezers      (5 eligible operations — highest in registry)
+ *         2. flat-blade-screwdriver (4 eligible operations)
+ *         3. spring-bar-tool        (4 eligible operations)
+ *       Phase 2 additions (Issue #307):
+ *         4. cross-tip-screwdriver  (4 eligible operations)
+ *         5. case-knife             (2 eligible operations — see AC5 baseGain note)
+ *         6. movement-holder        (6 eligible operations)
+ *         7. hand-setting-tool      (4 eligible operations)
+ *         8. dust-blower            (3 eligible operations)
  *   - Performance: proficiency calculation is O(1), well within the ≤8 ms budget.
  *
  * AC1: accuracy-weighted gain; retry events proportionally reduce gain.
@@ -29,6 +37,8 @@
  * AC3: Tier 1 reachable in 5–10 accurate uses (baseGain = 2.0, threshold = 10).
  * AC4: initialised from PlayerSaveState `tool_proficiency` field; null load = Tier 0 all tools.
  * AC5: getProficiencyBarData(toolId) drives ToolPanel proficiency bar display.
+ * AC3(#307): vocabulary migration — TIER_NAMES globally renamed; tier 0 unnamed (empty string);
+ *   one-time notice flag `tool_proficiency_vocabulary_updated` in PlayerSaveState.
  */
 
 'use strict';
@@ -37,9 +47,18 @@
 
 /**
  * Tier names (index = tier number 0–5).
+ * Tier 0 is the unnamed starting state ('no proficiency earned').
+ * TIER_NAMES[0] is '' (empty string) — use getProficiency().tierName for display.
+ *
+ * Issue #307: globally renamed from [Novice, Apprentice, Journeyman, Expert, Artisan, Master]
+ * to ['' (unnamed), Apprentice, Journeyman, Craftsman, Master, Grand Maître].
+ * Existing #297 saves are structurally unchanged (tier values stored as integers);
+ * labels Expert→Craftsman, Artisan→Master, Master→Grand Maître update silently on load.
+ * One-time in-game notice (tool_proficiency_vocabulary_updated in PlayerSaveState) acknowledges
+ * the vocabulary rebranding for players who had earned Expert, Artisan, or Master on #297 tools.
  * @type {string[]}
  */
-const TIER_NAMES = ['Novice', 'Apprentice', 'Journeyman', 'Expert', 'Artisan', 'Master'];
+const TIER_NAMES = ['', 'Apprentice', 'Journeyman', 'Craftsman', 'Master', 'Grand Maître'];
 
 /**
  * Cumulative point thresholds to reach each tier (index = tier number 1–5).
@@ -60,15 +79,24 @@ const TIER_THRESHOLDS = [10, 30, 60, 100, 150];
 const MAX_TIER = 5;
 
 /**
- * Phase 1 designated tool IDs with proficiency config.
- * Selected as the 3 highest-use tools confirmed by eligible-operation count
- * as proxy for MultiStepOperationTracker usage data (pre-build telemetry gate).
+ * All 8 designated tool IDs with proficiency config.
+ * Phase 1 (Issue #297): fine-tip-tweezers, flat-blade-screwdriver, spring-bar-tool.
+ * Phase 2 additions (Issue #307): cross-tip-screwdriver, case-knife, movement-holder,
+ *   hand-setting-tool, dust-blower.
+ * All tools use baseGain = 2.0. Tier 1 reachable in 5 accurate uses (threshold = 10).
+ * Note: case-knife has only 2 eligible operations — pre-build playtest gate should
+ * verify AC5 30-minute reachability; baseGain can be raised without affecting other tools.
  * @type {Object.<string, { baseGain: number }>}
  */
 const DESIGNATED_TOOLS = {
-  'fine-tip-tweezers':    { baseGain: 2.0 },
+  'fine-tip-tweezers':      { baseGain: 2.0 },
   'flat-blade-screwdriver': { baseGain: 2.0 },
-  'spring-bar-tool':       { baseGain: 2.0 },
+  'spring-bar-tool':        { baseGain: 2.0 },
+  'cross-tip-screwdriver':  { baseGain: 2.0 },
+  'case-knife':             { baseGain: 2.0 },
+  'movement-holder':        { baseGain: 2.0 },
+  'hand-setting-tool':      { baseGain: 2.0 },
+  'dust-blower':            { baseGain: 2.0 },
 };
 
 /**
@@ -213,7 +241,7 @@ class ProficiencyEngine {
 
     return {
       tier:            state.tier,
-      tierName:        TIER_NAMES[state.tier] || 'Unknown',
+      tierName:        TIER_NAMES[state.tier] !== undefined ? TIER_NAMES[state.tier] : 'Unknown',
       points:          state.points,
       pointsInTier:    Math.max(0, pointsInTier),
       pointsToNextTier: pointsToNextTier !== null ? Math.max(0, pointsToNextTier) : null,
@@ -247,7 +275,9 @@ class ProficiencyEngine {
 
     const label = proficiency.isMaxTier
       ? `${proficiency.tierName} (Maxed)`
-      : `${proficiency.tierName} — ${Math.floor(proficiency.pointsInTier)}/${this._tierSpan(proficiency.tier)} pts`;
+      : proficiency.tier === 0
+        ? `no proficiency earned — 0/${this._tierSpan(0)} pts`
+        : `${proficiency.tierName} — ${Math.floor(proficiency.pointsInTier)}/${this._tierSpan(proficiency.tier)} pts`;
 
     return {
       tier:             proficiency.tier,
